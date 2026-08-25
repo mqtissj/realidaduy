@@ -1,0 +1,118 @@
+@import "tailwindcss";
+
+/* Design tokens — docs/03-design-system.md */
+@theme {
+  --color-canvas: #f5f7f8;
+  --color-surface: #ffffff;
+  --color-ink: #16202b;
+  --color-ink-soft: #46525e;
+  --color-ink-faint: #64707c;
+  --color-primary: #1e3a5f;
+  --color-primary-hover: #16304f;
+  --color-primary-soft: #e8eef5;
+  --color-celeste: #7fa3c4;
+  --color-celeste-soft: #dde7f1;
+  --color-celeste-deep: #4a75a0;
+  --color-line: #e0e5e9;
+  --color-focus: #b45309;
+  --color-up: #166534;
+  --color-down: #9f1239;
+  --color-demo-ink: #92400e;
+  --color-demo-bg: #fef3c7;
+
+  --font-display: var(--font-bricolage), system-ui, sans-serif;
+  --font-body: var(--font-source-sans), system-ui, sans-serif;
+
+  --shadow-card: 0 1px 2px rgb(30 58 95 / 0.06), 0 1px 4px rgb(30 58 95 / 0.05);
+  --shadow-overlay: 0 8px 30px rgb(22 32 43 / 0.14);
+}
+
+/* Paleta secuencial del choropleth (azul, claro→oscuro, monótona) */
+:root {
+  --seq-1: #dde7f1;
+  --seq-2: #b3c9de;
+  --seq-3: #7fa3c4;
+  --seq-4: #4a75a0;
+  --seq-5: #1e3a5f;
+  /* Paleta categórica de gráficos (validada para daltonismo, orden fijo) */
+  --chart-1: #0072b2;
+  --chart-2: #e69f00;
+  --chart-3: #009e73;
+  --chart-4: #cc79a7;
+  --chart-5: #56b4e9;
+  --chart-6: #d55e00;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (min-width: 768px) {
+  body {
+    font-size: 1.125rem;
+  }
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+/* Cifras siempre tabulares */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Foco visible en TODO elemento interactivo (WCAG 2.2) */
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* details/summary como componente expandible accesible sin JS */
+details.fold > summary {
+  cursor: pointer;
+  list-style: none;
+}
+details.fold > summary::-webkit-details-marker {
+  display: none;
+}
+details.fold > summary::after {
+  content: "▾";
+  display: inline-block;
+  margin-left: 0.4em;
+  transition: transform 150ms;
+}
+details.fold[open] > summary::after {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
