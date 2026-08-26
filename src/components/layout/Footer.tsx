@@ -28,12 +28,20 @@ export default function Footer() {
           <ul className="mt-2 space-y-1 text-sm">
             <li><Link className="text-ink-soft hover:text-primary" href="/fuentes">Fuentes y metodología</Link></li>
             <li><Link className="text-ink-soft hover:text-primary" href="/indicadores">Diccionario de indicadores</Link></li>
+            <li><Link className="text-ink-soft hover:text-primary" href="/terminos">Términos y condiciones</Link></li>
+            <li><Link className="text-ink-soft hover:text-primary" href="/privacidad">Política de privacidad</Link></li>
           </ul>
           <p className="mt-4 text-xs text-ink-faint">
             Límites territoriales: IDE/Servicio Geográfico Militar e INE (cartografía censal
             2023), publicados bajo la Licencia de Datos Abiertos Uruguay.
           </p>
         </nav>
+      </div>
+      <div className="border-t border-line">
+        <p className="mx-auto max-w-6xl px-4 py-4 text-xs text-ink-faint md:px-6">
+          © 2026 realidad.uy · Plataforma cívica independiente, sin afiliación estatal ni
+          partidaria · Sin cuentas, sin cookies, sin rastreadores.
+        </p>
       </div>
     </footer>
   );

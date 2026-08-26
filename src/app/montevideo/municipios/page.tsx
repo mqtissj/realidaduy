@@ -67,7 +67,7 @@ export default function MunicipiosPage() {
         <div className="mt-4 flex flex-wrap gap-3">
           <Link
             href="/comparar?nivel=municipio"
-            className="rounded-lg bg-primary px-4 py-2.5 font-display text-sm font-semibold text-white transition-colors hover:bg-primary-hover"
+            className="pressable rounded-lg bg-primary px-4 py-2.5 font-display text-sm font-semibold text-white transition-colors hover:bg-primary-hover"
           >
             Comparar municipios
           </Link>

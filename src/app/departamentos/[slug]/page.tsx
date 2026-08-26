@@ -78,7 +78,7 @@ export default async function DepartmentProfile({
         </div>
         <Link
           href={`/comparar?a=${dept.slug}`}
-          className="rounded-lg border border-line bg-surface px-4 py-2 text-sm font-semibold text-primary transition-all duration-200 hover:-translate-y-0.5 hover:border-celeste"
+          className="pressable rounded-lg border border-line bg-surface px-4 py-2 text-sm font-semibold text-primary transition-colors hover:border-celeste"
         >
           Comparar con otro territorio
         </Link>

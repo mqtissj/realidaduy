@@ -36,7 +36,7 @@ export default function Header() {
                   <Link
                     href={item.href}
                     aria-current={active ? "page" : undefined}
-                    className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+                    className={`pressable rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
                       active
                         ? "bg-primary-soft text-primary"
                         : "text-ink-soft hover:bg-primary-soft/60 hover:text-primary"

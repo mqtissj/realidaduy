@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { motion, useReducedMotion } from "motion/react";
 import ChoroplethMap, { type MapEntry } from "@/components/map/ChoroplethMap";
 import { CategoricalLegend, SequentialLegend } from "@/components/map/MapLegend";
 import { PartyBadge } from "@/components/ui/Badge";
@@ -44,6 +45,7 @@ export default function MapExplorer({
 
   const [mode, setMode] = useState<string>(defaultMode);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const reduce = useReducedMotion();
 
   const byId = useMemo(
     () => Object.fromEntries(territories.map((t) => [t.id, t])),
@@ -111,13 +113,23 @@ export default function MapExplorer({
               type="button"
               aria-pressed={mode === value}
               onClick={() => setMode(value)}
-              className={`shrink-0 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm font-semibold transition-colors ${
-                mode === value
-                  ? "bg-primary text-white"
-                  : "text-ink-soft hover:bg-primary-soft/60 hover:text-primary"
+              className={`pressable relative shrink-0 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm font-semibold transition-colors duration-200 ${
+                mode === value ? "text-white" : "text-ink-soft hover:text-primary"
               }`}
             >
-              {label}
+              {mode === value ? (
+                <motion.span
+                  layoutId="modo-mapa-activo"
+                  aria-hidden
+                  className="absolute inset-0 rounded-lg bg-primary"
+                  transition={
+                    reduce
+                      ? { duration: 0 }
+                      : { type: "spring", duration: 0.45, bounce: 0.15 }
+                  }
+                />
+              ) : null}
+              <span className="relative z-10">{label}</span>
             </button>
           ))}
         </div>
@@ -150,7 +162,11 @@ export default function MapExplorer({
       </div>
 
       {selected ? (
-        <aside
+        <motion.aside
+          key={selected.id}
+          initial={reduce ? false : { opacity: 0, transform: "translateY(12px)" }}
+          animate={{ opacity: 1, transform: "translateY(0px)" }}
+          transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
           aria-label={`Detalle de ${selected.name}`}
           className="fixed inset-x-0 bottom-14 z-30 max-h-[55dvh] overflow-y-auto rounded-t-2xl border-t border-line bg-surface p-5 shadow-overlay md:bottom-0 lg:static lg:z-auto lg:mt-12 lg:max-h-none lg:rounded-2xl lg:border lg:shadow-card"
         >
@@ -211,12 +227,12 @@ export default function MapExplorer({
           {profileBase ? (
             <Link
               href={`${profileBase}/${selected.slug}`}
-              className="mt-5 inline-block rounded-lg bg-primary px-4 py-2.5 font-display text-sm font-semibold text-white transition-colors hover:bg-primary-hover"
+              className="pressable mt-5 inline-block rounded-lg bg-primary px-4 py-2.5 font-display text-sm font-semibold text-white transition-colors hover:bg-primary-hover"
             >
               Ver perfil completo →
             </Link>
           ) : null}
-        </aside>
+        </motion.aside>
       ) : (
         <aside className="hidden lg:mt-12 lg:block">
           <div className="rounded-2xl border border-dashed border-line bg-surface p-5 text-sm text-ink-soft">

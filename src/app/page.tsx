@@ -1,8 +1,10 @@
 import Link from "next/link";
 import MetricCard from "@/components/charts/MetricCard";
 import HeroMap from "@/components/map/HeroMap";
+import PartyBars from "@/components/charts/PartyBars";
 import Reveal from "@/components/ui/Reveal";
 import { TextureLink } from "@/components/cult/TextureButton";
+import { getElectionResults, getParty } from "@/data/elections";
 
 const HOY = [
   "tasa-desempleo",
@@ -16,10 +18,21 @@ const HOY = [
 ];
 
 export default function Home() {
+  const balotaje = getElectionResults("balotaje-2024", "UY")
+    .sort((a, b) => (b.pct ?? 0) - (a.pct ?? 0))
+    .map((r) => {
+      const p = getParty(r.partyId)!;
+      return { name: `${r.electedName} (${p.shortName})`, color: p.color, pct: r.pct ?? 0 };
+    });
   return (
     <>
-      <section className="bg-gradient-to-b from-primary to-primary-hover text-white">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-14 md:grid-cols-12 md:px-6 md:py-20">
+      <section className="relative overflow-hidden bg-gradient-to-b from-primary to-primary-hover text-white">
+        <div aria-hidden className="dot-grid absolute inset-0" />
+        <div
+          aria-hidden
+          className="absolute -right-32 top-1/2 h-[36rem] w-[36rem] -translate-y-1/2 rounded-full bg-celeste/15 blur-3xl"
+        />
+        <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 py-14 md:grid-cols-12 md:px-6 md:py-20">
           <div className="md:col-span-7">
             <Reveal>
               <p className="text-sm font-bold uppercase tracking-[0.2em] text-celeste-soft">
@@ -28,7 +41,7 @@ export default function Home() {
             </Reveal>
             <Reveal delay={0.08}>
               <h1 className="mt-3 max-w-2xl font-display text-5xl font-extrabold tracking-tight md:text-7xl">
-                Uruguay, <span className="text-celeste">en datos.</span>
+                Uruguay, <span className="hero-accent">en datos.</span>
               </h1>
             </Reveal>
             <Reveal delay={0.16}>
@@ -70,10 +83,14 @@ export default function Home() {
             Último dato disponible por indicador. Tocá una tarjeta para ver detalle y fuente.
           </p>
         </div>
-        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {HOY.map((id, i) => (
-            <Reveal key={id} delay={Math.min(i * 0.05, 0.3)}>
-              <MetricCard indicatorId={id} />
+            <Reveal
+              key={id}
+              delay={Math.min(i * 0.05, 0.3)}
+              className={i === 0 ? "sm:col-span-2 lg:col-span-2" : ""}
+            >
+              <MetricCard indicatorId={id} featured={i === 0} />
             </Reveal>
           ))}
         </div>
@@ -94,6 +111,12 @@ export default function Home() {
                   Resultados de 2024 y 2025, con mapa por partido ganador y datos
                   completos de cada departamento.
                 </p>
+                <div className="mt-4 max-w-md">
+                  <PartyBars compact rows={balotaje} />
+                  <p className="mt-1.5 text-xs text-ink-faint">
+                    Balotaje 2024 · % sobre votos válidos · Corte Electoral
+                  </p>
+                </div>
               </div>
               <p className="mt-6 font-display font-semibold text-primary group-hover:underline">
                 Ver elecciones →
