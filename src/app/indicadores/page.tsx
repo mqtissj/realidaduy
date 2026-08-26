@@ -7,17 +7,18 @@ import type { Category } from "@/lib/types";
 export const metadata: Metadata = {
   title: "Indicadores",
   description:
-    "Todos los indicadores de Uruguay Data por categoría: trabajo, economía, sociedad y población, con fuente y metodología.",
+    "Todos los indicadores de realidad.uy por categoría: trabajo, economía, sociedad, seguridad y población, con fuente y metodología.",
 };
 
 const CATEGORY_LABEL: Partial<Record<Category, string>> = {
   trabajo: "Trabajo",
   economia: "Economía",
   sociedad: "Sociedad",
+  seguridad: "Seguridad",
   poblacion: "Población",
 };
 
-const ORDER: Category[] = ["trabajo", "economia", "sociedad", "poblacion"];
+const ORDER: Category[] = ["trabajo", "economia", "sociedad", "seguridad", "poblacion"];
 
 export default function IndicadoresPage() {
   return (

@@ -7,7 +7,7 @@ import { StatusBadge } from "@/components/ui/Badge";
 export const metadata: Metadata = {
   title: "Fuentes y metodología",
   description:
-    "De dónde salen los datos de Uruguay Data: organismos oficiales, diccionario de indicadores, tipos de dato y proceso de validación.",
+    "De dónde salen los datos de realidad.uy: organismos oficiales, diccionario de indicadores, tipos de dato y proceso de validación.",
 };
 
 const LEVEL_ICON: Record<string, string> = {

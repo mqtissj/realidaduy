@@ -19,8 +19,8 @@ const sourceSans = Source_Sans_3({
 
 export const metadata: Metadata = {
   title: {
-    default: "Uruguay Data — Entendé Uruguay, territorio por territorio",
-    template: "%s · Uruguay Data",
+    default: "realidad.uy — Entendé Uruguay, territorio por territorio",
+    template: "%s · realidad.uy",
   },
   description:
     "Explorá la realidad política, económica y social de Uruguay con datos públicos verificables: mapas, indicadores, elecciones y comparaciones por departamento y municipio.",

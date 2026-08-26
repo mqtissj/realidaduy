@@ -4,7 +4,7 @@ import {
   departamental2025PorDepartamento,
   municipal2025Montevideo,
   nacional2024PorDepartamento,
-} from "./elecciones-generadas";
+} from "./elecciones-generadas.ts";
 
 // Resultados electorales. Verificación 2026-08-25 y auditoría adversarial
 // 2026-08-26 (41 valores cotejados contra Corte Electoral/Wikipedia/prensa).

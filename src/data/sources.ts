@@ -36,6 +36,15 @@ export const sources: Source[] = [
     provides: "Salario mínimo nacional (decretos).",
   },
   {
+    id: "mi",
+    name: "Ministerio del Interior",
+    shortName: "M. Interior",
+    url: "https://www.gub.uy/ministerio-interior/",
+    type: "official",
+    provides:
+      "Delitos denunciados (homicidios, rapiñas, hurtos) — microdatos abiertos 2013→presente, actualizados trimestralmente.",
+  },
+  {
     id: "opp",
     name: "Oficina de Planeamiento y Presupuesto — Observatorio Territorio Uruguay",
     shortName: "OPP",

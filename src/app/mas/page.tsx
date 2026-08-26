@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "Más secciones",
 };
 
+// Secciones que no entran en la barra inferior de móvil.
 const LINKS = [
   { href: "/departamentos", title: "Departamentos", body: "Perfiles de los 19 departamentos." },
   { href: "/montevideo/municipios", title: "Municipios de Montevideo", body: "Los 8 municipios de la capital." },

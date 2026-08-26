@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { departments, getDepartmentBySlug } from "@/data/territories";
-import { getGovernment, getParty, turnout } from "@/data/elections";
+import { getElectionResults, getGovernment, getParty, turnout } from "@/data/elections";
+import PartyBars from "@/components/charts/PartyBars";
 import { getIndicator } from "@/data/dictionary";
 import { getLatest, hasData, indicatorsForLevel } from "@/lib/data";
 import { formatNumber } from "@/lib/format";
@@ -51,6 +52,16 @@ export default async function DepartmentProfile({
   const deptMetricIds = indicatorsForLevel("departamento")
     .map((i) => i.id)
     .filter((id) => id !== "poblacion" && hasData(id, dept.id));
+  const toBars = (electionId: string) =>
+    getElectionResults(electionId, dept.id)
+      .filter((r) => r.pct !== null)
+      .sort((a, b) => (b.pct ?? 0) - (a.pct ?? 0))
+      .map((r) => {
+        const p = getParty(r.partyId)!;
+        return { name: p.name, color: p.color, pct: r.pct ?? 0 };
+      });
+  const bars2025 = toBars("departamental-2025");
+  const bars2024 = toBars("nacional-2024");
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 md:px-6 md:py-10">
@@ -125,42 +136,46 @@ export default async function DepartmentProfile({
           <div className="rounded-2xl border border-line bg-surface p-4 shadow-card">
             <h3 className="font-display text-lg font-bold">Elección departamental 2025</h3>
             {gov && party ? (
-              <dl className="mt-3 space-y-2 text-sm">
-                <div className="flex justify-between gap-2">
-                  <dt className="text-ink-faint">Lema ganador</dt>
-                  <dd className="font-semibold">{party.name}</dd>
-                </div>
-                <div className="flex justify-between gap-2">
-                  <dt className="text-ink-faint">Intendente electo</dt>
-                  <dd className="font-semibold">{gov.electedName}</dd>
-                </div>
-                <div className="flex justify-between gap-2">
-                  <dt className="text-ink-faint">Participación nacional</dt>
-                  <dd className="tnum font-semibold">
-                    {turnout2025 ? `${formatNumber(turnout2025.pct, 2)}%` : "—"}
-                  </dd>
-                </div>
-              </dl>
+              <p className="mt-2 text-sm text-ink-soft">
+                Intendente electo: <strong className="text-ink">{gov.electedName}</strong> (
+                {party.name}) · Participación nacional:{" "}
+                <span className="tnum">
+                  {turnout2025 ? `${formatNumber(turnout2025.pct, 2)}%` : "—"}
+                </span>
+              </p>
             ) : (
               <StateView kind="nodata" compact />
             )}
+            {bars2025.length > 0 ? (
+              <div className="mt-3">
+                <PartyBars compact rows={bars2025} />
+              </div>
+            ) : null}
             <p className="mt-3 text-xs text-ink-faint">
-              El desglose de votos y porcentajes por departamento se ingerirá desde los
-              archivos oficiales de la Corte Electoral (escrutinio primario 2025).
+              % sobre votos válidos al lema en {dept.name}. Fuente: Corte Electoral,
+              desglose oficial por circuito (11 de mayo de 2025).
             </p>
           </div>
           <div className="rounded-2xl border border-line bg-surface p-4 shadow-card">
-            <h3 className="font-display text-lg font-bold">Resultados por departamento 2024</h3>
-            <div className="mt-3">
-              <StateView
-                kind="pending"
-                detail="Los resultados de la elección nacional 2024 desagregados por departamento se ingerirán desde los datos abiertos de la Corte Electoral. Los resultados nacionales están en la sección Elecciones."
-                compact
-              />
-            </div>
+            <h3 className="font-display text-lg font-bold">
+              Primera vuelta 2024 en {dept.name}
+            </h3>
+            {bars2024.length > 0 ? (
+              <div className="mt-3">
+                <PartyBars compact rows={bars2024} />
+              </div>
+            ) : (
+              <div className="mt-3">
+                <StateView kind="nodata" compact />
+              </div>
+            )}
+            <p className="mt-3 text-xs text-ink-faint">
+              % sobre el total de votos emitidos en {dept.name} (27 de octubre de 2024).
+              Fuente: Corte Electoral, desglose oficial por circuito.
+            </p>
             <Link
               href="/elecciones"
-              className="mt-3 inline-block text-sm font-semibold text-primary hover:underline"
+              className="mt-2 inline-block text-sm font-semibold text-primary hover:underline"
             >
               Ver resultados nacionales →
             </Link>

@@ -10,6 +10,7 @@ const { allTerritories, departments, montevideoMunicipalities } = await import(
 const { nationalObservations } = await import("../src/data/observations/nacional.ts");
 const { departmentObservations } = await import("../src/data/observations/departamentos.ts");
 const { departmentEchObservations } = await import("../src/data/observations/departamentos-ech.ts");
+const { seguridadObservations } = await import("../src/data/observations/seguridad.ts");
 const { municipioObservations } = await import("../src/data/observations/municipios.ts");
 const { worldBankSeries } = await import("../src/data/observations/series-banco-mundial.ts");
 const { sources } = await import("../src/data/sources.ts");
@@ -19,6 +20,7 @@ const observations = [
   ...nationalObservations,
   ...departmentObservations,
   ...departmentEchObservations,
+  ...seguridadObservations,
   ...municipioObservations,
   ...worldBankSeries,
 ];
@@ -74,14 +76,18 @@ const sumaMunicipios = municipioObservations.reduce((s, o) => s + (o.value ?? 0)
 if (montevideo && Math.abs(sumaMunicipios - montevideo) / montevideo > 0.01)
   errors.push(`Suma municipal (${sumaMunicipios}) difiere >1% de Montevideo (${montevideo})`);
 
-// Series departamentales ECH: cada bloque debe cubrir los 19 departamentos.
+// Series departamentales: cada bloque debe cubrir los 19 departamentos.
+const deptWide = [...departmentEchObservations, ...seguridadObservations];
 for (const [indicatorId, period] of [
   ["tasa-desempleo", "2024"],
   ["informalidad", "2025"],
   ["ingreso-medio-hogar", "2023"],
   ["pobreza-personas", "2023"],
+  ["homicidios-100k", "2025"],
+  ["rapinas-100k", "2025"],
+  ["hurtos-100k", "2025"],
 ]) {
-  const n = departmentEchObservations.filter(
+  const n = deptWide.filter(
     (o) => o.indicatorId === indicatorId && o.period === period && o.territoryId !== "UY"
   ).length;
   if (n !== 19) errors.push(`${indicatorId} ${period}: ${n}/19 departamentos`);

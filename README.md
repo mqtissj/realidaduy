@@ -1,4 +1,4 @@
-# 🇺🇾 Uruguay Data
+# 🇺🇾 realidad.uy
 
 **Entendé Uruguay, territorio por territorio.** Plataforma ciudadana e independiente que
 convierte datos públicos de Uruguay en mapas, indicadores y comparaciones — siempre con
@@ -7,6 +7,18 @@ fuente, período y metodología a la vista.
 > Estado: **MVP en desarrollo**. Cada observación registra internamente (campo `demo`)
 > si ya fue cotejada a mano contra el boletín oficial. Una tarea programada revisa cada
 > mes (día 5) si hay datos nuevos del INE/BCU y actualiza el repo. **Nunca se inventan datos.**
+
+## Deploy y actualización automática
+
+- **Deploy:** conectar este repo en [vercel.com/new](https://vercel.com/new) (framework: Next.js,
+  sin configuración extra). Cada push a `main` redeploya solo.
+- **Datos:** el workflow [`actualizar-datos.yml`](.github/workflows/actualizar-datos.yml)
+  corre el día 5 de cada mes: ingesta Banco Mundial + seguridad (M. Interior) +
+  elecciones (Corte Electoral, con verificación automática contra el escrutinio),
+  valida, compila y commitea — lo que dispara el redeploy. También se puede lanzar a
+  mano desde la pestaña Actions ("Run workflow").
+- **Titulares del INE** (desempleo mensual, IPC, pobreza): los actualiza la tarea
+  programada local de Claude (día 5, 10:00) porque requieren leer boletines/prensa.
 
 ## Comandos
 

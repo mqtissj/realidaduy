@@ -20,7 +20,7 @@ export default function Header() {
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 md:px-6">
         <Link href="/" className="flex items-baseline gap-2">
           <span className="font-display text-xl font-extrabold tracking-tight text-primary">
-            Uruguay <span className="text-celeste-deep">Data</span>
+            realidad<span className="text-celeste-deep">.uy</span>
           </span>
           <span className="hidden text-xs font-semibold uppercase tracking-widest text-ink-faint sm:inline">
             beta

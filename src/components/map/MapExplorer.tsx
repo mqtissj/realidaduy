@@ -100,18 +100,18 @@ export default function MapExplorer({
         <div
           role="group"
           aria-label="Elegir qué mostrar en el mapa"
-          className="inline-flex flex-wrap gap-0.5 rounded-xl border border-line bg-surface p-1 shadow-card"
+          className="flex w-full gap-0.5 overflow-x-auto rounded-xl border border-line bg-surface p-1 shadow-card"
         >
           {[
             ...metricModes.map((m) => [m.indicatorId, m.mapLabel] as const),
-            ["gobierno", "Partido de gobierno"] as const,
+            ["gobierno", "Gobierno"] as const,
           ].map(([value, label]) => (
             <button
               key={value}
               type="button"
               aria-pressed={mode === value}
               onClick={() => setMode(value)}
-              className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors ${
+              className={`shrink-0 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm font-semibold transition-colors ${
                 mode === value
                   ? "bg-primary text-white"
                   : "text-ink-soft hover:bg-primary-soft/60 hover:text-primary"

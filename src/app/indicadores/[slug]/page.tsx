@@ -134,11 +134,17 @@ export default async function IndicadorPage({
               decimals={indicator.decimals}
             />
           </ChartCard>
-        ) : (
+        ) : indicator.geographicLevel.includes("pais") ? (
           <StateView
             kind="pending"
             detail={`La serie histórica oficial (${source?.shortName}) se ingerirá y validará antes de publicarse.`}
           />
+        ) : (
+          <p className="text-sm text-ink-faint">
+            La serie histórica {indicator.availableFrom ? `(${indicator.availableFrom}–hoy) ` : ""}
+            está disponible en la fuente; el gráfico de evolución se sumará en una próxima
+            versión.
+          </p>
         )}
       </section>
 

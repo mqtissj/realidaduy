@@ -5,7 +5,9 @@ export default function Footer() {
     <footer className="mt-16 border-t border-line bg-surface">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 md:grid-cols-3 md:px-6">
         <div>
-          <p className="font-display text-lg font-bold text-primary">Uruguay Data</p>
+          <p className="font-display text-lg font-bold text-primary">
+            realidad<span className="text-celeste-deep">.uy</span>
+          </p>
           <p className="mt-2 max-w-xs text-sm text-ink-soft">
             Plataforma ciudadana e independiente. Datos públicos con fuente, período y
             metodología a la vista. Sin afiliación partidaria.
