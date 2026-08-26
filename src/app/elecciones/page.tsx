@@ -138,35 +138,31 @@ export default function EleccionesPage() {
             />
           </div>
           <details className="fold mt-3">
-            <summary className="text-sm font-semibold text-primary">Ver datos</summary>
-            <div className="mt-2 overflow-x-auto">
-              <table className="w-full min-w-[360px] border-collapse text-sm">
+            <summary className="pressable inline-block rounded-lg text-sm font-semibold text-primary">
+              Ver datos
+            </summary>
+            <div className="tablewrap mt-2">
+              <table className="tabla min-w-[360px]">
                 <caption className="sr-only">Resultados de la primera vuelta 2024</caption>
                 <thead>
                   <tr>
-                    <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-left font-bold text-ink-soft">Partido</th>
-                    <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-right font-bold text-ink-soft">Votos</th>
-                    <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-right font-bold text-ink-soft">% del total emitido</th>
+                    <th scope="col">Partido</th>
+                    <th scope="col" className="num">Votos</th>
+                    <th scope="col" className="num">% del total emitido</th>
                   </tr>
                 </thead>
                 <tbody>
                   {nacionalRows.map((r) => (
                     <tr key={r.name}>
-                      <td className="border-b border-line px-2 py-1.5 font-semibold">{r.name}</td>
-                      <td className="tnum border-b border-line px-2 py-1.5 text-right">
-                        {r.votes ? formatNumber(r.votes) : "—"}
-                      </td>
-                      <td className="tnum border-b border-line px-2 py-1.5 text-right">
-                        {formatNumber(r.pct, 2)}%
-                      </td>
+                      <td>{r.name}</td>
+                      <td className="num">{r.votes ? formatNumber(r.votes) : "—"}</td>
+                      <td className="num">{formatNumber(r.pct, 2)}%</td>
                     </tr>
                   ))}
                   <tr>
-                    <td className="border-b border-line px-2 py-1.5 font-semibold">
-                      Otros, en blanco y anulados
-                    </td>
-                    <td className="tnum border-b border-line px-2 py-1.5 text-right">—</td>
-                    <td className="tnum border-b border-line px-2 py-1.5 text-right">{formatNumber(otros, 2)}%</td>
+                    <td>Otros, en blanco y anulados</td>
+                    <td className="num">—</td>
+                    <td className="num">{formatNumber(otros, 2)}%</td>
                   </tr>
                 </tbody>
               </table>
@@ -207,24 +203,22 @@ export default function EleccionesPage() {
                 <CategoricalLegend items={dept2024Parties} title="Partido más votado" />
               </div>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-sm">
+            <div className="tablewrap">
+              <table className="tabla">
                 <caption className="sr-only">Partido más votado por departamento, primera vuelta 2024</caption>
                 <thead>
                   <tr>
-                    <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-left font-bold text-ink-soft">Departamento</th>
-                    <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-left font-bold text-ink-soft">Más votado</th>
-                    <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-right font-bold text-ink-soft">%</th>
+                    <th scope="col">Departamento</th>
+                    <th scope="col">Más votado</th>
+                    <th scope="col" className="num">%</th>
                   </tr>
                 </thead>
                 <tbody>
                   {dept2024.map(({ dept, winner, party }) => (
                     <tr key={dept.id}>
-                      <td className="border-b border-line px-2 py-1.5 font-semibold">{dept.name}</td>
-                      <td className="border-b border-line px-2 py-1.5">
-                        {party ? <PartyBadge color={party.color} name={party.shortName} /> : "—"}
-                      </td>
-                      <td className="tnum border-b border-line px-2 py-1.5 text-right">
+                      <td>{dept.name}</td>
+                      <td>{party ? <PartyBadge color={party.color} name={party.shortName} /> : "—"}</td>
+                      <td className="num">
                         {winner?.pct !== null && winner?.pct !== undefined
                           ? `${formatNumber(winner.pct, 1)}%`
                           : "—"}
@@ -304,26 +298,24 @@ export default function EleccionesPage() {
                 <CategoricalLegend items={deptParties} title="Lema ganador" />
               </div>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-sm">
+            <div className="tablewrap">
+              <table className="tabla min-w-[380px]">
                 <caption className="sr-only">Intendentes electos por departamento, 2025</caption>
                 <thead>
                   <tr>
-                    <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-left font-bold text-ink-soft">Departamento</th>
-                    <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-left font-bold text-ink-soft">Intendente</th>
-                    <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-left font-bold text-ink-soft">Partido</th>
-                    <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-right font-bold text-ink-soft">%</th>
+                    <th scope="col">Departamento</th>
+                    <th scope="col">Intendente</th>
+                    <th scope="col">Partido</th>
+                    <th scope="col" className="num">%</th>
                   </tr>
                 </thead>
                 <tbody>
                   {deptWinners.map(({ dept, winner, party }) => (
                     <tr key={dept.id}>
-                      <td className="border-b border-line px-2 py-1.5 font-semibold">{dept.name}</td>
-                      <td className="border-b border-line px-2 py-1.5">{winner?.electedName ?? "—"}</td>
-                      <td className="border-b border-line px-2 py-1.5">
-                        {party ? <PartyBadge color={party.color} name={party.shortName} /> : "—"}
-                      </td>
-                      <td className="tnum border-b border-line px-2 py-1.5 text-right">
+                      <td>{dept.name}</td>
+                      <td>{winner?.electedName ?? "—"}</td>
+                      <td>{party ? <PartyBadge color={party.color} name={party.shortName} /> : "—"}</td>
+                      <td className="num">
                         {winner?.pct !== null && winner?.pct !== undefined
                           ? `${formatNumber(winner.pct, 1)}%`
                           : "—"}
@@ -364,26 +356,24 @@ export default function EleccionesPage() {
                 <CategoricalLegend items={muniParties} title="Lema ganador" />
               </div>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-sm">
+            <div className="tablewrap">
+              <table className="tabla min-w-[380px]">
                 <caption className="sr-only">Alcaldes electos por municipio de Montevideo, 2025</caption>
                 <thead>
                   <tr>
-                    <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-left font-bold text-ink-soft">Municipio</th>
-                    <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-left font-bold text-ink-soft">Alcalde/sa</th>
-                    <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-left font-bold text-ink-soft">Partido</th>
-                    <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-right font-bold text-ink-soft">%</th>
+                    <th scope="col">Municipio</th>
+                    <th scope="col">Alcalde/sa</th>
+                    <th scope="col">Partido</th>
+                    <th scope="col" className="num">%</th>
                   </tr>
                 </thead>
                 <tbody>
                   {muniWinners.map(({ muni, winner, party }) => (
                     <tr key={muni.id}>
-                      <td className="border-b border-line px-2 py-1.5 font-semibold">{muni.name}</td>
-                      <td className="border-b border-line px-2 py-1.5">{winner?.electedName ?? "—"}</td>
-                      <td className="border-b border-line px-2 py-1.5">
-                        {party ? <PartyBadge color={party.color} name={party.shortName} /> : "—"}
-                      </td>
-                      <td className="tnum border-b border-line px-2 py-1.5 text-right">
+                      <td>{muni.name}</td>
+                      <td>{winner?.electedName ?? "—"}</td>
+                      <td>{party ? <PartyBadge color={party.color} name={party.shortName} /> : "—"}</td>
+                      <td className="num">
                         {winner?.pct !== null && winner?.pct !== undefined
                           ? `${formatNumber(winner.pct, 1)}%`
                           : "—"}

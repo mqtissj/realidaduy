@@ -27,18 +27,16 @@ export default function ChartCard({
       </figcaption>
       <div className="mt-4">{children}</div>
       <details className="fold mt-3">
-        <summary className="text-sm font-semibold text-primary">Ver datos</summary>
-        <div className="mt-2 overflow-x-auto">
-          <table className="w-full min-w-[320px] border-collapse text-sm">
+        <summary className="pressable inline-block rounded-lg text-sm font-semibold text-primary">
+          Ver datos
+        </summary>
+        <div className="tablewrap mt-2">
+          <table className="tabla min-w-[320px]">
             <caption className="sr-only">{table.caption}</caption>
             <thead>
               <tr>
-                {table.head.map((h) => (
-                  <th
-                    key={h}
-                    scope="col"
-                    className="border-b-2 border-line px-2 py-1.5 text-left font-bold text-ink-soft"
-                  >
+                {table.head.map((h, j) => (
+                  <th key={h} scope="col" className={j > 0 ? "num" : undefined}>
                     {h}
                   </th>
                 ))}
@@ -48,10 +46,7 @@ export default function ChartCard({
               {table.rows.map((row, i) => (
                 <tr key={i}>
                   {row.map((cell, j) => (
-                    <td
-                      key={j}
-                      className={`border-b border-line px-2 py-1.5 ${j > 0 ? "tnum" : ""}`}
-                    >
+                    <td key={j} className={j > 0 ? "num" : undefined}>
                       {cell}
                     </td>
                   ))}

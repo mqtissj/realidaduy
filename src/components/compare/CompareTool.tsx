@@ -152,25 +152,17 @@ export default function CompareTool({
             </div>
 
             {withData.length >= 2 && base ? (
-              <div className="mt-5 overflow-x-auto">
-                <table className="w-full min-w-[420px] border-collapse text-sm">
+              <div className="tablewrap mt-5">
+                <table className="tabla min-w-[420px]">
                   <caption className="sr-only">
                     Comparación de {meta.name} entre los territorios elegidos
                   </caption>
                   <thead>
                     <tr>
-                      <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-left font-bold text-ink-soft">
-                        Territorio
-                      </th>
-                      <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-right font-bold text-ink-soft">
-                        {meta.name}
-                      </th>
-                      <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-right font-bold text-ink-soft">
-                        Diferencia vs {base.territory.name}
-                      </th>
-                      <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-right font-bold text-ink-soft">
-                        Diferencia %
-                      </th>
+                      <th scope="col">Territorio</th>
+                      <th scope="col" className="num">{meta.name}</th>
+                      <th scope="col" className="num">Diferencia vs {base.territory.name}</th>
+                      <th scope="col" className="num">Diferencia %</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -183,16 +175,12 @@ export default function CompareTool({
                           : formatNumber(Math.abs(diff), meta.decimals);
                       return (
                         <tr key={territory.id}>
-                          <td className="border-b border-line px-2 py-1.5 font-semibold">
-                            {territory.name}
-                          </td>
-                          <td className="tnum border-b border-line px-2 py-1.5 text-right">
-                            {metric!.display}
-                          </td>
-                          <td className="tnum border-b border-line px-2 py-1.5 text-right">
+                          <td>{territory.name}</td>
+                          <td className="num">{metric!.display}</td>
+                          <td className="num">
                             {i === 0 ? "—" : `${diff > 0 ? "+" : "−"}${diffDisplay}`}
                           </td>
-                          <td className="tnum border-b border-line px-2 py-1.5 text-right">
+                          <td className="num">
                             {i === 0 ? "—" : `${pct > 0 ? "+" : "−"}${formatNumber(Math.abs(pct), 1)}%`}
                           </td>
                         </tr>
