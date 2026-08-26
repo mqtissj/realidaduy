@@ -4,10 +4,12 @@
 //     "Elecciones Nacionales 2024", recurso "Desglose de votos" (por hoja y
 //     circuito) + "Totales generales por CRV" (emitidos por circuito).
 //  2. Elecciones departamentales 2025 por departamento y municipales 2025 de
-//     Montevideo — dataset CKAN "Elecciones Departamentales y Municipales 2025",
-//     recurso "Desglose de votos" (tipos HOJA_ED/VOTO_LEMA_ED y HOJA_EM/VOTO_LEMA_EM).
+//     TODO el país (los ~125 municipios) — dataset CKAN "Elecciones
+//     Departamentales y Municipales 2025", recurso "Desglose de votos"
+//     (tipos HOJA_ED/VOTO_LEMA_ED y HOJA_EM/VOTO_LEMA_EM; DESCRIPCION_2 = municipio).
 //
-// Salida: src/data/elecciones-generadas.ts
+// Salida: src/data/elecciones-generadas.ts (resultados) y
+//         src/data/territorios-municipios.ts (territorios municipales)
 //
 // GARANTÍAS (el script FALLA si no se cumplen):
 //  - Totales nacionales 2024 por partido == escrutinio oficial ya auditado.
@@ -24,7 +26,34 @@ import path from "node:path";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const CACHE = path.join(ROOT, "scripts", "ingest", ".cache");
 const OUT = path.join(ROOT, "src", "data", "elecciones-generadas.ts");
+const OUT_TERR = path.join(ROOT, "src", "data", "territorios-municipios.ts");
 const TODAY = new Date().toISOString().slice(0, 10);
+
+/** "PASO CARRASCO" → "Paso Carrasco"; letras solas (A…G, CH) → "Municipio A". */
+function displayName(raw) {
+  const name = raw.trim();
+  if (/^[A-ZÁÉÍÓÚÑ]{1,2}$/.test(name)) return `Municipio ${name}`;
+  const menores = new Set(["de", "del", "la", "las", "los", "el", "y"]);
+  return name
+    .toLowerCase()
+    .split(/\s+/)
+    .map((w, i) =>
+      i > 0 && menores.has(w) ? w : w.charAt(0).toUpperCase() + w.slice(1)
+    )
+    .join(" ");
+}
+
+/** "PASO CARRASCO" → "paso-carrasco" (sin tildes ni ñ para slug/id). */
+function slugify(raw) {
+  return raw
+    .trim()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/ñ/gi, "n")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
 
 const UA = {
   "User-Agent":
@@ -212,7 +241,8 @@ console.log("Elecciones departamentales y municipales 2025 (desglose por circuit
 const d25 = await cachedDownload("elecciones-desglose-2025.csv", SRC.desglose2025);
 const lines25 = d25.trim().split(/\r?\n/);
 const byDept2025 = Object.fromEntries(DEPT_CODES.map((d) => [d, {}]));
-const byMuniMO = {};
+// byMuni[depto]["NOMBRE MUNICIPIO"][party] = votos (todo el país).
+const byMuni = {};
 for (let i = 1; i < lines25.length; i++) {
   const p = parseLine(lines25[i]);
   const [tipo, depto, , , lema, , desc2] = p;
@@ -221,11 +251,16 @@ for (let i = 1; i < lines25.length; i++) {
   if (tipo === "HOJA_ED" || tipo === "VOTO_LEMA_ED") {
     if (!byDept2025[depto]) throw new Error(`Departamento desconocido en 2025: "${depto}"`);
     byDept2025[depto][party] = (byDept2025[depto][party] ?? 0) + votes;
-  } else if ((tipo === "HOJA_EM" || tipo === "VOTO_LEMA_EM") && depto === "MO") {
-    if (!byMuniMO[desc2]) byMuniMO[desc2] = {};
-    byMuniMO[desc2][party] = (byMuniMO[desc2][party] ?? 0) + votes;
+  } else if (tipo === "HOJA_EM" || tipo === "VOTO_LEMA_EM") {
+    if (!byDept2025[depto]) throw new Error(`Departamento desconocido en municipales: "${depto}"`);
+    const muni = desc2.trim();
+    if (!muni) throw new Error(`Municipio vacío en fila ${i}`);
+    if (!byMuni[depto]) byMuni[depto] = {};
+    if (!byMuni[depto][muni]) byMuni[depto][muni] = {};
+    byMuni[depto][muni][party] = (byMuni[depto][muni][party] ?? 0) + votes;
   }
 }
+const byMuniMO = byMuni.MO ?? {};
 
 // Chequeo: lema ganador por departamento = ganadores verificados.
 for (const [code, expected] of Object.entries(EXPECTED_WINNERS_2025)) {
@@ -245,9 +280,6 @@ assertEqual(byMuniMO.F.fa, EXPECTED_MUNI_F_FA_VOTES, "votos FA en Municipio F");
 const valid2025 = Object.fromEntries(
   Object.entries(byDept2025).map(([k, v]) => [k, Object.values(v).reduce((a, b) => a + b, 0)])
 );
-const validMuni = Object.fromEntries(
-  Object.entries(byMuniMO).map(([k, v]) => [k, Object.values(v).reduce((a, b) => a + b, 0)])
-);
 
 const rows2025 = toRows({
   byDept: byDept2025,
@@ -257,14 +289,46 @@ const rows2025 = toRows({
   sourceUrl: SRC.desglose2025,
   territoryFor: (code) => `UY-${code}`,
 });
-const rowsMuni = toRows({
-  byDept: byMuniMO,
-  electionId: "municipal-2025",
-  denominators: validMuni,
-  pctBase: "validos",
-  sourceUrl: SRC.desglose2025,
-  territoryFor: (letter) => `UY-MO-${letter}`,
-});
+
+// ── Municipios de TODO el país: territorios + resultados ─────────────────────
+const muniTerritories = [];
+const rowsMuni = [];
+const seenIds = new Set();
+for (const depto of Object.keys(byMuni).sort()) {
+  for (const muniName of Object.keys(byMuni[depto]).sort()) {
+    const slug = slugify(muniName);
+    const id = `UY-${depto}-${slug.toUpperCase()}`;
+    if (seenIds.has(id)) throw new Error(`Id de municipio duplicado: ${id}`);
+    seenIds.add(id);
+    muniTerritories.push({
+      id,
+      slug,
+      name: displayName(muniName),
+      parentId: `UY-${depto}`,
+    });
+    const parties = Object.entries(byMuni[depto][muniName]).sort((a, b) => b[1] - a[1]);
+    const valid = parties.reduce((s, [, v]) => s + v, 0);
+    if (valid <= 0) throw new Error(`Municipio sin votos válidos: ${id}`);
+    const winnerParty = parties[0][0];
+    for (const [partyId, votes] of parties) {
+      if (votes === 0) continue;
+      rowsMuni.push({
+        electionId: "municipal-2025",
+        territoryId: id,
+        partyId,
+        votes,
+        pct: round2((votes / valid) * 100),
+        pctBase: "validos",
+        winner: partyId === winnerParty,
+        sourceUrl: SRC.desglose2025,
+      });
+    }
+  }
+}
+if (muniTerritories.length < 100 || muniTerritories.length > 150) {
+  throw new Error(`Cantidad de municipios fuera de rango plausible: ${muniTerritories.length}`);
+}
+console.log(`  ✓ municipios en todo el país: ${muniTerritories.length}`);
 
 // ── Salida ───────────────────────────────────────────────────────────────────
 const serialize = (rows) =>
@@ -295,12 +359,33 @@ export const departamental2025PorDepartamento: ElectionResult[] = [
 ${serialize(rows2025)}
 ];
 
-export const municipal2025Montevideo: ElectionResult[] = [
+/** Resultados municipales 2025 de TODO el país (${muniTerritories.length} municipios). */
+export const municipal2025PorMunicipio: ElectionResult[] = [
 ${serialize(rowsMuni)}
 ];
 `;
 
 await writeFile(OUT, file);
+
+const terrFile = `import type { Territory } from "@/lib/types";
+
+// GENERADO por scripts/ingest/fetch-elecciones.mjs — no editar a mano.
+// Última ejecución: ${TODAY}. Los ${muniTerritories.length} municipios de Uruguay según el
+// desglose oficial de las elecciones municipales 2025 (Corte Electoral).
+// Ids: UY-<depto>-<slug>. No todo el territorio nacional está municipalizado.
+
+export const municipalTerritories: Territory[] = [
+${muniTerritories
+  .map(
+    (t) =>
+      `  { id: ${JSON.stringify(t.id)}, slug: ${JSON.stringify(t.slug)}, name: ${JSON.stringify(t.name)}, level: "municipio", parentId: ${JSON.stringify(t.parentId)} },`
+  )
+  .join("\n")}
+];
+`;
+await writeFile(OUT_TERR, terrFile);
+
 console.log(
   `→ ${OUT}\n  nacional-2024: ${rows2024.length} filas · departamental-2025: ${rows2025.length} filas · municipal-2025: ${rowsMuni.length} filas`
 );
+console.log(`→ ${OUT_TERR} (${muniTerritories.length} municipios)`);

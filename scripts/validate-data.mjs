@@ -4,9 +4,8 @@
 // type-stripping; los módulos de datos solo usan `import type`, que se borra).
 
 const { dictionary } = await import("../src/data/dictionary.ts");
-const { allTerritories, departments, montevideoMunicipalities } = await import(
-  "../src/data/territories.ts"
-);
+const { allTerritories, departments, montevideoMunicipalities, municipalTerritories } =
+  await import("../src/data/territories.ts");
 const { nationalObservations } = await import("../src/data/observations/nacional.ts");
 const { departmentObservations } = await import("../src/data/observations/departamentos.ts");
 const { departmentEchObservations } = await import("../src/data/observations/departamentos-ech.ts");
@@ -56,7 +55,16 @@ for (const i of dictionary) {
 // 5: consistencia territorial.
 if (departments.length !== 19) errors.push(`Se esperaban 19 departamentos, hay ${departments.length}`);
 if (montevideoMunicipalities.length !== 8)
-  errors.push(`Se esperaban 8 municipios, hay ${montevideoMunicipalities.length}`);
+  errors.push(`Se esperaban 8 municipios de Montevideo, hay ${montevideoMunicipalities.length}`);
+if (municipalTerritories.length !== 136)
+  errors.push(`Se esperaban 136 municipios en el país, hay ${municipalTerritories.length}`);
+// Todo municipio debe tener exactamente un lema ganador en 2025.
+for (const m of municipalTerritories) {
+  const winners = electionResults.filter(
+    (r) => r.electionId === "municipal-2025" && r.territoryId === m.id && r.winner
+  ).length;
+  if (winners !== 1) errors.push(`${m.name} (${m.id}): ${winners} ganadores municipales`);
+}
 
 // 6: la suma de población departamental debe igualar el total censal del país.
 const totalUY = nationalObservations.find(

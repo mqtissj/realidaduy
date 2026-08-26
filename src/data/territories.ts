@@ -30,19 +30,25 @@ export const departments: Territory[] = [
   { id: "UY-TT", slug: "treinta-y-tres", name: "Treinta y Tres", level: "departamento", capital: "Treinta y Tres" },
 ];
 
-// 8 municipios de Montevideo.
-export const montevideoMunicipalities: Territory[] = [
-  { id: "UY-MO-A", slug: "a", name: "Municipio A", level: "municipio", parentId: "UY-MO" },
-  { id: "UY-MO-B", slug: "b", name: "Municipio B", level: "municipio", parentId: "UY-MO" },
-  { id: "UY-MO-C", slug: "c", name: "Municipio C", level: "municipio", parentId: "UY-MO" },
-  { id: "UY-MO-CH", slug: "ch", name: "Municipio CH", level: "municipio", parentId: "UY-MO" },
-  { id: "UY-MO-D", slug: "d", name: "Municipio D", level: "municipio", parentId: "UY-MO" },
-  { id: "UY-MO-E", slug: "e", name: "Municipio E", level: "municipio", parentId: "UY-MO" },
-  { id: "UY-MO-F", slug: "f", name: "Municipio F", level: "municipio", parentId: "UY-MO" },
-  { id: "UY-MO-G", slug: "g", name: "Municipio G", level: "municipio", parentId: "UY-MO" },
-];
+// Los 136 municipios del país (generados desde el desglose oficial 2025).
+// Import relativo con extensión para que los scripts de Node puedan ejecutarlo.
+import { municipalTerritories } from "./territorios-municipios.ts";
 
-export const allTerritories: Territory[] = [uruguay, ...departments, ...montevideoMunicipalities];
+export { municipalTerritories };
+
+/** Los 8 municipios de Montevideo (subconjunto con datos de población y mapa). */
+export const montevideoMunicipalities: Territory[] = municipalTerritories.filter(
+  (t) => t.parentId === "UY-MO"
+);
+
+export const allTerritories: Territory[] = [uruguay, ...departments, ...municipalTerritories];
+
+/** Municipios de un departamento, ordenados alfabéticamente. */
+export function municipalitiesOf(departmentId: string): Territory[] {
+  return municipalTerritories
+    .filter((t) => t.parentId === departmentId)
+    .sort((a, b) => a.name.localeCompare(b.name, "es"));
+}
 
 export function getTerritoryById(id: string): Territory | undefined {
   return allTerritories.find((t) => t.id === id);

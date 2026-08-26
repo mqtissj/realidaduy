@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { departments, getDepartmentBySlug } from "@/data/territories";
+import { departments, getDepartmentBySlug, municipalitiesOf } from "@/data/territories";
 import { getElectionResults, getGovernment, getParty, turnout } from "@/data/elections";
 import PartyBars from "@/components/charts/PartyBars";
 import { getIndicator } from "@/data/dictionary";
@@ -62,6 +62,11 @@ export default async function DepartmentProfile({
       });
   const bars2025 = toBars("departamental-2025");
   const bars2024 = toBars("nacional-2024");
+  const munis = municipalitiesOf(dept.id).map((m) => ({
+    territory: m,
+    winner: getElectionResults("municipal-2025", m.id).find((r) => r.winner),
+  }));
+  const munisConNombre = munis.some((m) => m.winner?.electedName);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 md:px-6 md:py-10">
@@ -182,6 +187,68 @@ export default async function DepartmentProfile({
           </div>
         </div>
       </section>
+
+      {/* Municipios del departamento */}
+      {munis.length > 0 ? (
+        <section aria-labelledby="municipios-dept" className="mt-10">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 id="municipios-dept" className="font-display text-2xl font-bold">
+              Municipios de {dept.name}
+              <span className="ml-2 text-base font-semibold text-ink-faint">
+                {munis.length}
+              </span>
+            </h2>
+            <Link
+              className="text-sm font-semibold text-primary hover:underline"
+              href="/municipios"
+            >
+              Ver los 136 del país →
+            </Link>
+          </div>
+          <div className="tablewrap mt-4">
+            <table className="tabla min-w-[420px]">
+              <caption className="sr-only">
+                Municipios de {dept.name} y lema ganador de la alcaldía en 2025
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Municipio</th>
+                  {munisConNombre ? <th scope="col">Alcalde/sa</th> : null}
+                  <th scope="col">Lema ganador (2025)</th>
+                  <th scope="col" className="num">% válidos</th>
+                </tr>
+              </thead>
+              <tbody>
+                {munis.map(({ territory, winner }) => {
+                  const wParty = winner ? getParty(winner.partyId) : undefined;
+                  return (
+                    <tr key={territory.id}>
+                      <td>{territory.name}</td>
+                      {munisConNombre ? <td>{winner?.electedName ?? "—"}</td> : null}
+                      <td>
+                        {wParty ? (
+                          <PartyBadge color={wParty.color} name={wParty.shortName} />
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                      <td className="num">
+                        {winner?.pct !== null && winner?.pct !== undefined
+                          ? `${formatNumber(winner.pct, 1)}%`
+                          : "—"}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-2 text-xs text-ink-faint">
+            Fuente: Corte Electoral, desglose oficial por circuito. No todo el territorio
+            departamental está municipalizado.
+          </p>
+        </section>
+      ) : null}
 
       {/* Economía y sociedad — datos departamentales */}
       <section aria-labelledby="datos-dept" className="mt-10">

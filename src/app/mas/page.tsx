@@ -8,7 +8,8 @@ export const metadata: Metadata = {
 // Secciones que no entran en la barra inferior de móvil.
 const LINKS = [
   { href: "/departamentos", title: "Departamentos", body: "Perfiles de los 19 departamentos." },
-  { href: "/montevideo/municipios", title: "Municipios de Montevideo", body: "Los 8 municipios de la capital." },
+  { href: "/municipios", title: "Municipios de Uruguay", body: "Los 136 municipios del país y quién ganó cada alcaldía." },
+  { href: "/montevideo/municipios", title: "Municipios de Montevideo", body: "Los 8 de la capital, con mapa y población." },
   { href: "/elecciones", title: "Elecciones", body: "¿Cómo votó Uruguay? 2024 y 2025." },
   { href: "/fuentes", title: "Fuentes y metodología", body: "De dónde sale cada dato." },
 ];

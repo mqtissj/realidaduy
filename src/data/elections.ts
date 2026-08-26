@@ -2,7 +2,7 @@ import type { Election, ElectionResult, Party } from "@/lib/types";
 // Import relativo (no alias) para que scripts/validate-data.mjs pueda ejecutarlo con Node.
 import {
   departamental2025PorDepartamento,
-  municipal2025Montevideo,
+  municipal2025PorMunicipio,
   nacional2024PorDepartamento,
 } from "./elecciones-generadas.ts";
 
@@ -137,9 +137,11 @@ export const electionResults: ElectionResult[] = [
   // Balance: PN 13 · FA 4 · PC 1 · CR 1. Nombres de intendentes adjuntados.
   ...withNames(departamental2025PorDepartamento, INTENDENTES_2025),
 
-  // ── Municipales 2025, Montevideo (generado; todos los lemas) ──
-  // Balance: FA 6 · CR 2. Nombres de alcaldes/as adjuntados.
-  ...withNames(municipal2025Montevideo, ALCALDES_2025),
+  // ── Municipales 2025, TODO el país (generado; todos los lemas) ──
+  // 136 municipios. Nombres de alcaldes/as adjuntados donde ya fueron
+  // verificados (los 8 de Montevideo); el resto se ingerirá desde las
+  // proclamaciones de las Juntas Electorales.
+  ...withNames(municipal2025PorMunicipio, ALCALDES_2025),
 ];
 
 export function getElection(id: string): Election | undefined {
@@ -157,7 +159,7 @@ export function getGovernment(territoryId: string): ElectionResult | undefined {
   const electionId =
     territoryId === "UY"
       ? "balotaje-2024"
-      : territoryId.split("-").length === 3
+      : territoryId.split("-").length >= 3
         ? "municipal-2025"
         : "departamental-2025";
   return electionResults.find(

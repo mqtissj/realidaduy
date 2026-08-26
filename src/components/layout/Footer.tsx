@@ -18,6 +18,7 @@ export default function Footer() {
           <ul className="mt-2 space-y-1 text-sm">
             <li><Link className="text-ink-soft hover:text-primary" href="/mapa">Mapa de Uruguay</Link></li>
             <li><Link className="text-ink-soft hover:text-primary" href="/departamentos">Departamentos</Link></li>
+            <li><Link className="text-ink-soft hover:text-primary" href="/municipios">Municipios de Uruguay</Link></li>
             <li><Link className="text-ink-soft hover:text-primary" href="/montevideo/municipios">Municipios de Montevideo</Link></li>
             <li><Link className="text-ink-soft hover:text-primary" href="/elecciones">Elecciones</Link></li>
             <li><Link className="text-ink-soft hover:text-primary" href="/comparar">Comparador</Link></li>
