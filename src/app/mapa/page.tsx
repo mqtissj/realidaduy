@@ -14,8 +14,8 @@ export default function MapaPage() {
     <div className="mx-auto max-w-6xl px-4 py-8 md:px-6 md:py-10">
       <h1 className="font-display text-3xl font-bold md:text-4xl">Explorá Uruguay</h1>
       <p className="mt-2 max-w-2xl text-ink-soft">
-        Tocá un departamento para ver su resumen. Elegí qué mostrar: población o partido de
-        gobierno.
+        Elegí qué mostrar con los botones de arriba del mapa y tocá un departamento para ver
+        su resumen completo.
       </p>
       <div className="mt-6">
         <MapExplorer
@@ -27,8 +27,10 @@ export default function MapaPage() {
       </div>
       <p className="mt-6 text-xs text-ink-faint">
         Límites: IDE / Servicio Geográfico Militar vía catalogodatos.gub.uy (Licencia de
-        Datos Abiertos Uruguay). Población: INE, Censo 2023. Gobierno: Corte Electoral,
-        elecciones departamentales 2025.
+        Datos Abiertos Uruguay). Población: INE, Censo 2023. Desempleo, pobreza e
+        informalidad: ECH del INE (elaboraciones INE y Observatorio Social del MIDES).
+        Gobierno: Corte Electoral, elecciones departamentales 2025. Cada indicador tiene su
+        metodología en su propia página.
       </p>
     </div>
   );

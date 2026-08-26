@@ -2,7 +2,6 @@ import Link from "next/link";
 import { getIndicator } from "@/data/dictionary";
 import { getLatest } from "@/lib/data";
 import { getSource } from "@/data/sources";
-import { DemoBadge } from "@/components/ui/Badge";
 import Delta from "@/components/charts/Delta";
 import StateView from "@/components/ui/StateView";
 import MetricValue from "@/components/charts/MetricValue";
@@ -54,11 +53,6 @@ export default function MetricCard({
           <p className="mt-2 text-xs text-ink-faint">
             {obs.periodLabel} · {source?.shortName ?? indicator.sourceId}
           </p>
-          {obs.demo ? (
-            <div className="mt-2">
-              <DemoBadge />
-            </div>
-          ) : null}
         </TextureCardContent>
       </TextureCard>
     </Link>

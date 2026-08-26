@@ -8,7 +8,7 @@ import {
 } from "@/data/elections";
 import { departments, montevideoMunicipalities } from "@/data/territories";
 import { formatNumber } from "@/lib/format";
-import { DemoBadge, PartyBadge } from "@/components/ui/Badge";
+import { PartyBadge } from "@/components/ui/Badge";
 import { CategoricalLegend } from "@/components/map/MapLegend";
 import ChoroplethMap from "@/components/map/ChoroplethMap";
 import StateView from "@/components/ui/StateView";
@@ -119,13 +119,17 @@ export default function EleccionesPage() {
               Elección nacional 2024 — primera vuelta
             </h2>
             <p className="mt-0.5 text-sm text-ink-soft">
-              27 de octubre de 2024 · Porcentajes sobre votos válidos · Participación:{" "}
-              {formatNumber(turnoutFor("nacional-2024") ?? 0, 2)}% de los habilitados
+              27 de octubre de 2024 · Porcentajes sobre el total de votos emitidos ·
+              Participación: {formatNumber(turnoutFor("nacional-2024") ?? 0, 2)}% de los
+              habilitados
             </p>
           </figcaption>
           <div className="mt-4">
             <PartyBars
-              rows={[...nacionalRows, { name: "Otros partidos", color: "#8A8A8A", pct: otros, votes: null }]}
+              rows={[
+                ...nacionalRows,
+                { name: "Otros, en blanco y anulados", color: "#8A8A8A", pct: otros, votes: null },
+              ]}
             />
           </div>
           <details className="fold mt-3">
@@ -137,7 +141,7 @@ export default function EleccionesPage() {
                   <tr>
                     <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-left font-bold text-ink-soft">Partido</th>
                     <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-right font-bold text-ink-soft">Votos</th>
-                    <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-right font-bold text-ink-soft">% válidos</th>
+                    <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-right font-bold text-ink-soft">% del total emitido</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -153,7 +157,9 @@ export default function EleccionesPage() {
                     </tr>
                   ))}
                   <tr>
-                    <td className="border-b border-line px-2 py-1.5 font-semibold">Otros partidos</td>
+                    <td className="border-b border-line px-2 py-1.5 font-semibold">
+                      Otros, en blanco y anulados
+                    </td>
                     <td className="tnum border-b border-line px-2 py-1.5 text-right">—</td>
                     <td className="tnum border-b border-line px-2 py-1.5 text-right">{formatNumber(otros, 2)}%</td>
                   </tr>
@@ -166,9 +172,10 @@ export default function EleccionesPage() {
             <a className="underline" href={eleccion2024.sourceUrl} target="_blank" rel="noopener noreferrer">
               resultados oficiales
             </a>
-            ). &quot;Otros partidos&quot; se calcula como el resto hasta 100% de los votos válidos.
+            ). Los porcentajes se expresan sobre el total de votos emitidos (la forma en que
+            se difundieron públicamente); &quot;Otros, en blanco y anulados&quot; es el resto hasta
+            el 100%.
           </p>
-          <div className="mt-2"><DemoBadge /></div>
         </figure>
       </section>
 
@@ -207,7 +214,6 @@ export default function EleccionesPage() {
             son distintos: 49,84% y 45,87%. Esta plataforma nunca mezcla las dos bases en un
             mismo gráfico.
           </p>
-          <div className="mt-2"><DemoBadge /></div>
         </figure>
       </section>
 
@@ -262,7 +268,6 @@ export default function EleccionesPage() {
             Fuente: Corte Electoral (escrutinio primario 2025). El desglose de votos por
             departamento se ingerirá desde los archivos oficiales.
           </p>
-          <div className="mt-2"><DemoBadge /></div>
         </figure>
       </section>
 
@@ -316,7 +321,6 @@ export default function EleccionesPage() {
             Fuente: Corte Electoral / prensa que reproduce el escrutinio. En el Municipio F la
             definición llegó tras el escrutinio de votos observados (581 votos de diferencia).
           </p>
-          <div className="mt-2"><DemoBadge /></div>
         </figure>
       </section>
 

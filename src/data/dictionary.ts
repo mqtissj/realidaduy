@@ -10,6 +10,7 @@ export const dictionary: Indicator[] = [
     id: "poblacion",
     slug: "poblacion",
     name: "Población",
+    shortName: "Población",
     question: "¿Cuánta gente vive en cada departamento?",
     description: "Población residente habitual según el Censo 2023 (resultados finales).",
     plainDefinition:
@@ -36,6 +37,7 @@ export const dictionary: Indicator[] = [
     id: "tasa-desempleo",
     slug: "desempleo",
     name: "Tasa de desempleo",
+    shortName: "Desempleo",
     question: "¿Cuánta gente busca trabajo y no encuentra?",
     description:
       "Porcentaje de la población económicamente activa que busca trabajo y no lo encuentra.",
@@ -50,7 +52,7 @@ export const dictionary: Indicator[] = [
     geographicLevel: ["pais", "departamento"],
     availableFrom: "2006",
     methodology:
-      "Encuesta Continua de Hogares (ECH) del INE. La ECH fue rediseñada en 2021–2022: las series anteriores y posteriores no son estrictamente comparables. La apertura departamental es anual.",
+      "Encuesta Continua de Hogares (ECH) del INE. La ECH fue rediseñada en 2021–2022: las series anteriores y posteriores no son estrictamente comparables. La apertura departamental es el promedio anual calculado por el Observatorio Social del MIDES sobre los microdatos de la ECH, y puede diferir levemente de los boletines de trimestres móviles del INE.",
     isCalculated: false,
     reading: "lowerIsBetter",
     decimals: 1,
@@ -61,6 +63,7 @@ export const dictionary: Indicator[] = [
     id: "tasa-empleo",
     slug: "empleo",
     name: "Tasa de empleo",
+    shortName: "Empleo",
     question: "¿Qué parte de la población tiene trabajo?",
     description: "Personas ocupadas como porcentaje de la población de 14 años o más.",
     plainDefinition:
@@ -84,6 +87,7 @@ export const dictionary: Indicator[] = [
     id: "tasa-actividad",
     slug: "actividad",
     name: "Tasa de actividad",
+    shortName: "Actividad",
     question: "¿Qué parte de la población trabaja o busca trabajo?",
     description:
       "Población económicamente activa como porcentaje de la población de 14 años o más.",
@@ -193,10 +197,11 @@ export const dictionary: Indicator[] = [
     sourceId: "mtss",
     sourceUrl:
       "https://www.gub.uy/ministerio-trabajo-seguridad-social/comunicacion/noticias/salario-minimo-nacional-24572-desde-1o-enero-2026",
-    periodicity: "anual",
+    periodicity: "semestral",
     geographicLevel: ["pais"],
     availableFrom: "1969",
-    methodology: "Fijado por decreto del Poder Ejecutivo. Valores a precios corrientes (nominales).",
+    methodology:
+      "Fijado por decreto del Poder Ejecutivo. En 2026 el ajuste fue en dos tramos: $24.572 desde enero y $25.383 desde julio. Valores a precios corrientes (nominales).",
     isCalculated: false,
     reading: "neutral",
     decimals: 0,
@@ -217,7 +222,7 @@ export const dictionary: Indicator[] = [
     unitLabel: "variación nominal interanual",
     sourceId: "ine",
     sourceUrl:
-      "https://www.gub.uy/instituto-nacional-estadistica/comunicacion/publicaciones/indice-medio-salarios-ims-mayo-2026",
+      "https://www.gub.uy/instituto-nacional-estadistica/tematica/ims-indice-medio-salarios",
     periodicity: "mensual",
     geographicLevel: ["pais"],
     availableFrom: "1968",
@@ -233,6 +238,7 @@ export const dictionary: Indicator[] = [
     id: "pobreza-personas",
     slug: "pobreza",
     name: "Pobreza (personas)",
+    shortName: "Pobreza",
     question: "¿Qué parte de la población vive en situación de pobreza?",
     description:
       "Porcentaje de personas bajo la línea de pobreza, según la metodología vigente del INE.",
@@ -244,11 +250,11 @@ export const dictionary: Indicator[] = [
     sourceId: "ine",
     sourceUrl:
       "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/HTML/ECH/Pobreza/2025/Informe%20pobreza%20primer%20semestre%202025.html",
-    periodicity: "anual",
-    geographicLevel: ["pais"],
-    availableFrom: "2025",
+    periodicity: "semestral",
+    geographicLevel: ["pais", "departamento"],
+    availableFrom: "2006",
     methodology:
-      "ECH del INE con la metodología actualizada (nueva canasta, 2025). No es comparable con la serie de la metodología anterior: esta plataforma no empalma ambas series.",
+      "ECH del INE. El dato nacional usa la metodología actualizada del INE (canasta de la ENGIH 2016-2017, adoptada en 2025). La apertura departamental disponible corresponde a 2023 con la metodología anterior (canasta 2006, cálculo del Observatorio Social del MIDES): ambas mediciones NO son comparables entre sí y esta plataforma nunca las mezcla en un mismo gráfico.",
     isCalculated: false,
     reading: "lowerIsBetter",
     decimals: 1,
@@ -260,45 +266,55 @@ export const dictionary: Indicator[] = [
     id: "ingreso-medio-hogar",
     slug: "ingreso",
     name: "Ingreso medio de los hogares",
+    shortName: "Ingreso",
     question: "¿Cuánto ingresa por mes un hogar promedio?",
-    description: "Ingreso medio mensual de los hogares, a precios corrientes, por departamento.",
+    description:
+      "Ingreso medio mensual de los hogares por departamento (con valor locativo), según la ECH.",
     plainDefinition:
-      "El ingreso total promedio que recibe un hogar por mes, incluyendo salarios, jubilaciones y otras fuentes.",
+      "El ingreso total promedio que recibe un hogar por mes, incluyendo salarios, jubilaciones, otras fuentes y el valor locativo (lo que 'vale' vivir en una vivienda propia).",
     category: "economia",
     unit: "pesos",
-    unitLabel: "pesos corrientes por mes",
+    unitLabel: "pesos de 2023 por mes, con valor locativo",
     sourceId: "ine",
-    sourceUrl: "https://www.gub.uy/instituto-nacional-estadistica/",
+    sourceUrl:
+      "https://www.gub.uy/ministerio-desarrollo-social/indicador/promedio-ingresos-del-hogar-valor-locativo-pesos-corrientes-segun-departamento-total-pais",
     periodicity: "anual",
-    geographicLevel: ["pais", "departamento"],
-    methodology: "ECH del INE. Pendiente de ingesta.",
+    geographicLevel: ["departamento"],
+    availableFrom: "2006",
+    methodology:
+      "ECH del INE, elaboración del Observatorio Social del MIDES. El nivel de esta serie difiere del de la serie nacional del INE (~+17-21%, metodología de ponderación propia): es útil para comparar departamentos entre sí, no como nivel oficial nacional. Serie 2006–2023.",
     isCalculated: false,
     reading: "higherIsBetter",
     decimals: 0,
-    lastUpdated: "2026-08-25",
-    status: "planned",
+    lastUpdated: "2026-08-26",
+    status: "active",
   },
   {
     id: "informalidad",
     slug: "informalidad",
     name: "Informalidad laboral",
-    question: "¿Cuántos trabajadores no tienen cobertura de la seguridad social?",
-    description: "Ocupados que no aportan a la seguridad social, como porcentaje del total.",
+    shortName: "Informalidad",
+    question: "¿Cuántos trabajadores están en la informalidad?",
+    description:
+      "Ocupación informal (medición ampliada de la OIT) como porcentaje del total de ocupados.",
     plainDefinition:
-      "Porcentaje de personas ocupadas que no aportan a la seguridad social por su trabajo principal.",
+      "Porcentaje de personas ocupadas en la informalidad: principalmente quienes no aportan a la seguridad social por su trabajo, más otras formas de trabajo no registrado que define la OIT.",
     category: "trabajo",
     unit: "%",
     unitLabel: "por ciento de los ocupados",
     sourceId: "ine",
-    sourceUrl: "https://www.gub.uy/instituto-nacional-estadistica/",
+    sourceUrl:
+      "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/HTML/ECH/Informalidad/Informe-caracterizaci%C3%B3n-puestos-de-trabajo-2025.html",
     periodicity: "anual",
     geographicLevel: ["pais", "departamento"],
-    methodology: "ECH del INE (no registro a la seguridad social). Pendiente de ingesta.",
+    availableFrom: "2022",
+    methodology:
+      "ECH del INE, informe anual de informalidad. Medición ampliada de ocupación informal (OIT, 21.ª CIET): no registro a la seguridad social más otras formas de informalidad. Es algo más amplia que el 'no registro' clásico (2024: 22,7% ampliada vs 21,7% no registro).",
     isCalculated: false,
     reading: "lowerIsBetter",
     decimals: 1,
-    lastUpdated: "2026-08-25",
-    status: "planned",
+    lastUpdated: "2026-08-26",
+    status: "active",
   },
 ];
 

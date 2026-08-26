@@ -1,9 +1,11 @@
 "use client";
 
+import { useId } from "react";
 import {
+  Area,
+  AreaChart,
   CartesianGrid,
-  Line,
-  LineChart as RLineChart,
+  ReferenceDot,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -25,10 +27,18 @@ export default function LineChart({
   unit: string;
   decimals: number;
 }) {
+  const gradientId = useId().replace(/[:]/g, "");
+  const last = data[data.length - 1];
   return (
     <div aria-hidden className="h-64 w-full md:h-72">
       <ResponsiveContainer width="100%" height="100%">
-        <RLineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
+        <AreaChart data={data} margin={{ top: 8, right: 14, bottom: 0, left: 0 }}>
+          <defs>
+            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.2} />
+              <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0} />
+            </linearGradient>
+          </defs>
           <CartesianGrid stroke="var(--color-line)" vertical={false} />
           <XAxis
             dataKey="x"
@@ -51,21 +61,33 @@ export default function LineChart({
             formatter={(value) => [formatValue(Number(value), unit, decimals), ""]}
             separator=""
             contentStyle={{
-              borderRadius: 8,
+              borderRadius: 10,
               border: "1px solid var(--color-line)",
+              boxShadow: "var(--shadow-card)",
               fontSize: 13,
               fontFamily: "var(--font-body)",
             }}
           />
-          <Line
+          <Area
             type="monotone"
             dataKey="y"
             stroke="var(--chart-1)"
             strokeWidth={2}
+            fill={`url(#${gradientId})`}
             dot={false}
             activeDot={{ r: 4, strokeWidth: 2, stroke: "var(--color-surface)" }}
           />
-        </RLineChart>
+          {last ? (
+            <ReferenceDot
+              x={last.x}
+              y={last.y}
+              r={4}
+              fill="var(--chart-1)"
+              stroke="var(--color-surface)"
+              strokeWidth={2}
+            />
+          ) : null}
+        </AreaChart>
       </ResponsiveContainer>
     </div>
   );

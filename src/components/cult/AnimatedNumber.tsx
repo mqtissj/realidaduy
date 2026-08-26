@@ -10,8 +10,13 @@ import {
 } from "motion/react";
 
 /*
- * AnimatedNumber de Cult UI, con respeto de prefers-reduced-motion:
- * si la persona pide menos movimiento, la cifra se muestra directa.
+ * AnimatedNumber (base Cult UI) con dos reglas propias de la plataforma:
+ * 1. El primer render (incluido el HTML del servidor) muestra SIEMPRE el valor
+ *    real — nunca un conteo desde 0: una cifra falsa en el HTML rompe SEO,
+ *    lectores sin JS y pestañas en segundo plano.
+ * 2. La animación queda reservada para cuando `value` CAMBIA (actualización de
+ *    datos en vivo), que es cuando el movimiento comunica algo.
+ * Con prefers-reduced-motion la cifra es estática siempre.
  */
 
 interface AnimatedNumberProps {
@@ -32,7 +37,7 @@ export function AnimatedNumber({
   format = (num) => num.toLocaleString("es-UY"),
 }: AnimatedNumberProps) {
   const reduce = useReducedMotion();
-  const spring = useSpring(reduce ? value : 0, { mass, stiffness, damping });
+  const spring = useSpring(value, { mass, stiffness, damping });
   const display: MotionValue<string> = useTransform(spring, (current) =>
     format(parseFloat(current.toFixed(precision)))
   );

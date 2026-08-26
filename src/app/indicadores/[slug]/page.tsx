@@ -5,7 +5,7 @@ import { activeIndicators, getIndicator } from "@/data/dictionary";
 import { getDepartmentRanking, getLatest, getSeries } from "@/lib/data";
 import { getSource } from "@/data/sources";
 import { formatNumber, formatValue } from "@/lib/format";
-import { DemoBadge, StatusBadge } from "@/components/ui/Badge";
+import { StatusBadge } from "@/components/ui/Badge";
 import Delta from "@/components/charts/Delta";
 import ChartCard from "@/components/charts/ChartCard";
 import LineChart from "@/components/charts/LineChart";
@@ -83,14 +83,18 @@ export default async function IndicadorPage({
                 {latest.obs.periodLabel} · {source?.shortName}
               </span>
               <StatusBadge status={latest.obs.status} />
-              {latest.obs.demo ? <DemoBadge /> : null}
             </div>
             {latest.obs.notes ? (
               <p className="mt-2 text-sm text-ink-soft">{latest.obs.notes}</p>
             ) : null}
           </div>
-        ) : (
+        ) : indicator.geographicLevel.includes("pais") ? (
           <StateView kind="pending" />
+        ) : (
+          <div className="rounded-2xl border border-line bg-surface p-4 text-sm text-ink-soft shadow-card">
+            Este indicador se publica por departamento: el detalle está en el ranking de más
+            abajo.
+          </div>
         )}
       </section>
 

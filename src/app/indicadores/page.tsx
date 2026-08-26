@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import MetricCard from "@/components/charts/MetricCard";
 import { activeIndicators, plannedIndicators } from "@/data/dictionary";
 import type { Category } from "@/lib/types";
@@ -35,9 +36,25 @@ export default function IndicadoresPage() {
               {CATEGORY_LABEL[cat]}
             </h2>
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {indicators.map((i) => (
-                <MetricCard key={i.id} indicatorId={i.id} />
-              ))}
+              {indicators.map((i) =>
+                i.geographicLevel.includes("pais") ? (
+                  <MetricCard key={i.id} indicatorId={i.id} />
+                ) : (
+                  <Link
+                    key={i.id}
+                    href={`/indicadores/${i.slug}`}
+                    className="group flex flex-col justify-between rounded-2xl border border-line bg-surface p-4 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-celeste"
+                  >
+                    <div>
+                      <p className="text-sm font-bold text-ink-soft">{i.name}</p>
+                      <p className="mt-1 text-sm text-ink-faint">{i.question}</p>
+                    </div>
+                    <p className="mt-3 text-sm font-semibold text-primary group-hover:underline">
+                      Ver por departamento →
+                    </p>
+                  </Link>
+                )
+              )}
             </div>
           </section>
         );

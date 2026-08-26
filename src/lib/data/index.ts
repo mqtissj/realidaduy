@@ -6,6 +6,7 @@ import { dictionary, getIndicator } from "@/data/dictionary";
 import { nationalObservations } from "@/data/observations/nacional";
 import { departmentObservations } from "@/data/observations/departamentos";
 import { municipioObservations } from "@/data/observations/municipios";
+import { departmentEchObservations } from "@/data/observations/departamentos-ech";
 import { worldBankSeries } from "@/data/observations/series-banco-mundial";
 import { departments, getTerritoryById } from "@/data/territories";
 
@@ -17,6 +18,7 @@ export { getSource, sources } from "@/data/sources";
 const allObservations: Observation[] = [
   ...nationalObservations,
   ...departmentObservations,
+  ...departmentEchObservations,
   ...municipioObservations,
   ...worldBankSeries,
 ];

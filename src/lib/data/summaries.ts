@@ -2,8 +2,25 @@
 
 import { departments, montevideoMunicipalities } from "@/data/territories";
 import { getGovernment, getParty } from "@/data/elections";
-import { getLatest } from "@/lib/data";
-import { formatNumber } from "@/lib/format";
+import { getLatest, indicatorsForLevel } from "@/lib/data";
+import { getSource } from "@/data/sources";
+import { formatNumber, formatValue } from "@/lib/format";
+import type { GeoLevel } from "@/lib/types";
+
+export interface MetricSummary {
+  indicatorId: string;
+  slug: string;
+  name: string;
+  /** Etiqueta corta para selectores ("Desempleo"). */
+  mapLabel: string;
+  unit: string;
+  decimals: number;
+  value: number;
+  /** Valor formateado con unidad ("7,2%", "$ 91.500"). */
+  display: string;
+  periodLabel: string;
+  sourceShort: string;
+}
 
 export interface TerritorySummary {
   id: string;
@@ -20,6 +37,29 @@ export interface TerritorySummary {
     electedName?: string;
     demo: boolean;
   };
+  /** Todos los indicadores del nivel con dato en este territorio (incluye población). */
+  metrics: MetricSummary[];
+}
+
+function metricsFor(territoryId: string, level: GeoLevel): MetricSummary[] {
+  const out: MetricSummary[] = [];
+  for (const i of indicatorsForLevel(level)) {
+    const latest = getLatest(i.id, territoryId);
+    if (!latest || latest.obs.value === null) continue;
+    out.push({
+      indicatorId: i.id,
+      slug: i.slug,
+      name: i.name,
+      mapLabel: i.shortName ?? i.name,
+      unit: i.unit,
+      decimals: i.decimals,
+      value: latest.obs.value,
+      display: formatValue(latest.obs.value, i.unit, i.decimals),
+      periodLabel: latest.obs.periodLabel,
+      sourceShort: getSource(i.sourceId)?.shortName ?? i.sourceId,
+    });
+  }
+  return out;
 }
 
 function summarize(
@@ -55,6 +95,7 @@ function summarize(
             demo: gov.demo,
           }
         : undefined,
+    metrics: metricsFor(territory.id, level),
   };
 }
 

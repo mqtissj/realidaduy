@@ -15,9 +15,10 @@ export const nationalObservations: Observation[] = [
     status: "OFFICIAL",
     demo: false,
     sourceUrl:
-      "https://www.opp.gub.uy/es/noticias/censo-nacional-2023-contabilizo-3499451-habitantes-en-uruguay",
-    retrievedAt: "2026-08-25",
-    notes: "Resultados finales del Censo 2023 (publicados en diciembre de 2024).",
+      "https://www.gub.uy/presidencia/comunicacion/noticias/censo-nacional-2023-contabilizo-3499451-habitantes-uruguay",
+    retrievedAt: "2026-08-26",
+    notes:
+      "Resultados finales del Censo 2023 (publicados en diciembre de 2024). Cifra verificada dígito a dígito contra el PDF oficial del INE (auditoría 2026-08-26).",
   },
   // ── Trabajo (ECH, INE) ─────────────────────────────────────
   {
@@ -166,6 +167,20 @@ export const nationalObservations: Observation[] = [
     retrievedAt: "2026-08-25",
     notes: "Variación nominal interanual. Acumulada en el año: 3,83%.",
   },
+  {
+    indicatorId: "indice-medio-salarios",
+    territoryId: "UY",
+    period: "2026-06",
+    periodLabel: "Junio 2026",
+    value: 5.16,
+    status: "OFFICIAL",
+    demo: false,
+    sourceUrl:
+      "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/HTML/IMS/2026/IMS%20Junio%202026.html",
+    retrievedAt: "2026-08-26",
+    notes:
+      "Variación nominal interanual (boletín oficial del INE). Mensual: 0,04%; acumulada en el año: 3,87%. IMS nominal: 5,25% interanual.",
+  },
   // ── Sociedad ───────────────────────────────────────────────
   {
     indicatorId: "pobreza-personas",
@@ -179,6 +194,6 @@ export const nationalObservations: Observation[] = [
       "https://www.ambito.com/uruguay/la-pobreza-al-166-2025-pero-se-concentro-mas-fuerza-ninos-y-hogares-encabezados-mujeres-n6268800",
     retrievedAt: "2026-08-25",
     notes:
-      "Metodología nueva (canasta actualizada 2025): no comparable con la serie anterior. Equivale a 578.665 personas; hogares: 13,2%; indigencia: 1,7%. El informe del 1er semestre 2026 aún no estaba publicado al 25/08/2026.",
+      "Metodología nueva del INE (canasta de la ENGIH 2016-2017, adoptada en 2025): no comparable con la serie de la metodología anterior. Equivale a 578.665 personas; hogares: 13,2%; indigencia: 1,7%. El informe del 1er semestre 2026 aún no estaba publicado al 26/08/2026.",
   },
 ];

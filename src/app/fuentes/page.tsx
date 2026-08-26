@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { sources } from "@/data/sources";
 import { dictionary } from "@/data/dictionary";
 import { getSource } from "@/data/sources";
-import { DemoBadge, StatusBadge } from "@/components/ui/Badge";
+import { StatusBadge } from "@/components/ui/Badge";
 
 export const metadata: Metadata = {
   title: "Fuentes y metodología",
@@ -69,20 +69,8 @@ export default function FuentesPage() {
             <dd className="text-ink-soft">Fuente internacional que reproduce o estima datos del país (Banco Mundial). Solo para evolución histórica, nunca para titulares si existe dato oficial.</dd>
           </div>
           <div className="flex flex-wrap items-baseline gap-2">
-            <dt><StatusBadge status="ESTIMATED" /></dt>
-            <dd className="text-ink-soft">Estimación metodológicamente documentada. No se usa en esta versión.</dd>
-          </div>
-          <div className="flex flex-wrap items-baseline gap-2">
             <dt><StatusBadge status="UNAVAILABLE" /></dt>
             <dd className="text-ink-soft">No existe dato público para ese territorio o período: la plataforma lo dice en lugar de estimar.</dd>
-          </div>
-          <div className="flex flex-wrap items-baseline gap-2">
-            <dt><DemoBadge /></dt>
-            <dd className="text-ink-soft">
-              El valor proviene de investigación verificada (prensa que cita al organismo, o
-              fuente aún no cotejada a mano) y está pendiente de validación final contra el
-              boletín oficial. Desaparece cuando una persona verifica el dato en la fuente.
-            </dd>
           </div>
         </dl>
       </section>
@@ -137,9 +125,7 @@ export default function FuentesPage() {
             de pobreza 2025, cambio de base del PIB): las series no comparables nunca se
             empalman en silencio.
           </li>
-          <li>
-            Recién entonces el dato pierde el distintivo &quot;Pendiente de validación&quot;.
-          </li>
+          <li>Recién entonces el dato se publica como validado.</li>
         </ol>
       </section>
 

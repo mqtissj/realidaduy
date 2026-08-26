@@ -47,6 +47,8 @@ export interface Indicator {
   id: string;
   slug: string;
   name: string;
+  /** Nombre corto para selectores de mapa y comparador ("Desempleo"). */
+  shortName?: string;
   /** Título-pregunta para gráficos y páginas ("¿Cómo evolucionó el desempleo?"). */
   question: string;
   description: string;

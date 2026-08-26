@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { DemoBadge } from "@/components/ui/Badge";
+import Link from "next/link";
 import { formatNumber } from "@/lib/format";
-import type { TerritorySummary } from "@/lib/data/summaries";
+import type { MetricSummary, TerritorySummary } from "@/lib/data/summaries";
 
 const EMPTY = "";
 
@@ -27,13 +27,33 @@ export default function CompareTool({
   const departments = territories.filter((t) => t.level === "departamento");
   const municipios = territories.filter((t) => t.level === "municipio");
 
+  // Indicadores comparables: los que existen en al menos un territorio.
+  const indicatorOptions = useMemo(() => {
+    const seen = new Map<string, MetricSummary>();
+    for (const t of territories) {
+      for (const m of t.metrics) {
+        if (!seen.has(m.indicatorId)) seen.set(m.indicatorId, m);
+      }
+    }
+    return [...seen.values()];
+  }, [territories]);
+
+  const [indicatorId, setIndicatorId] = useState("poblacion");
+  const meta =
+    indicatorOptions.find((m) => m.indicatorId === indicatorId) ?? indicatorOptions[0];
+
   const chosen = picks
     .filter((p) => p !== EMPTY)
     .map((p) => bySlug[p])
-    .filter((t): t is TerritorySummary => Boolean(t?.poblacion));
+    .filter((t): t is TerritorySummary => Boolean(t));
 
-  const max = Math.max(...chosen.map((t) => t.poblacion!.value), 1);
-  const base = chosen[0];
+  const rows = chosen.map((t) => ({
+    territory: t,
+    metric: t.metrics.find((m) => m.indicatorId === meta?.indicatorId),
+  }));
+  const withData = rows.filter((r) => r.metric);
+  const max = Math.max(...withData.map((r) => r.metric!.value), 1);
+  const base = withData[0];
 
   const update = (index: number, value: string) => {
     setPicks((prev) => prev.map((p, i) => (i === index ? value : p)));
@@ -43,7 +63,7 @@ export default function CompareTool({
     <div>
       <fieldset className="rounded-2xl border border-line bg-surface p-4 shadow-card">
         <legend className="px-1 font-display text-sm font-bold text-ink-soft">
-          Elegí hasta 3 territorios
+          Elegí hasta 3 territorios y un indicador
         </legend>
         <div className="grid gap-3 sm:grid-cols-3">
           {[0, 1, 2].map((i) => (
@@ -79,101 +99,116 @@ export default function CompareTool({
         <label className="mt-3 block text-sm">
           <span className="font-semibold text-ink-soft">Indicador</span>
           <select
-            disabled
-            className="mt-1 w-full rounded-lg border border-line bg-canvas px-3 py-2.5 text-base text-ink-soft sm:max-w-xs"
+            value={meta?.indicatorId ?? ""}
+            onChange={(e) => setIndicatorId(e.target.value)}
+            className="mt-1 w-full rounded-lg border border-line bg-surface px-3 py-2.5 text-base sm:max-w-sm"
           >
-            <option>Población (Censo 2023, INE)</option>
+            {indicatorOptions.map((m) => (
+              <option key={m.indicatorId} value={m.indicatorId}>
+                {m.name} · {m.periodLabel}
+              </option>
+            ))}
           </select>
-          <span className="mt-1 block text-xs text-ink-faint">
-            Más indicadores comparables se sumarán al ingerir la apertura departamental de la
-            ECH (desempleo, ingreso, pobreza).
-          </span>
         </label>
       </fieldset>
 
       <div aria-live="polite" className="mt-6">
-        {chosen.length < 2 ? (
+        {chosen.length < 2 || !meta ? (
           <div className="rounded-2xl border border-dashed border-line bg-surface px-4 py-8 text-center text-ink-soft">
             Elegí al menos dos territorios para comparar.
           </div>
         ) : (
           <figure className="rounded-2xl border border-line bg-surface p-4 shadow-card md:p-5">
             <figcaption>
-              <h2 className="font-display text-lg font-bold md:text-xl">
-                ¿Cuánta gente vive en cada territorio?
-              </h2>
-              <p className="mt-0.5 text-sm text-ink-soft">Población · Censo 2023 · INE</p>
+              <h2 className="font-display text-lg font-bold md:text-xl">{meta.name}</h2>
+              <p className="mt-0.5 text-sm text-ink-soft">
+                {meta.periodLabel} · {meta.sourceShort}
+              </p>
             </figcaption>
             <div className="mt-4 space-y-2">
-              {chosen.map((t) => (
+              {rows.map(({ territory, metric }) => (
                 <div
-                  key={t.id}
+                  key={territory.id}
                   className="grid grid-cols-[8rem_1fr_auto] items-center gap-2 text-sm sm:grid-cols-[11rem_1fr_auto]"
                 >
-                  <span className="truncate font-semibold">{t.name}</span>
-                  <span aria-hidden className="h-5 overflow-hidden rounded-r-sm bg-primary-soft">
-                    <span
-                      className="block h-full rounded-r-sm bg-primary"
-                      style={{ width: `${Math.max((t.poblacion!.value / max) * 100, 2)}%` }}
-                    />
-                  </span>
-                  <span className="tnum font-bold">{t.poblacion!.display}</span>
+                  <span className="truncate font-semibold">{territory.name}</span>
+                  {metric ? (
+                    <>
+                      <span aria-hidden className="h-5 overflow-hidden rounded-r-sm bg-primary-soft">
+                        <span
+                          className="block h-full rounded-r-sm bg-primary"
+                          style={{ width: `${Math.max((metric.value / max) * 100, 2)}%` }}
+                        />
+                      </span>
+                      <span className="tnum font-bold">{metric.display}</span>
+                    </>
+                  ) : (
+                    <span className="col-span-2 text-ink-faint">
+                      Sin datos para este nivel territorial
+                    </span>
+                  )}
                 </div>
               ))}
             </div>
 
-            <div className="mt-5 overflow-x-auto">
-              <table className="w-full min-w-[420px] border-collapse text-sm">
-                <caption className="sr-only">
-                  Comparación de población entre los territorios elegidos
-                </caption>
-                <thead>
-                  <tr>
-                    <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-left font-bold text-ink-soft">
-                      Territorio
-                    </th>
-                    <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-right font-bold text-ink-soft">
-                      Población
-                    </th>
-                    <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-right font-bold text-ink-soft">
-                      Diferencia vs {base.name}
-                    </th>
-                    <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-right font-bold text-ink-soft">
-                      Diferencia %
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {chosen.map((t, i) => {
-                    const diff = t.poblacion!.value - base.poblacion!.value;
-                    const pct = (diff / base.poblacion!.value) * 100;
-                    return (
-                      <tr key={t.id}>
-                        <td className="border-b border-line px-2 py-1.5 font-semibold">{t.name}</td>
-                        <td className="tnum border-b border-line px-2 py-1.5 text-right">
-                          {t.poblacion!.display}
-                        </td>
-                        <td className="tnum border-b border-line px-2 py-1.5 text-right">
-                          {i === 0 ? "—" : `${diff > 0 ? "+" : "−"}${formatNumber(Math.abs(diff))}`}
-                        </td>
-                        <td className="tnum border-b border-line px-2 py-1.5 text-right">
-                          {i === 0 ? "—" : `${pct > 0 ? "+" : "−"}${formatNumber(Math.abs(pct), 1)}%`}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            <p className="mt-3 text-xs text-ink-faint">
-              Fuente: INE, Censo 2023 (resultados finales). La población de los municipios de
-              Montevideo se calcula sumando sus CCZ según la cartografía censal.
-            </p>
-            {chosen.some((t) => t.poblacion!.demo) ? (
-              <div className="mt-2">
-                <DemoBadge />
+            {withData.length >= 2 && base ? (
+              <div className="mt-5 overflow-x-auto">
+                <table className="w-full min-w-[420px] border-collapse text-sm">
+                  <caption className="sr-only">
+                    Comparación de {meta.name} entre los territorios elegidos
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-left font-bold text-ink-soft">
+                        Territorio
+                      </th>
+                      <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-right font-bold text-ink-soft">
+                        {meta.name}
+                      </th>
+                      <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-right font-bold text-ink-soft">
+                        Diferencia vs {base.territory.name}
+                      </th>
+                      <th scope="col" className="border-b-2 border-line px-2 py-1.5 text-right font-bold text-ink-soft">
+                        Diferencia %
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {withData.map(({ territory, metric }, i) => {
+                      const diff = metric!.value - base.metric!.value;
+                      const pct = (diff / base.metric!.value) * 100;
+                      const diffDisplay =
+                        meta.unit === "%"
+                          ? `${formatNumber(Math.abs(diff), 1)} pp`
+                          : formatNumber(Math.abs(diff), meta.decimals);
+                      return (
+                        <tr key={territory.id}>
+                          <td className="border-b border-line px-2 py-1.5 font-semibold">
+                            {territory.name}
+                          </td>
+                          <td className="tnum border-b border-line px-2 py-1.5 text-right">
+                            {metric!.display}
+                          </td>
+                          <td className="tnum border-b border-line px-2 py-1.5 text-right">
+                            {i === 0 ? "—" : `${diff > 0 ? "+" : "−"}${diffDisplay}`}
+                          </td>
+                          <td className="tnum border-b border-line px-2 py-1.5 text-right">
+                            {i === 0 ? "—" : `${pct > 0 ? "+" : "−"}${formatNumber(Math.abs(pct), 1)}%`}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             ) : null}
+            <p className="mt-3 text-xs text-ink-faint">
+              Fuente: {meta.sourceShort} · {meta.periodLabel}. Metodología y definición en{" "}
+              <Link className="font-semibold text-primary hover:underline" href={`/indicadores/${meta.slug}`}>
+                la página del indicador
+              </Link>
+              .
+            </p>
           </figure>
         )}
       </div>

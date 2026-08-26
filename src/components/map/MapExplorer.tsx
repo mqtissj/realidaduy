@@ -4,12 +4,18 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import ChoroplethMap, { type MapEntry } from "@/components/map/ChoroplethMap";
 import { CategoricalLegend, SequentialLegend } from "@/components/map/MapLegend";
-import { DemoBadge, PartyBadge } from "@/components/ui/Badge";
+import { PartyBadge } from "@/components/ui/Badge";
 import { quantileScale } from "@/lib/scale";
-import { formatCompact } from "@/lib/format";
-import type { TerritorySummary } from "@/lib/data/summaries";
+import { formatCompact, formatNumber } from "@/lib/format";
+import type { MetricSummary, TerritorySummary } from "@/lib/data/summaries";
 
-type Mode = "poblacion" | "gobierno";
+/** Formato compacto para leyendas según la unidad del indicador. */
+function legendFormat(unit: string, decimals: number) {
+  if (unit === "%") return (v: number) => `${formatNumber(v, Math.min(decimals, 1))}%`;
+  if (unit === "pesos") return (v: number) => `$ ${formatCompact(v)}`;
+  if (unit === "USD") return (v: number) => `US$ ${formatCompact(v)}`;
+  return (v: number) => formatCompact(v);
+}
 
 export default function MapExplorer({
   territories,
@@ -23,9 +29,20 @@ export default function MapExplorer({
   /** Base del enlace "Ver perfil completo" (null = sin perfil individual). */
   profileBase: string | null;
   mapTitle: string;
-  defaultMode?: Mode;
+  defaultMode?: string;
 }) {
-  const [mode, setMode] = useState<Mode>(defaultMode);
+  // Modos disponibles: cada indicador con datos en ≥1 territorio + partido de gobierno.
+  const metricModes = useMemo(() => {
+    const seen = new Map<string, MetricSummary>();
+    for (const t of territories) {
+      for (const m of t.metrics) {
+        if (!seen.has(m.indicatorId)) seen.set(m.indicatorId, m);
+      }
+    }
+    return [...seen.values()];
+  }, [territories]);
+
+  const [mode, setMode] = useState<string>(defaultMode);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const byId = useMemo(
@@ -33,29 +50,32 @@ export default function MapExplorer({
     [territories]
   );
 
+  const activeMetric = metricModes.find((m) => m.indicatorId === mode);
+
   const scale = useMemo(() => {
+    if (!activeMetric) return null;
     const values = territories
-      .map((t) => t.poblacion?.value)
+      .map((t) => t.metrics.find((m) => m.indicatorId === activeMetric.indicatorId)?.value)
       .filter((v): v is number => v !== undefined);
+    if (values.length < 2) return null;
     return quantileScale(values);
-  }, [territories]);
+  }, [territories, activeMetric]);
 
   const entries = useMemo(() => {
     const out: Record<string, MapEntry> = {};
     for (const t of territories) {
-      if (mode === "poblacion") {
-        out[t.id] = {
-          fill: t.poblacion ? scale.fillFor(t.poblacion.value) : "var(--color-line)",
-          label: t.name,
-          sublabel: t.poblacion
-            ? `${t.poblacion.display} habitantes (${t.poblacion.periodLabel})`
-            : "Sin datos",
-        };
-      } else {
+      if (mode === "gobierno") {
         out[t.id] = {
           fill: t.gov?.color ?? "var(--color-line)",
           label: t.name,
           sublabel: t.gov ? `Gobierno: ${t.gov.partyName}` : "Sin datos",
+        };
+      } else {
+        const metric = t.metrics.find((m) => m.indicatorId === mode);
+        out[t.id] = {
+          fill: metric && scale ? scale.fillFor(metric.value) : "var(--color-line)",
+          label: t.name,
+          sublabel: metric ? `${metric.display} (${metric.periodLabel})` : "Sin datos",
         };
       }
     }
@@ -80,21 +100,21 @@ export default function MapExplorer({
         <div
           role="group"
           aria-label="Elegir qué mostrar en el mapa"
-          className="inline-flex rounded-lg border border-line bg-surface p-1"
+          className="inline-flex flex-wrap gap-0.5 rounded-xl border border-line bg-surface p-1 shadow-card"
         >
-          {(
-            [
-              ["poblacion", "Población"],
-              ["gobierno", "Partido de gobierno"],
-            ] as [Mode, string][]
-          ).map(([value, label]) => (
+          {[
+            ...metricModes.map((m) => [m.indicatorId, m.mapLabel] as const),
+            ["gobierno", "Partido de gobierno"] as const,
+          ].map(([value, label]) => (
             <button
               key={value}
               type="button"
               aria-pressed={mode === value}
               onClick={() => setMode(value)}
-              className={`rounded-md px-3 py-1.5 text-sm font-semibold transition-colors ${
-                mode === value ? "bg-primary text-white" : "text-ink-soft hover:text-primary"
+              className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors ${
+                mode === value
+                  ? "bg-primary text-white"
+                  : "text-ink-soft hover:bg-primary-soft/60 hover:text-primary"
               }`}
             >
               {label}
@@ -113,15 +133,15 @@ export default function MapExplorer({
         </div>
 
         <div className="mt-4">
-          {mode === "poblacion" ? (
+          {mode === "gobierno" ? (
+            <CategoricalLegend items={partiesInMap} title="Partido de gobierno (2025)" />
+          ) : activeMetric && scale ? (
             <SequentialLegend
               breaks={scale.breaks}
-              format={(v) => formatCompact(v)}
-              title="Habitantes (Censo 2023)"
+              format={legendFormat(activeMetric.unit, activeMetric.decimals)}
+              title={`${activeMetric.name} · ${activeMetric.periodLabel}`}
             />
-          ) : (
-            <CategoricalLegend items={partiesInMap} title="Partido de gobierno (2025)" />
-          )}
+          ) : null}
         </div>
         <p className="mt-3 text-xs text-ink-faint">
           Navegable con teclado: usá Tab para recorrer los territorios y Enter para
@@ -151,7 +171,7 @@ export default function MapExplorer({
             </button>
           </div>
 
-          <dl className="mt-4 space-y-4 text-sm">
+          <dl className="mt-4 space-y-3.5 text-sm">
             <div>
               <dt className="font-bold text-ink-faint">
                 {selected.level === "municipio" ? "Alcalde/sa" : "Gobierno departamental"}
@@ -163,36 +183,29 @@ export default function MapExplorer({
                     {selected.gov.electedName ? (
                       <span className="font-semibold">{selected.gov.electedName}</span>
                     ) : null}
-                    {selected.gov.demo ? <DemoBadge /> : null}
                   </div>
                 ) : (
                   "Sin datos"
                 )}
               </dd>
             </div>
-            <div>
-              <dt className="font-bold text-ink-faint">Población</dt>
-              <dd className="mt-1">
-                {selected.poblacion ? (
-                  <span className="tnum text-lg font-bold">
-                    {selected.poblacion.display}{" "}
-                    <span className="text-sm font-normal text-ink-faint">
-                      habitantes · {selected.poblacion.periodLabel}
-                    </span>
+            {selected.metrics.map((m) => (
+              <div key={m.indicatorId} className="flex items-baseline justify-between gap-3 border-t border-line pt-3">
+                <dt className="text-ink-soft">{m.name}</dt>
+                <dd className="text-right">
+                  <span className="tnum font-bold text-ink">{m.display}</span>{" "}
+                  <span className="block text-xs text-ink-faint">
+                    {m.periodLabel} · {m.sourceShort}
                   </span>
-                ) : (
-                  "Sin datos"
-                )}
-              </dd>
-            </div>
-            <div>
-              <dt className="font-bold text-ink-faint">Empleo, ingreso y pobreza</dt>
-              <dd className="mt-1 text-ink-soft">
-                {selected.level === "municipio"
-                  ? "Disponible a nivel departamental. No existe información municipal comparable."
-                  : "La apertura departamental (ECH del INE) todavía no fue ingerida en la plataforma."}
-              </dd>
-            </div>
+                </dd>
+              </div>
+            ))}
+            {selected.level === "municipio" ? (
+              <div className="border-t border-line pt-3 text-xs text-ink-faint">
+                Los indicadores de la ECH (empleo, ingreso, pobreza) existen a nivel
+                departamental, no municipal.
+              </div>
+            ) : null}
           </dl>
 
           {profileBase ? (

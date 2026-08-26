@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import MapExplorer from "@/components/map/MapExplorer";
 import { municipioSummaries } from "@/lib/data/summaries";
-import { DemoBadge, PartyBadge } from "@/components/ui/Badge";
+import { PartyBadge } from "@/components/ui/Badge";
 
 export const metadata: Metadata = {
   title: "Montevideo por municipios",
@@ -59,7 +59,6 @@ export default function MunicipiosPage() {
                   <p>
                     Alcalde/sa: <span className="font-semibold">{m.gov.electedName}</span>
                   </p>
-                  {m.gov.demo ? <DemoBadge /> : null}
                 </div>
               ) : null}
             </li>

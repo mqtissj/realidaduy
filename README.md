@@ -4,9 +4,9 @@
 convierte datos públicos de Uruguay en mapas, indicadores y comparaciones — siempre con
 fuente, período y metodología a la vista.
 
-> Estado: **MVP en desarrollo**. Los valores marcados "Pendiente de validación" provienen
-> de investigación verificada (prensa que cita al organismo oficial) y deben cotejarse
-> contra el boletín original antes de salir a producción. **Nunca se inventan datos.**
+> Estado: **MVP en desarrollo**. Cada observación registra internamente (campo `demo`)
+> si ya fue cotejada a mano contra el boletín oficial. Una tarea programada revisa cada
+> mes (día 5) si hay datos nuevos del INE/BCU y actualiza el repo. **Nunca se inventan datos.**
 
 ## Comandos
 
@@ -26,9 +26,9 @@ completo por observación (fuente, período, estado, URL, notas metodológicas).
 
 ## Documentación
 
-Todo el paquete de planificación está en [`docs/`](docs/00-resumen.md): arquitectura,
-sitemap y flujos, design system, modelo de datos, Data Dictionary, estrategia de fuentes y
-roadmap.
+La revisión de seguridad está en [`docs/security-review.md`](docs/security-review.md).
+El paquete de planificación completo (arquitectura, data dictionary, fuentes, roadmap)
+está publicado como artifact del proyecto.
 
 ## Principios no negociables
 

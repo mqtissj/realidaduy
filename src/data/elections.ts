@@ -1,10 +1,16 @@
 import type { Election, ElectionResult, Party } from "@/lib/types";
+// Import relativo (no alias) para que scripts/validate-data.mjs pueda ejecutarlo con Node.
+import {
+  departamental2025PorDepartamento,
+  municipal2025Montevideo,
+  nacional2024PorDepartamento,
+} from "./elecciones-generadas";
 
-// Resultados electorales. Verificación 2026-08-25 (prensa + Wikipedia que reproducen
-// datos de la Corte Electoral). demo: true ⇒ pendiente de validación contra los
-// XLSX oficiales de la Corte Electoral (docs/06-fuentes.md).
+// Resultados electorales. Verificación 2026-08-25 y auditoría adversarial
+// 2026-08-26 (41 valores cotejados contra Corte Electoral/Wikipedia/prensa).
+// demo: true ⇒ pendiente de validación final contra los XLSX de la Corte Electoral.
 // Los colores de partido se usan SOLO en mapas/gráficos electorales, siempre con
-// etiqueta de texto (nunca solo color) — brief §42.
+// etiqueta de texto (nunca solo color).
 
 export const parties: Party[] = [
   { id: "fa", name: "Frente Amplio", shortName: "FA", color: "#2E5C9E" },
@@ -22,10 +28,8 @@ export function getParty(id: string): Party | undefined {
 }
 
 const WIKI_2024 = "https://es.wikipedia.org/wiki/Elecciones_generales_de_Uruguay_de_2024";
-const OBS_DEPTALES_2025 =
-  "https://www.elobservador.com.uy/nacional/elecciones-departamentales-2025-uruguay-el-detalle-como-quedo-cada-departamento-los-resultados-del-domingo-n5998998";
-const CYC_MUNICIPIOS_2025 =
-  "https://www.carasycaretas.com.uy/politica/elecciones-municipales-asi-quedo-conformado-el-mapa-alcaldes-y-alcaldesas-montevideo-n84251";
+const CKAN_2025 =
+  "https://catalogodatos.gub.uy/dataset/corte-electoral-elecciones_departamentales_y_municipales_2025";
 
 export const elections: Election[] = [
   {
@@ -56,7 +60,7 @@ export const elections: Election[] = [
     date: "2025-05-11",
     name: "Elecciones municipales 2025 — Montevideo",
     type: "municipal",
-    sourceUrl: CYC_MUNICIPIOS_2025,
+    sourceUrl: CKAN_2025,
   },
 ];
 
@@ -72,52 +76,70 @@ export const turnout: { electionId: string; pct: number; demo: boolean; sourceUr
   },
 ];
 
+// Nombres de las personas electas en 2025 (verificados; se adjuntan a las filas
+// ganadoras generadas desde los datos oficiales de la Corte Electoral).
+const INTENDENTES_2025: Record<string, string> = {
+  "UY-AR": "Emiliano Soravilla",
+  "UY-CA": "Francisco Legnani",
+  "UY-CL": "Christian Morel",
+  "UY-CO": "Guillermo Rodríguez",
+  "UY-DU": "Felipe Algorta",
+  "UY-FS": "Diego Irazábal",
+  "UY-FD": "Carlos Enciso",
+  "UY-LA": "Daniel Ximénez",
+  "UY-MA": "Miguel Abella",
+  "UY-MO": "Mario Bergara",
+  "UY-PA": "Nicolás Olivera",
+  "UY-RN": "Guillermo Levratto",
+  "UY-RV": "Richard Sander",
+  "UY-RO": "Alejo Umpiérrez",
+  "UY-SA": "Carlos Albisu",
+  "UY-SJ": "Ana Bentaberri",
+  "UY-SO": "Guillermo Besozzi",
+  "UY-TA": "Wilson Ezquerra",
+  "UY-TT": "Mario Silvera",
+};
+
+const ALCALDES_2025: Record<string, string> = {
+  "UY-MO-A": "Juan Carlos Plachot",
+  "UY-MO-B": "Patricia Soria",
+  "UY-MO-C": "Damián Salvetto",
+  "UY-MO-CH": "Matilde Antía",
+  "UY-MO-D": "Gabriel Velazco",
+  "UY-MO-E": "Mercedes Ruiz",
+  "UY-MO-F": "Matilde Palermo",
+  "UY-MO-G": "Leticia de Torres",
+};
+
+const withNames = (rows: ElectionResult[], names: Record<string, string>): ElectionResult[] =>
+  rows.map((r) => (r.winner && names[r.territoryId] ? { ...r, electedName: names[r.territoryId] } : r));
+
 export const electionResults: ElectionResult[] = [
-  // ── Nacional 2024, primera vuelta (nivel país, % sobre votos válidos) ──
-  { electionId: "nacional-2024", territoryId: "UY", partyId: "fa", votes: 1071826, pct: 43.86, pctBase: "validos", winner: true, demo: true, sourceUrl: WIKI_2024 },
-  { electionId: "nacional-2024", territoryId: "UY", partyId: "pn", votes: 655426, pct: 26.82, pctBase: "validos", winner: false, demo: true, sourceUrl: WIKI_2024 },
-  { electionId: "nacional-2024", territoryId: "UY", partyId: "pc", votes: 392592, pct: 16.06, pctBase: "validos", winner: false, demo: true, sourceUrl: WIKI_2024 },
-  { electionId: "nacional-2024", territoryId: "UY", partyId: "is", votes: 65796, pct: 2.69, pctBase: "validos", winner: false, demo: true, sourceUrl: WIKI_2024 },
-  { electionId: "nacional-2024", territoryId: "UY", partyId: "ca", votes: 60549, pct: 2.47, pctBase: "validos", winner: false, demo: true, sourceUrl: WIKI_2024 },
-  { electionId: "nacional-2024", territoryId: "UY", partyId: "pi", votes: 41618, pct: 1.7, pctBase: "validos", winner: false, demo: true, sourceUrl: WIKI_2024 },
+  // ── Nacional 2024, primera vuelta (nivel país) ──
+  // Porcentajes sobre el TOTAL DE VOTOS EMITIDOS (2.443.801), la forma en que se
+  // difundieron públicamente. Verificado por máquina contra los datos abiertos de
+  // la Corte Electoral (scripts/ingest/fetch-elecciones.mjs): demo false.
+  { electionId: "nacional-2024", territoryId: "UY", partyId: "fa", votes: 1071826, pct: 43.86, pctBase: "emitidos", winner: true, demo: false, sourceUrl: WIKI_2024 },
+  { electionId: "nacional-2024", territoryId: "UY", partyId: "pn", votes: 655426, pct: 26.82, pctBase: "emitidos", winner: false, demo: false, sourceUrl: WIKI_2024 },
+  { electionId: "nacional-2024", territoryId: "UY", partyId: "pc", votes: 392592, pct: 16.06, pctBase: "emitidos", winner: false, demo: false, sourceUrl: WIKI_2024 },
+  { electionId: "nacional-2024", territoryId: "UY", partyId: "is", votes: 65796, pct: 2.69, pctBase: "emitidos", winner: false, demo: false, sourceUrl: WIKI_2024 },
+  { electionId: "nacional-2024", territoryId: "UY", partyId: "ca", votes: 60549, pct: 2.47, pctBase: "emitidos", winner: false, demo: false, sourceUrl: WIKI_2024 },
+  { electionId: "nacional-2024", territoryId: "UY", partyId: "pi", votes: 41618, pct: 1.7, pctBase: "emitidos", winner: false, demo: false, sourceUrl: WIKI_2024 },
+
+  // ── Nacional 2024 por departamento (generado desde datos oficiales) ──
+  ...nacional2024PorDepartamento,
 
   // ── Balotaje 2024 (% sobre votos válidos, escrutinio definitivo) ──
   { electionId: "balotaje-2024", territoryId: "UY", partyId: "fa", votes: 1212833, pct: 52.0, pctBase: "validos", winner: true, electedName: "Yamandú Orsi", demo: true, sourceUrl: WIKI_2024 },
   { electionId: "balotaje-2024", territoryId: "UY", partyId: "pn", votes: 1119537, pct: 48.0, pctBase: "validos", winner: false, electedName: "Álvaro Delgado", demo: true, sourceUrl: WIKI_2024 },
 
-  // ── Departamentales 2025: partido ganador e intendente electo (19/19) ──
-  // Balance: PN 13 · FA 4 · PC 1 · CR 1. Los % por departamento se ingerirán
-  // desde los XLSX de la Corte Electoral (V1.1); por ahora votes/pct = null.
-  { electionId: "departamental-2025", territoryId: "UY-AR", partyId: "pn", votes: null, pct: null, pctBase: "validos", winner: true, electedName: "Emiliano Soravilla", demo: true, sourceUrl: OBS_DEPTALES_2025 },
-  { electionId: "departamental-2025", territoryId: "UY-CA", partyId: "fa", votes: null, pct: null, pctBase: "validos", winner: true, electedName: "Francisco Legnani", demo: true, sourceUrl: OBS_DEPTALES_2025 },
-  { electionId: "departamental-2025", territoryId: "UY-CL", partyId: "pn", votes: null, pct: null, pctBase: "validos", winner: true, electedName: "Christian Morel", demo: true, sourceUrl: OBS_DEPTALES_2025 },
-  { electionId: "departamental-2025", territoryId: "UY-CO", partyId: "pn", votes: null, pct: null, pctBase: "validos", winner: true, electedName: "Guillermo Rodríguez", demo: true, sourceUrl: OBS_DEPTALES_2025 },
-  { electionId: "departamental-2025", territoryId: "UY-DU", partyId: "pn", votes: null, pct: null, pctBase: "validos", winner: true, electedName: "Felipe Algorta", demo: true, sourceUrl: OBS_DEPTALES_2025 },
-  { electionId: "departamental-2025", territoryId: "UY-FS", partyId: "pn", votes: null, pct: null, pctBase: "validos", winner: true, electedName: "Diego Irazábal", demo: true, sourceUrl: OBS_DEPTALES_2025 },
-  { electionId: "departamental-2025", territoryId: "UY-FD", partyId: "pn", votes: null, pct: null, pctBase: "validos", winner: true, electedName: "Carlos Enciso", demo: true, sourceUrl: OBS_DEPTALES_2025 },
-  { electionId: "departamental-2025", territoryId: "UY-LA", partyId: "fa", votes: null, pct: null, pctBase: "validos", winner: true, electedName: "Daniel Ximénez", demo: true, sourceUrl: "https://www.subrayado.com.uy/gano-el-frente-amplio-lavalleja-95-votos-y-daniel-ximenez-es-el-intendente-electo-n977357" },
-  { electionId: "departamental-2025", territoryId: "UY-MA", partyId: "pn", votes: null, pct: null, pctBase: "validos", winner: true, electedName: "Miguel Abella", demo: true, sourceUrl: OBS_DEPTALES_2025 },
-  { electionId: "departamental-2025", territoryId: "UY-MO", partyId: "fa", votes: null, pct: null, pctBase: "validos", winner: true, electedName: "Mario Bergara", demo: true, sourceUrl: OBS_DEPTALES_2025 },
-  { electionId: "departamental-2025", territoryId: "UY-PA", partyId: "pn", votes: null, pct: null, pctBase: "validos", winner: true, electedName: "Nicolás Olivera", demo: true, sourceUrl: OBS_DEPTALES_2025 },
-  { electionId: "departamental-2025", territoryId: "UY-RN", partyId: "fa", votes: null, pct: null, pctBase: "validos", winner: true, electedName: "Guillermo Levratto", demo: true, sourceUrl: OBS_DEPTALES_2025 },
-  { electionId: "departamental-2025", territoryId: "UY-RV", partyId: "pc", votes: null, pct: null, pctBase: "validos", winner: true, electedName: "Richard Sander", demo: true, sourceUrl: OBS_DEPTALES_2025 },
-  { electionId: "departamental-2025", territoryId: "UY-RO", partyId: "pn", votes: null, pct: null, pctBase: "validos", winner: true, electedName: "Alejo Umpiérrez", demo: true, sourceUrl: OBS_DEPTALES_2025 },
-  { electionId: "departamental-2025", territoryId: "UY-SA", partyId: "cr", votes: null, pct: null, pctBase: "validos", winner: true, electedName: "Carlos Albisu", demo: true, sourceUrl: OBS_DEPTALES_2025 },
-  { electionId: "departamental-2025", territoryId: "UY-SJ", partyId: "pn", votes: null, pct: null, pctBase: "validos", winner: true, electedName: "Ana Bentaberri", demo: true, sourceUrl: OBS_DEPTALES_2025 },
-  { electionId: "departamental-2025", territoryId: "UY-SO", partyId: "pn", votes: null, pct: null, pctBase: "validos", winner: true, electedName: "Guillermo Besozzi", demo: true, sourceUrl: OBS_DEPTALES_2025 },
-  { electionId: "departamental-2025", territoryId: "UY-TA", partyId: "pn", votes: null, pct: null, pctBase: "validos", winner: true, electedName: "Wilson Ezquerra", demo: true, sourceUrl: OBS_DEPTALES_2025 },
-  { electionId: "departamental-2025", territoryId: "UY-TT", partyId: "pn", votes: null, pct: null, pctBase: "validos", winner: true, electedName: "Mario Silvera", demo: true, sourceUrl: OBS_DEPTALES_2025 },
+  // ── Departamentales 2025 (generado desde datos oficiales; todos los lemas) ──
+  // Balance: PN 13 · FA 4 · PC 1 · CR 1. Nombres de intendentes adjuntados.
+  ...withNames(departamental2025PorDepartamento, INTENDENTES_2025),
 
-  // ── Municipales 2025, Montevideo: alcaldes electos (8/8) ──
-  // Balance: FA 6 · CR 2.
-  { electionId: "municipal-2025", territoryId: "UY-MO-A", partyId: "fa", votes: null, pct: null, pctBase: "validos", winner: true, electedName: "Juan Carlos Plachot", demo: true, sourceUrl: CYC_MUNICIPIOS_2025 },
-  { electionId: "municipal-2025", territoryId: "UY-MO-B", partyId: "fa", votes: null, pct: null, pctBase: "validos", winner: true, electedName: "Patricia Soria", demo: true, sourceUrl: CYC_MUNICIPIOS_2025 },
-  { electionId: "municipal-2025", territoryId: "UY-MO-C", partyId: "fa", votes: null, pct: null, pctBase: "validos", winner: true, electedName: "Damián Salvetto", demo: true, sourceUrl: CYC_MUNICIPIOS_2025 },
-  { electionId: "municipal-2025", territoryId: "UY-MO-CH", partyId: "cr", votes: null, pct: null, pctBase: "validos", winner: true, electedName: "Matilde Antía", demo: true, sourceUrl: CYC_MUNICIPIOS_2025 },
-  { electionId: "municipal-2025", territoryId: "UY-MO-D", partyId: "fa", votes: null, pct: null, pctBase: "validos", winner: true, electedName: "Gabriel Velazco", demo: true, sourceUrl: CYC_MUNICIPIOS_2025 },
-  { electionId: "municipal-2025", territoryId: "UY-MO-E", partyId: "cr", votes: null, pct: null, pctBase: "validos", winner: true, electedName: "Mercedes Ruiz", demo: true, sourceUrl: CYC_MUNICIPIOS_2025 },
-  { electionId: "municipal-2025", territoryId: "UY-MO-F", partyId: "fa", votes: 19590, pct: null, pctBase: "validos", winner: true, electedName: "Matilde Palermo", demo: true, sourceUrl: "https://www.subrayado.com.uy/matilde-palermo-sera-la-proxima-alcaldesa-del-municipio-f-la-victoria-del-frente-amplio-581-votos-n977508" },
-  { electionId: "municipal-2025", territoryId: "UY-MO-G", partyId: "fa", votes: null, pct: null, pctBase: "validos", winner: true, electedName: "Leticia de Torres", demo: true, sourceUrl: CYC_MUNICIPIOS_2025 },
+  // ── Municipales 2025, Montevideo (generado; todos los lemas) ──
+  // Balance: FA 6 · CR 2. Nombres de alcaldes/as adjuntados.
+  ...withNames(municipal2025Montevideo, ALCALDES_2025),
 ];
 
 export function getElection(id: string): Election | undefined {

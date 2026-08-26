@@ -4,9 +4,10 @@ import { notFound } from "next/navigation";
 import { departments, getDepartmentBySlug } from "@/data/territories";
 import { getGovernment, getParty, turnout } from "@/data/elections";
 import { getIndicator } from "@/data/dictionary";
-import { getLatest } from "@/lib/data";
+import { getLatest, hasData, indicatorsForLevel } from "@/lib/data";
 import { formatNumber } from "@/lib/format";
-import { DemoBadge, PartyBadge, StatusBadge } from "@/components/ui/Badge";
+import { PartyBadge } from "@/components/ui/Badge";
+import MetricCard from "@/components/charts/MetricCard";
 import SourceNote from "@/components/ui/SourceNote";
 import StateView from "@/components/ui/StateView";
 
@@ -47,6 +48,9 @@ export default async function DepartmentProfile({
     poblacion?.obs.value && poblacionUY?.obs.value
       ? (poblacion.obs.value / poblacionUY.obs.value) * 100
       : null;
+  const deptMetricIds = indicatorsForLevel("departamento")
+    .map((i) => i.id)
+    .filter((id) => id !== "poblacion" && hasData(id, dept.id));
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 md:px-6 md:py-10">
@@ -97,7 +101,6 @@ export default async function DepartmentProfile({
               <div className="mt-2 space-y-1.5">
                 <div className="flex flex-wrap items-center gap-2">
                   <PartyBadge color={party.color} name={party.name} />
-                  {gov.demo ? <DemoBadge /> : null}
                 </div>
                 <p className="text-lg">
                   Intendente: <span className="font-bold">{gov.electedName}</span>
@@ -165,30 +168,28 @@ export default async function DepartmentProfile({
         </div>
       </section>
 
-      {/* Datos departamentales pendientes — honestidad ante todo (brief §27) */}
+      {/* Economía y sociedad — datos departamentales */}
       <section aria-labelledby="datos-dept" className="mt-10">
         <h2 id="datos-dept" className="font-display text-2xl font-bold">
           Economía y sociedad
         </h2>
-        <div className="mt-4 rounded-2xl border border-line bg-surface p-4 shadow-card">
-          <div className="flex flex-wrap items-center gap-2">
-            <StatusBadge status="UNAVAILABLE" />
-            <p className="text-sm font-semibold text-ink-soft">
-              Apertura departamental pendiente de ingesta
+        {deptMetricIds.length > 0 ? (
+          <>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {deptMetricIds.map((id) => (
+                <MetricCard key={id} indicatorId={id} territoryId={dept.id} />
+              ))}
+            </div>
+            <p className="mt-3 text-xs text-ink-faint">
+              Tocá una tarjeta para ver qué significa el indicador, su evolución y el ranking
+              de los 19 departamentos.
             </p>
+          </>
+        ) : (
+          <div className="mt-4">
+            <StateView kind="nodata-departamental" />
           </div>
-          <p className="mt-2 text-sm text-ink-soft">
-            El INE publica desempleo, empleo, ingreso de los hogares y pobreza con apertura
-            departamental (ECH, frecuencia anual). Esos datos todavía no fueron ingeridos en
-            la plataforma: antes de mostrarlos, cada serie pasa por el proceso de validación
-            documentado en <Link className="font-semibold text-primary hover:underline" href="/fuentes">Fuentes</Link>.
-            Mientras tanto podés ver los valores nacionales en{" "}
-            <Link className="font-semibold text-primary hover:underline" href="/indicadores">
-              Indicadores
-            </Link>
-            .
-          </p>
-        </div>
+        )}
       </section>
 
       {/* Fuente */}
