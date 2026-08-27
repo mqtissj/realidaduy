@@ -7,6 +7,7 @@ import { nationalObservations } from "@/data/observations/nacional";
 import { departmentObservations } from "@/data/observations/departamentos";
 import { municipioObservations } from "@/data/observations/municipios";
 import { departmentEchObservations } from "@/data/observations/departamentos-ech";
+import { otuObservations } from "@/data/observations/otu";
 import { seguridadObservations } from "@/data/observations/seguridad";
 import { worldBankSeries } from "@/data/observations/series-banco-mundial";
 import { departments, getTerritoryById } from "@/data/territories";
@@ -20,6 +21,7 @@ const allObservations: Observation[] = [
   ...nationalObservations,
   ...departmentObservations,
   ...departmentEchObservations,
+  ...otuObservations,
   ...seguridadObservations,
   ...municipioObservations,
   ...worldBankSeries,
@@ -67,6 +69,8 @@ export function getLatest(indicatorId: string, territoryId: string): LatestResul
   }
   if (obs.length === 0) return undefined;
   const latest = obs[obs.length - 1];
+  // Quiebre metodológico: jamás se compara contra el período anterior.
+  if (latest.breakBefore) return { obs: latest };
   const comparable = obs.filter(
     (o) => o.period.length === latest.period.length && o.period < latest.period
   );

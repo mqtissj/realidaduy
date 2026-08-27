@@ -29,36 +29,11 @@ const D = {
 
 const RETRIEVED = "2026-08-25";
 
-// ── Tasa de desempleo por departamento — promedio anual 2024 ─────────────────
-// Fuente: MIDES (Observatorio Social / DINEM) en base a la ECH del INE.
-// CSV oficial: tabla 7976 del indicador "Tasa de desempleo según departamento".
-// Nota: promedio anual; difiere de los trimestres móviles que publica el INE en
-// boletines. El total país de esta tabla (8,9%) puede diferir levemente del
-// titular anual del INE por diferencias de procesamiento de la ECH.
-const DESEMPLEO_URL = "https://www.gub.uy/ministerio-desarrollo-social/export-table/7976/csv";
-const DESEMPLEO_NOTE =
-  "Promedio anual 2024. Cálculo del Observatorio Social del MIDES (DINEM) sobre microdatos de la ECH del INE. No comparable con los trimestres móviles de los boletines mensuales del INE. Serie disponible 2006–2024 en la misma fuente.";
-const desempleo2024: [string, number][] = [
-  [D.artigas, 11.1],
-  [D.canelones, 10.1],
-  [D.cerroLargo, 6.0],
-  [D.colonia, 6.8],
-  [D.durazno, 12.2],
-  [D.flores, 5.4],
-  [D.florida, 13.4],
-  [D.lavalleja, 5.7],
-  [D.maldonado, 6.3],
-  [D.montevideo, 7.8],
-  [D.paysandu, 14.8],
-  [D.rioNegro, 12.0],
-  [D.rivera, 13.7],
-  [D.rocha, 9.4],
-  [D.salto, 10.8],
-  [D.sanJose, 6.8],
-  [D.soriano, 8.4],
-  [D.tacuarembo, 9.9],
-  [D.treintaYTres, 13.5],
-];
+// NOTA (auditoría 2026-08-26): la tasa de desempleo departamental 2024 se
+// cargaba desde MIDES (tabla 7976), pero su total país (8,9%) y su apertura
+// departamental no cuadran con la cifra oficial del INE (~8,2%). Se reemplazó
+// por la elaboración del Observatorio Territorio Uruguay (OPP), cuyo total sí
+// coincide — ver scripts/ingest/fetch-otu.mjs y src/data/observations/otu.ts.
 
 // ── Informalidad por departamento — año 2025 ─────────────────────────────────
 // Fuente: INE, informe "Informalidad y subutilización de la fuerza de trabajo
@@ -179,15 +154,6 @@ function block(
 }
 
 export const departmentEchObservations: Observation[] = [
-  ...block(
-    "tasa-desempleo",
-    "2024",
-    "2024 (promedio anual)",
-    "OFFICIAL",
-    DESEMPLEO_URL,
-    DESEMPLEO_NOTE,
-    desempleo2024
-  ),
   ...block(
     "informalidad",
     "2025",

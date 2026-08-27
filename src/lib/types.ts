@@ -101,6 +101,11 @@ export interface Observation {
   sourceUrl: string;
   retrievedAt: string;
   notes?: string;
+  /**
+   * true ⇒ quiebre metodológico respecto al período anterior: la UI nunca
+   * calcula ni muestra variación contra el dato previo (series no comparables).
+   */
+  breakBefore?: boolean;
 }
 
 // ── Elecciones ──────────────────────────────────────────────────
