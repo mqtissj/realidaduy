@@ -9,6 +9,7 @@ import { municipioObservations } from "@/data/observations/municipios";
 import { departmentEchObservations } from "@/data/observations/departamentos-ech";
 import { otuObservations } from "@/data/observations/otu";
 import { otuMunicipioObservations } from "@/data/observations/otu-municipios";
+import { otuCensalObservations } from "@/data/observations/otu-censal";
 import { seguridadObservations } from "@/data/observations/seguridad";
 import { worldBankSeries } from "@/data/observations/series-banco-mundial";
 import { departments, getTerritoryById } from "@/data/territories";
@@ -24,6 +25,7 @@ const allObservations: Observation[] = [
   ...departmentEchObservations,
   ...otuObservations,
   ...otuMunicipioObservations,
+  ...otuCensalObservations,
   ...seguridadObservations,
   ...municipioObservations,
   ...worldBankSeries,

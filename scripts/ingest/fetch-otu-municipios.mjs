@@ -47,6 +47,8 @@ const INE_DEPT_TO_ISO = {
   19: "UY-TT",
 };
 
+const round1 = (n) => Math.round(n * 10) / 10;
+
 const normalize = (s) =>
   String(s)
     .normalize("NFD")
@@ -124,6 +126,7 @@ for (const t of municipalTerritories) {
   oursByKey.set(`${t.parentId}|${normalize(t.name)}`, t);
 }
 const matched = [];
+const matchedByOtuId = {};
 const unmatched = [];
 for (const [otuId, data] of Object.entries(byOtuId)) {
   const deptCode = Math.floor(Number(otuId) / 100);
@@ -148,6 +151,7 @@ for (const [otuId, data] of Object.entries(byOtuId)) {
     continue;
   }
   matched.push({ territory: ours, ...data });
+  matchedByOtuId[otuId] = ours;
 }
 console.log(`  ✓ mapeados ${matched.length}/${Object.keys(byOtuId).length} al padrón 2025`);
 if (unmatched.length > 0) {
@@ -186,6 +190,174 @@ if (!(sumInterior > 1000000 && sumInterior < 2300000)) {
   throw new Error(`Suma de población del interior municipal fuera de rango: ${sumInterior}`);
 }
 console.log(`  ✓ suma interior municipalizado: ${sumInterior} personas`);
+
+// ── 5. Indicadores censales 2011 (país + departamentos + municipios) ────────
+// El Censo 2011 es la última fuente con estos cortes a nivel municipal; se
+// actualizarán cuando el INE publique los tabulados temáticos del Censo 2023.
+const CENSAL = [
+  {
+    datosId: 2846,
+    indicatorId: "nbi-vivienda",
+    option: "Al menos una NBI de Vivienda decorosa",
+    range: [1, 45],
+    note: "Hogares con al menos una Necesidad Básica Insatisfecha en la vivienda (materialidad, espacio habitable o espacio para cocinar). Censo 2011, elaboración Observatorio Territorio Uruguay (OPP).",
+  },
+  {
+    datosId: 2877,
+    indicatorId: "analfabetismo",
+    option: "Total",
+    range: [0.3, 8],
+    note: "Población de 15 años y más que no sabe leer ni escribir. Censo 2011, elaboración Observatorio Territorio Uruguay (OPP).",
+  },
+  {
+    datosId: 2881,
+    indicatorId: "asistencia-media",
+    option: "Total",
+    range: [40, 98],
+    note: "Población de 12 a 17 años que asiste a educación media, sobre el total de esa edad. Censo 2011, elaboración Observatorio Territorio Uruguay (OPP).",
+  },
+];
+
+function pickOption(tableHtml, option) {
+  for (const c of tableHtml.matchAll(
+    /data-option-value='([^']+)'[\s\S]*?data-datocsv='([^']+)'/g
+  )) {
+    if (c[1].trim() === option) return Number(String(c[2]).replace(",", "."));
+  }
+  return undefined;
+}
+
+const censalLines = [];
+for (const ind of CENSAL) {
+  console.log(`Indicador censal ${ind.indicatorId} (datos ${ind.datosId})…`);
+  const srcPage = `https://otu.opp.gub.uy/?q=listados/listados_datos_formato&id=${ind.datosId}&cant=0&fecha=2011-01-01`;
+
+  // Departamentos + total país en una sola llamada (d=1..19).
+  const dBody = new URLSearchParams({
+    consulta: String(ind.datosId),
+    d: Array.from({ length: 19 }, (_, i) => i + 1).join(","),
+    r: "",
+    m: "",
+    l: "",
+  }).toString();
+  const dRaw = await cachedPost(
+    `otu-tabla-${ind.datosId}-deptos.json`,
+    "https://otu.opp.gub.uy/?q=tabla-engine",
+    dBody
+  );
+  let dHtml;
+  try {
+    dHtml = JSON.parse(dRaw);
+  } catch {
+    dHtml = dRaw;
+  }
+  dHtml = String(dHtml);
+  const deptVals = {};
+  let paisVal;
+  {
+    let pendingRow = null;
+    for (const t of dHtml.matchAll(/<table[^>]*>[\s\S]*?<\/table>/g)) {
+      const row = (t[0].match(/data-row='([^']+)'/) || [])[1]?.trim() ?? null;
+      const val = pickOption(t[0], ind.option);
+      if (row !== null && val === undefined) {
+        pendingRow = row;
+        continue;
+      }
+      if (val === undefined) continue;
+      const effective = row ?? pendingRow;
+      pendingRow = null;
+      if (effective === null) {
+        paisVal = val;
+        continue;
+      }
+      const key = normalize(effective).replace(/ /g, " ");
+      const iso = Object.entries({
+        artigas: "UY-AR", canelones: "UY-CA", "cerro largo": "UY-CL", colonia: "UY-CO",
+        durazno: "UY-DU", flores: "UY-FS", florida: "UY-FD", lavalleja: "UY-LA",
+        maldonado: "UY-MA", montevideo: "UY-MO", paysandu: "UY-PA", "rio negro": "UY-RN",
+        rivera: "UY-RV", rocha: "UY-RO", salto: "UY-SA", "san jose": "UY-SJ",
+        soriano: "UY-SO", tacuarembo: "UY-TA", "treinta y tres": "UY-TT",
+      }).find(([n]) => n === key)?.[1];
+      if (iso) deptVals[iso] = val;
+      else if (paisVal === undefined) paisVal = val;
+    }
+  }
+  if (Object.keys(deptVals).length !== 19) {
+    throw new Error(`${ind.indicatorId}: departamentos incompletos (${Object.keys(deptVals).length}/19)`);
+  }
+  if (paisVal === undefined || !(paisVal >= ind.range[0] && paisVal <= ind.range[1])) {
+    throw new Error(`${ind.indicatorId}: total país fuera de rango: ${paisVal}`);
+  }
+  console.log(`  ✓ 19 departamentos + país (${round1(paisVal)})`);
+
+  // Municipios (mismas tandas que la población; incluye Montevideo: única fuente).
+  const muniVals = [];
+  for (let i = 0; i < otuMunis.length; i += CHUNK) {
+    const chunk = otuMunis.slice(i, i + CHUNK);
+    const body = new URLSearchParams({
+      consulta: String(ind.datosId),
+      d: "",
+      r: "",
+      m: chunk.map((m) => m.id).join(","),
+      l: "",
+    }).toString();
+    const raw = await cachedPost(
+      `otu-tabla-${ind.datosId}-chunk${i / CHUNK}.json`,
+      "https://otu.opp.gub.uy/?q=tabla-engine",
+      body
+    );
+    let html;
+    try {
+      html = JSON.parse(raw);
+    } catch {
+      html = raw;
+    }
+    html = String(html);
+    for (const t of html.matchAll(/<table[^>]*data-row='([^']+)'[\s\S]*?<\/table>/g)) {
+      const val = pickOption(t[0], ind.option);
+      if (val === undefined) continue;
+      const nombre = t[1].trim();
+      const muni = chunk.find((m) => normalize(m.nombre) === normalize(nombre));
+      if (!muni) continue;
+      // Mapeo directo por id del padrón (mismo criterio que la población).
+      const found = matchedByOtuId[muni.id];
+      if (!found) continue;
+      if (!(val >= ind.range[0] * 0.2 && val <= ind.range[1] * 1.5)) {
+        console.warn(`  AVISO: ${ind.indicatorId} fuera de rango en ${found.name}: ${val}`);
+      }
+      muniVals.push({ territory: found, val });
+    }
+  }
+  if (muniVals.length < 100) {
+    throw new Error(`${ind.indicatorId}: cobertura municipal insuficiente (${muniVals.length})`);
+  }
+  console.log(`  ✓ ${muniVals.length} municipios`);
+
+  const emit = (territoryId, val) =>
+    censalLines.push(
+      `  { indicatorId: ${JSON.stringify(ind.indicatorId)}, territoryId: ${JSON.stringify(territoryId)}, period: "2011", periodLabel: "Censo 2011", value: ${round1(val)}, status: "OFFICIAL", demo: false, sourceUrl: ${JSON.stringify(srcPage)}, retrievedAt: ${JSON.stringify(TODAY)}, notes: ${JSON.stringify(ind.note)} },`
+    );
+  emit("UY", paisVal);
+  for (const [iso, val] of Object.entries(deptVals).sort()) emit(iso, val);
+  for (const m of muniVals.sort((a, b) => a.territory.id.localeCompare(b.territory.id))) {
+    emit(m.territory.id, m.val);
+  }
+}
+
+const censalFile = `import type { Observation } from "@/lib/types";
+
+// GENERADO por scripts/ingest/fetch-otu-municipios.mjs — no editar a mano.
+// Última ejecución: ${TODAY}. Indicadores del Censo 2011 (última fuente con
+// apertura MUNICIPAL para estos cortes; se actualizarán cuando el INE publique
+// los tabulados temáticos del Censo 2023) en tres niveles: país, departamento
+// y municipio. Elaboración Observatorio Territorio Uruguay (OPP).
+
+export const otuCensalObservations: Observation[] = [
+${censalLines.join("\n")}
+];
+`;
+await writeFile(path.join(ROOT, "src", "data", "observations", "otu-censal.ts"), censalFile);
+console.log(`→ src/data/observations/otu-censal.ts (${censalLines.length} observaciones)`);
 
 // ── Salida ───────────────────────────────────────────────────────────────────
 const lines = interior

@@ -12,6 +12,7 @@ const { departmentEchObservations } = await import("../src/data/observations/dep
 const { seguridadObservations } = await import("../src/data/observations/seguridad.ts");
 const { otuObservations } = await import("../src/data/observations/otu.ts");
 const { otuMunicipioObservations } = await import("../src/data/observations/otu-municipios.ts");
+const { otuCensalObservations } = await import("../src/data/observations/otu-censal.ts");
 const { municipioObservations } = await import("../src/data/observations/municipios.ts");
 const { worldBankSeries } = await import("../src/data/observations/series-banco-mundial.ts");
 const { sources } = await import("../src/data/sources.ts");
@@ -23,6 +24,7 @@ const observations = [
   ...departmentEchObservations,
   ...otuObservations,
   ...otuMunicipioObservations,
+  ...otuCensalObservations,
   ...seguridadObservations,
   ...municipioObservations,
   ...worldBankSeries,
@@ -102,8 +104,16 @@ if (montevideo && Math.abs(sumaMunicipios - montevideo) / montevideo > 0.01)
   errors.push(`Suma municipal (${sumaMunicipios}) difiere >1% de Montevideo (${montevideo})`);
 
 // Series departamentales: cada bloque debe cubrir los 19 departamentos.
-const deptWide = [...departmentEchObservations, ...otuObservations, ...seguridadObservations];
+const deptWide = [
+  ...departmentEchObservations,
+  ...otuObservations,
+  ...otuCensalObservations,
+  ...seguridadObservations,
+];
 for (const [indicatorId, period] of [
+  ["nbi-vivienda", "2011"],
+  ["analfabetismo", "2011"],
+  ["asistencia-media", "2011"],
   ["tasa-desempleo", "2024"],
   ["informalidad", "2025"],
   ["ingreso-medio-hogar", "2023"],
@@ -115,7 +125,10 @@ for (const [indicatorId, period] of [
   ["hurtos-100k", "2025"],
 ]) {
   const n = deptWide.filter(
-    (o) => o.indicatorId === indicatorId && o.period === period && o.territoryId !== "UY"
+    (o) =>
+      o.indicatorId === indicatorId &&
+      o.period === period &&
+      o.territoryId.split("-").length === 2
   ).length;
   if (n !== 19) errors.push(`${indicatorId} ${period}: ${n}/19 departamentos`);
 }
