@@ -213,6 +213,7 @@ export default async function DepartmentProfile({
               <thead>
                 <tr>
                   <th scope="col">Municipio</th>
+                  <th scope="col" className="num">Población (2023)</th>
                   {munisConNombre ? <th scope="col">Alcalde/sa</th> : null}
                   <th scope="col">Lema ganador (2025)</th>
                   <th scope="col" className="num">% válidos</th>
@@ -221,9 +222,13 @@ export default async function DepartmentProfile({
               <tbody>
                 {munis.map(({ territory, winner }) => {
                   const wParty = winner ? getParty(winner.partyId) : undefined;
+                  const pop = getLatest("poblacion", territory.id);
                   return (
                     <tr key={territory.id}>
                       <td>{territory.name}</td>
+                      <td className="num">
+                        {pop?.obs.value ? formatNumber(pop.obs.value) : "—"}
+                      </td>
                       {munisConNombre ? <td>{winner?.electedName ?? "—"}</td> : null}
                       <td>
                         {wParty ? (

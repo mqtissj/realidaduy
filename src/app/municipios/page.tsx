@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { departments, municipalitiesOf, municipalTerritories } from "@/data/territories";
 import { electionResults, getParty } from "@/data/elections";
+import { getLatest } from "@/lib/data";
 import { formatNumber } from "@/lib/format";
 import { PartyBadge } from "@/components/ui/Badge";
 
@@ -131,13 +132,14 @@ export default function MunicipiosPaisPage() {
                 </Link>
               </div>
               <div className="tablewrap mt-3">
-                <table className="tabla min-w-[420px]">
+                <table className="tabla min-w-[480px]">
                   <caption className="sr-only">
-                    Municipios de {d.name} y lema ganador de la alcaldía en 2025
+                    Municipios de {d.name}: población, lema ganador y porcentaje en 2025
                   </caption>
                   <thead>
                     <tr>
                       <th scope="col">Municipio</th>
+                      <th scope="col" className="num">Población (2023)</th>
                       {hasNames ? <th scope="col">Alcalde/sa</th> : null}
                       <th scope="col">Lema ganador</th>
                       <th scope="col" className="num">% válidos</th>
@@ -147,9 +149,13 @@ export default function MunicipiosPaisPage() {
                     {munis.map((m) => {
                       const w = winnerOf(m.id);
                       const party = w ? getParty(w.partyId) : undefined;
+                      const pop = getLatest("poblacion", m.id);
                       return (
                         <tr key={m.id}>
                           <td>{m.name}</td>
+                          <td className="num">
+                            {pop?.obs.value ? formatNumber(pop.obs.value) : "—"}
+                          </td>
                           {hasNames ? <td>{w?.electedName ?? "—"}</td> : null}
                           <td>
                             {party ? (
@@ -174,10 +180,11 @@ export default function MunicipiosPaisPage() {
         })}
 
       <p className="mt-10 text-xs text-ink-faint">
-        Los nombres de alcaldes y alcaldesas del interior se ingerirán desde las
-        proclamaciones oficiales de las Juntas Electorales; por ahora se muestra el lema
-        ganador con su porcentaje sobre votos válidos. Montevideo incluye los nombres ya
-        verificados. Para población y mapa de los municipios de la capital, mirá{" "}
+        Población: Censo 2023 (INE; interior elaborado por el Observatorio Territorio
+        Uruguay de OPP; Montevideo por cartografía censal). Los municipios creados en la
+        expansión de 2025 todavía no tienen población censal agregada publicada. Los
+        nombres de alcaldes del interior se ingerirán desde las proclamaciones de las
+        Juntas Electorales. Para el mapa de la capital, mirá{" "}
         <Link className="font-semibold text-primary hover:underline" href="/montevideo/municipios">
           Montevideo por municipios
         </Link>

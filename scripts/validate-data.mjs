@@ -11,6 +11,7 @@ const { departmentObservations } = await import("../src/data/observations/depart
 const { departmentEchObservations } = await import("../src/data/observations/departamentos-ech.ts");
 const { seguridadObservations } = await import("../src/data/observations/seguridad.ts");
 const { otuObservations } = await import("../src/data/observations/otu.ts");
+const { otuMunicipioObservations } = await import("../src/data/observations/otu-municipios.ts");
 const { municipioObservations } = await import("../src/data/observations/municipios.ts");
 const { worldBankSeries } = await import("../src/data/observations/series-banco-mundial.ts");
 const { sources } = await import("../src/data/sources.ts");
@@ -21,10 +22,24 @@ const observations = [
   ...departmentObservations,
   ...departmentEchObservations,
   ...otuObservations,
+  ...otuMunicipioObservations,
   ...seguridadObservations,
   ...municipioObservations,
   ...worldBankSeries,
 ];
+
+// Población municipal: cobertura razonable (interior + los 8 de Montevideo) y
+// suma total menor que la población del país.
+{
+  const popMunis = [...otuMunicipioObservations, ...municipioObservations].filter(
+    (o) => o.indicatorId === "poblacion"
+  );
+  if (popMunis.length < 115)
+    errors.push(`Población municipal: solo ${popMunis.length} municipios con dato`);
+  const suma = popMunis.reduce((s, o) => s + (o.value ?? 0), 0);
+  if (!(suma > 2000000 && suma < 3499451))
+    errors.push(`Suma de población municipal fuera de rango: ${suma}`);
+}
 
 const errors = [];
 const warnings = [];
