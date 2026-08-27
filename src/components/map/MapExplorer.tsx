@@ -97,12 +97,12 @@ export default function MapExplorer({
   const selected = selectedId ? byId[selectedId] : null;
 
   return (
-    <div className="lg:grid lg:grid-cols-[1fr_340px] lg:gap-6">
-      <div>
+    <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-6">
+      <div className="min-w-0">
         <div
           role="group"
           aria-label="Elegir qué mostrar en el mapa"
-          className="flex w-full gap-0.5 overflow-x-auto rounded-xl border border-line bg-surface p-1 shadow-card"
+          className="flex w-full flex-wrap gap-0.5 rounded-xl border border-line bg-surface p-1 shadow-card"
         >
           {[
             ...metricModes.map((m) => [m.indicatorId, m.mapLabel] as const),

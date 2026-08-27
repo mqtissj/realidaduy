@@ -119,6 +119,10 @@ details.fold[open] > summary::after {
   border: 1px solid var(--color-line);
   border-radius: 12px;
   background: var(--color-surface);
+  /* Como ítem de grid/flex debe poder encogerse: sin esto, el min-content de
+     la tabla interior estira la pista y desborda la página entera. */
+  min-width: 0;
+  max-width: 100%;
 }
 .tabla {
   width: 100%;
