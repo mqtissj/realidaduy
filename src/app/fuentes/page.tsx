@@ -228,6 +228,18 @@ export default function FuentesPage() {
               ingesta (25/08/2026, documentado en el repositorio).
             </p>
           </div>
+          <div className="rounded-2xl border border-line bg-surface p-5 shadow-card md:col-span-2">
+            <h3 className="font-display text-base font-bold">136 municipios del país</h3>
+            <p className="mt-1.5 text-sm text-ink-soft">
+              Capa oficial &quot;Municipios&quot; de la Dirección Nacional de Ordenamiento
+              Territorial (MVOT), servida por el geoserver del Ministerio de Ambiente (WFS)
+              y actualizada al 18/09/2025. Construida a partir de las Series Electorales
+              2025 en cooperación entre IDEuy y la Corte Electoral (Circular Nº 12208).
+              Los municipios no cubren todo el territorio: las zonas rurales sin municipio
+              se muestran en blanco en el mapa. Geometría simplificada para la web: no usar
+              para fines catastrales.
+            </p>
+          </div>
         </div>
       </section>
     </div>

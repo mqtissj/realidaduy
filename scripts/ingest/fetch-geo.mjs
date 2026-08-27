@@ -4,9 +4,12 @@
 //     publicado en catalogodatos.gub.uy (licencia de Datos Abiertos Uruguay).
 //  2. Municipios de Montevideo (8): shapefile oficial de la Intendencia de
 //     Montevideo (generador intgis, dataset CKAN "limites-de-municipios-de-montevideo").
+//  3. Municipios de todo el país (136): capa "Municipios" de DINOT/MVOT servida por
+//     el geoserver del Ministerio de Ambiente (WFS), elaborada desde las Series
+//     Electorales 2025 (IDEuy + Corte Electoral, Circular Nº 12208).
 //
-// Salida: public/geo/departamentos.json y public/geo/municipios-montevideo.json
-// (GeoJSON simplificado, coordenadas redondeadas, con properties.territoryId).
+// Salida: public/geo/departamentos.json, public/geo/municipios-montevideo.json y
+// public/geo/municipios.json (GeoJSON simplificado, con properties.territoryId).
 //
 // Uso: npm run fetch:geo
 
@@ -306,6 +309,89 @@ ${obsLines.join("\n")}
   console.log(`  -> ${tsOut}`);
 }
 
+// ── Municipios de todo el país (136) ────────────────────────────────────────
+// Fuente: capa "Municipios" (u19600217:c101) de la Dirección Nacional de
+// Ordenamiento Territorial (MVOT), publicada en el geoserver del Ministerio de
+// Ambiente. Linaje declarado: construida a partir de las Series Electorales
+// 2025 (cooperación IDEuy + Corte Electoral, Circular Nº 12208) por el Grupo
+// de Trabajo sobre Límites Administrativos. Actualizada al 18/09/2025.
+// OJO: los municipios NO cubren todo el territorio nacional (hay zonas rurales
+// sin municipio); los huecos del mapa son reales, no datos faltantes.
+
+const MUNICIPIOS_WFS_URL =
+  "https://www.ambiente.gub.uy/geoserver/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=u19600217:c101&outputFormat=application/json&srsName=EPSG:4326";
+
+async function fetchMunicipiosNacionales() {
+  console.log("Descargando municipios del país (DINOT/MVOT vía WFS de Ambiente)...");
+  const { access, readFile } = await import("node:fs/promises");
+  const { municipalTerritories } = await import("../../src/data/territories.ts");
+
+  const cacheDir = path.join(ROOT, "scripts", "ingest", ".cache");
+  await mkdir(cacheDir, { recursive: true });
+  const cachePath = path.join(cacheDir, "municipios-dinot-raw.json");
+  let raw;
+  if (await access(cachePath).then(() => true, () => false)) {
+    console.log("  Usando descarga en caché.");
+    raw = JSON.parse(await readFile(cachePath, "utf8"));
+  } else {
+    const res = await fetchWithRetry(MUNICIPIOS_WFS_URL);
+    const text = await res.text();
+    await writeFile(cachePath, text);
+    raw = JSON.parse(text);
+  }
+  console.log(`  ${raw.features.length} features recibidas`);
+  if (raw.features.length !== 136) {
+    throw new Error(`Se esperaban 136 municipios, llegaron ${raw.features.length}`);
+  }
+
+  // Match (depto, municipio) -> territoryId de src/data/territories.ts.
+  // Los nombres difieren solo en prefijos ("VILLA ...", "MUNICIPIO ..."):
+  // verificado 136/136 sin alias el 2026-08-27.
+  const byKey = new Map(
+    municipalTerritories.map((t) => [`${t.id.slice(0, 5)}|${normalize(t.name)}`, t])
+  );
+  const resolveId = (deptoName, muniName) => {
+    const dep = DEPARTMENT_IDS[normalize(deptoName)];
+    if (!dep) return null;
+    const name = normalize(muniName).replace(/\s+/g, " ");
+    for (const candidate of [
+      name,
+      `villa ${name}`,
+      name.replace(/^villa /, ""),
+      `municipio ${name}`,
+    ]) {
+      const hit = byKey.get(`${dep}|${candidate}`);
+      if (hit) return hit;
+    }
+    return null;
+  };
+
+  const simplified = simplify(raw, 0.025, 4);
+  const matched = new Set();
+  const unmatched = [];
+  for (const feat of simplified.features) {
+    const t = resolveId(feat.properties.depto, feat.properties.municipio);
+    if (!t) {
+      unmatched.push(`${feat.properties.depto} :: ${feat.properties.municipio}`);
+      continue;
+    }
+    matched.add(t.id);
+    feat.properties = { territoryId: t.id, name: t.name };
+  }
+  if (unmatched.length > 0) {
+    throw new Error(`Municipios sin mapear: ${unmatched.join(", ")}`);
+  }
+  const missing = municipalTerritories.filter((t) => !matched.has(t.id));
+  if (missing.length > 0) {
+    throw new Error(`Territorios sin geometría: ${missing.map((t) => t.id).join(", ")}`);
+  }
+
+  const out = path.join(OUT_DIR, "municipios.json");
+  const json = JSON.stringify(simplified);
+  await writeFile(out, json);
+  console.log(`  -> ${out} (${(json.length / 1024).toFixed(0)} KB)`);
+}
+
 await mkdir(OUT_DIR, { recursive: true });
 let failures = 0;
 try {
@@ -319,5 +405,11 @@ try {
 } catch (err) {
   failures++;
   console.error(`ERROR municipios: ${err.message}`);
+}
+try {
+  await fetchMunicipiosNacionales();
+} catch (err) {
+  failures++;
+  console.error(`ERROR municipios nacionales: ${err.message}`);
 }
 process.exit(failures > 0 ? 1 : 0);

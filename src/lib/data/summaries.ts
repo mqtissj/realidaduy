@@ -1,6 +1,6 @@
 // Resúmenes serializables para componentes cliente (mapa, comparador).
 
-import { departments, montevideoMunicipalities } from "@/data/territories";
+import { departments, montevideoMunicipalities, municipalTerritories } from "@/data/territories";
 import { getGovernment, getParty } from "@/data/elections";
 import { getLatest, indicatorsForLevel } from "@/lib/data";
 import { getSource } from "@/data/sources";
@@ -105,4 +105,9 @@ export function departmentSummaries(): TerritorySummary[] {
 
 export function municipioSummaries(): TerritorySummary[] {
   return montevideoMunicipalities.map((m) => summarize(m, "municipio"));
+}
+
+/** Los 136 municipios del país (incluye los 8 de Montevideo). */
+export function allMunicipioSummaries(): TerritorySummary[] {
+  return municipalTerritories.map((m) => summarize(m, "municipio"));
 }

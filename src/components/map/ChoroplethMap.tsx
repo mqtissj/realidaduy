@@ -13,6 +13,11 @@ export interface MapEntry {
 
 type Props = {
   geoUrl: string;
+  /**
+   * Capa de contexto no interactiva que se dibuja debajo (p. ej. los límites
+   * departamentales bajo el mapa de municipios, que no cubren todo el país).
+   */
+  backdropUrl?: string;
   entries: Record<string, MapEntry>;
   selectedId?: string | null;
   onSelect?: (id: string | null) => void;
@@ -25,6 +30,7 @@ const WIDTH = 720;
 
 export default function ChoroplethMap({
   geoUrl,
+  backdropUrl,
   entries,
   selectedId = null,
   onSelect,
@@ -32,19 +38,23 @@ export default function ChoroplethMap({
   title,
 }: Props) {
   const [fc, setFc] = useState<FeatureCollection | null>(null);
+  const [backdropFc, setBackdropFc] = useState<FeatureCollection | null>(null);
   const [error, setError] = useState(false);
   const [tooltip, setTooltip] = useState<{ x: number; y: number; id: string } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let cancelled = false;
-    fetch(geoUrl)
-      .then((r) => {
+    const load = (url: string) =>
+      fetch(url).then((r) => {
         if (!r.ok) throw new Error(String(r.status));
-        return r.json();
-      })
-      .then((data: FeatureCollection) => {
-        if (!cancelled) setFc(data);
+        return r.json() as Promise<FeatureCollection>;
+      });
+    Promise.all([load(geoUrl), backdropUrl ? load(backdropUrl) : Promise.resolve(null)])
+      .then(([data, backdrop]) => {
+        if (cancelled) return;
+        setFc(data);
+        setBackdropFc(backdrop);
       })
       .catch(() => {
         if (!cancelled) setError(true);
@@ -52,13 +62,17 @@ export default function ChoroplethMap({
     return () => {
       cancelled = true;
     };
-  }, [geoUrl]);
+  }, [geoUrl, backdropUrl]);
 
   const layout = useMemo(() => {
     if (!fc) return null;
-    const projection = geoMercator().fitWidth(WIDTH - 16, fc);
+    if (backdropUrl && !backdropFc) return null;
+    // La proyección se ajusta a la capa de mayor extensión (el fondo cubre
+    // todo el país; los municipios, no).
+    const extentFc = backdropFc ?? fc;
+    const projection = geoMercator().fitWidth(WIDTH - 16, extentFc);
     const path = geoPath(projection);
-    const bounds = path.bounds(fc);
+    const bounds = path.bounds(extentFc);
     const height = Math.ceil(bounds[1][1]) + 8;
     const features = fc.features
       .filter((f): f is Feature<Geometry> & { properties: { territoryId: string; name: string } } =>
@@ -70,8 +84,9 @@ export default function ChoroplethMap({
         d: path(f) ?? "",
         centroid: path.centroid(f),
       }));
-    return { height, features };
-  }, [fc]);
+    const backdropPaths = (backdropFc?.features ?? []).map((f) => path(f) ?? "");
+    return { height, features, backdropPaths };
+  }, [fc, backdropFc, backdropUrl]);
 
   if (error) {
     return <StateView kind="error" detail="No se pudo cargar el mapa." />;
@@ -104,6 +119,18 @@ export default function ChoroplethMap({
         aria-label={title}
         className="h-auto w-full"
       >
+        {layout.backdropPaths.map((d, i) => (
+          <path
+            key={`bg-${i}`}
+            d={d}
+            fill="var(--color-surface)"
+            stroke="var(--color-line)"
+            strokeWidth={1}
+            strokeLinejoin="round"
+            aria-hidden
+            className="pointer-events-none"
+          />
+        ))}
         {ordered.map((f) => {
           const entry = entries[f.id];
           const selected = f.id === selectedId;

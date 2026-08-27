@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import MapExplorer from "@/components/map/MapExplorer";
 import { departmentSummaries } from "@/lib/data/summaries";
 
@@ -17,6 +18,22 @@ export default function MapaPage() {
         Elegí qué mostrar con los botones de arriba del mapa y tocá un departamento para ver
         su resumen completo.
       </p>
+
+      <nav aria-label="Nivel territorial" className="mt-4 inline-flex rounded-xl border border-line bg-surface p-1 shadow-card">
+        <span
+          aria-current="page"
+          className="rounded-lg bg-primary px-3 py-1.5 text-sm font-semibold text-white"
+        >
+          Departamentos
+        </span>
+        <Link
+          href="/mapa/municipios"
+          className="pressable rounded-lg px-3 py-1.5 text-sm font-semibold text-ink-soft hover:text-primary"
+        >
+          Municipios
+        </Link>
+      </nav>
+
       <div className="mt-6">
         <MapExplorer
           territories={territories}

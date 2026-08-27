@@ -33,8 +33,8 @@ export default function Footer() {
             <li><Link className="text-ink-soft hover:text-primary" href="/privacidad">Política de privacidad</Link></li>
           </ul>
           <p className="mt-4 text-xs text-ink-faint">
-            Límites territoriales: IDE/Servicio Geográfico Militar e INE (cartografía censal
-            2023), publicados bajo la Licencia de Datos Abiertos Uruguay.
+            Límites territoriales: IDE/Servicio Geográfico Militar, DINOT/MVOT (municipios)
+            e INE (cartografía censal 2023), publicados como datos abiertos.
           </p>
         </nav>
       </div>

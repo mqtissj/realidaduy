@@ -22,16 +22,21 @@ function legendFormat(unit: string, decimals: number) {
 export default function MapExplorer({
   territories,
   geoUrl,
+  backdropUrl,
   profileBase,
   mapTitle,
   defaultMode = "poblacion",
+  showCodes = true,
 }: {
   territories: TerritorySummary[];
   geoUrl: string;
+  /** Capa de contexto no interactiva bajo el mapa (ver ChoroplethMap). */
+  backdropUrl?: string;
   /** Base del enlace "Ver perfil completo" (null = sin perfil individual). */
   profileBase: string | null;
   mapTitle: string;
   defaultMode?: string;
+  showCodes?: boolean;
 }) {
   // Modos disponibles: cada indicador con datos en ≥1 territorio + partido de gobierno.
   const metricModes = useMemo(() => {
@@ -159,10 +164,12 @@ export default function MapExplorer({
           <div className="mt-2">
             <ChoroplethMap
               geoUrl={geoUrl}
+              backdropUrl={backdropUrl}
               entries={entries}
               selectedId={selectedId}
               onSelect={setSelectedId}
               title={mapTitle}
+              showCodes={showCodes}
             />
           </div>
 
