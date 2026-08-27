@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
 import ChoroplethMap, { type MapEntry } from "@/components/map/ChoroplethMap";
 import { CategoricalLegend, SequentialLegend } from "@/components/map/MapLegend";
+import ShareButton from "@/components/share/ShareButton";
 import { PartyBadge } from "@/components/ui/Badge";
 import { quantileScale } from "@/lib/scale";
 import { formatCompact, formatNumber } from "@/lib/format";
@@ -134,26 +135,48 @@ export default function MapExplorer({
           ))}
         </div>
 
-        <div className="mt-4">
-          <ChoroplethMap
-            geoUrl={geoUrl}
-            entries={entries}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
-            title={mapTitle}
-          />
-        </div>
-
-        <div className="mt-4">
-          {mode === "gobierno" ? (
-            <CategoricalLegend items={partiesInMap} title="Partido de gobierno (2025)" />
-          ) : activeMetric && scale ? (
-            <SequentialLegend
-              breaks={scale.breaks}
-              format={legendFormat(activeMetric.unit, activeMetric.decimals)}
-              title={`${activeMetric.name} · ${activeMetric.periodLabel}`}
+        <div data-share-card className="mt-3">
+          <div data-no-export className="flex justify-end">
+            <ShareButton
+              filename={`mapa-${mode}`}
+              title={
+                activeMetric
+                  ? `${activeMetric.name} (${activeMetric.periodLabel})`
+                  : "Partido de gobierno (2025)"
+              }
             />
-          ) : null}
+          </div>
+          <p hidden data-export-only className="font-display text-xl font-bold text-ink">
+            {activeMetric
+              ? `${activeMetric.name} · ${activeMetric.periodLabel}`
+              : "Partido de gobierno (2025)"}
+          </p>
+          <p hidden data-export-only className="mt-0.5 text-sm text-ink-soft">
+            {activeMetric
+              ? `Fuente: ${activeMetric.sourceShort}`
+              : "Fuente: Corte Electoral"}
+          </p>
+          <div className="mt-2">
+            <ChoroplethMap
+              geoUrl={geoUrl}
+              entries={entries}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              title={mapTitle}
+            />
+          </div>
+
+          <div className="mt-4">
+            {mode === "gobierno" ? (
+              <CategoricalLegend items={partiesInMap} title="Partido de gobierno (2025)" />
+            ) : activeMetric && scale ? (
+              <SequentialLegend
+                breaks={scale.breaks}
+                format={legendFormat(activeMetric.unit, activeMetric.decimals)}
+                title={`${activeMetric.name} · ${activeMetric.periodLabel}`}
+              />
+            ) : null}
+          </div>
         </div>
         <p className="mt-3 text-xs text-ink-faint">
           Navegable con teclado: usá Tab para recorrer los territorios y Enter para

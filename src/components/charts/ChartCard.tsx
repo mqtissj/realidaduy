@@ -1,8 +1,11 @@
 import type { ReactNode } from "react";
+import ShareButton from "@/components/share/ShareButton";
+import { toSlug } from "@/lib/format";
 
 /**
- * Marco estándar de todo gráfico: título-pregunta, fuente, período y
- * "Ver datos" (tabla accesible). Un gráfico nunca se publica suelto.
+ * Marco estándar de todo gráfico: título-pregunta, fuente, período,
+ * "Ver datos" (tabla accesible) y exportación como imagen. Un gráfico
+ * nunca se publica suelto.
  */
 export default function ChartCard({
   question,
@@ -10,6 +13,7 @@ export default function ChartCard({
   sourceLine,
   note,
   table,
+  exportName,
   children,
 }: {
   question: string;
@@ -17,16 +21,24 @@ export default function ChartCard({
   sourceLine: string;
   note?: string;
   table: { caption: string; head: string[]; rows: (string | number)[][] };
+  /** Nombre de archivo para la imagen exportada (por defecto, la pregunta). */
+  exportName?: string;
   children: ReactNode;
 }) {
   return (
-    <figure className="rounded-2xl border border-line bg-surface p-4 shadow-card md:p-5">
-      <figcaption>
-        <h3 className="font-display text-lg font-bold text-ink md:text-xl">{question}</h3>
-        {subtitle ? <p className="mt-0.5 text-sm text-ink-soft">{subtitle}</p> : null}
-      </figcaption>
+    <figure
+      data-share-card
+      className="rounded-2xl border border-line bg-surface p-4 shadow-card md:p-5"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <figcaption className="min-w-0">
+          <h3 className="font-display text-lg font-bold text-ink md:text-xl">{question}</h3>
+          {subtitle ? <p className="mt-0.5 text-sm text-ink-soft">{subtitle}</p> : null}
+        </figcaption>
+        <ShareButton filename={exportName ?? toSlug(question)} title={question} />
+      </div>
       <div className="mt-4">{children}</div>
-      <details className="fold mt-3">
+      <details data-no-export className="fold mt-3">
         <summary className="pressable inline-block rounded-lg text-sm font-semibold text-primary">
           Ver datos
         </summary>

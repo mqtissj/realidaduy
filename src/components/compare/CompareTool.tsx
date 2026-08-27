@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import ShareButton from "@/components/share/ShareButton";
 import { formatNumber } from "@/lib/format";
 import type { MetricSummary, TerritorySummary } from "@/lib/data/summaries";
 
@@ -118,13 +119,19 @@ export default function CompareTool({
             Elegí al menos dos territorios para comparar.
           </div>
         ) : (
-          <figure className="rounded-2xl border border-line bg-surface p-4 shadow-card md:p-5">
-            <figcaption>
-              <h2 className="font-display text-lg font-bold md:text-xl">{meta.name}</h2>
-              <p className="mt-0.5 text-sm text-ink-soft">
-                {meta.periodLabel} · {meta.sourceShort}
-              </p>
-            </figcaption>
+          <figure data-share-card className="rounded-2xl border border-line bg-surface p-4 shadow-card md:p-5">
+            <div className="flex items-start justify-between gap-3">
+              <figcaption className="min-w-0">
+                <h2 className="font-display text-lg font-bold md:text-xl">{meta.name}</h2>
+                <p className="mt-0.5 text-sm text-ink-soft">
+                  {meta.periodLabel} · {meta.sourceShort}
+                </p>
+              </figcaption>
+              <ShareButton
+                filename={`comparacion-${meta.slug}`}
+                title={`Comparación: ${meta.name}`}
+              />
+            </div>
             <div className="mt-4 space-y-2">
               {rows.map(({ territory, metric }) => (
                 <div

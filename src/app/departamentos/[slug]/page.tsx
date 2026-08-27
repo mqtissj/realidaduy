@@ -9,6 +9,7 @@ import { getLatest, hasData, indicatorsForLevel } from "@/lib/data";
 import { formatNumber } from "@/lib/format";
 import { PartyBadge } from "@/components/ui/Badge";
 import MetricCard from "@/components/charts/MetricCard";
+import ShareButton from "@/components/share/ShareButton";
 import SourceNote from "@/components/ui/SourceNote";
 import StateView from "@/components/ui/StateView";
 
@@ -138,8 +139,14 @@ export default async function DepartmentProfile({
           Política
         </h2>
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
-          <div className="rounded-2xl border border-line bg-surface p-4 shadow-card">
-            <h3 className="font-display text-lg font-bold">Elección departamental 2025</h3>
+          <div data-share-card className="rounded-2xl border border-line bg-surface p-4 shadow-card">
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="font-display text-lg font-bold">Elección departamental 2025</h3>
+              <ShareButton
+                filename={`departamental-2025-${dept.slug}`}
+                title={`Elección departamental 2025 en ${dept.name}`}
+              />
+            </div>
             {gov && party ? (
               <p className="mt-2 text-sm text-ink-soft">
                 Intendente electo: <strong className="text-ink">{gov.electedName}</strong> (
@@ -161,10 +168,16 @@ export default async function DepartmentProfile({
               desglose oficial por circuito (11 de mayo de 2025).
             </p>
           </div>
-          <div className="rounded-2xl border border-line bg-surface p-4 shadow-card">
-            <h3 className="font-display text-lg font-bold">
-              Primera vuelta 2024 en {dept.name}
-            </h3>
+          <div data-share-card className="rounded-2xl border border-line bg-surface p-4 shadow-card">
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="font-display text-lg font-bold">
+                Primera vuelta 2024 en {dept.name}
+              </h3>
+              <ShareButton
+                filename={`primera-vuelta-2024-${dept.slug}`}
+                title={`Primera vuelta 2024 en ${dept.name}`}
+              />
+            </div>
             {bars2024.length > 0 ? (
               <div className="mt-3">
                 <PartyBars compact rows={bars2024} />
@@ -180,6 +193,7 @@ export default async function DepartmentProfile({
             </p>
             <Link
               href="/elecciones"
+              data-no-export
               className="mt-2 inline-block text-sm font-semibold text-primary hover:underline"
             >
               Ver resultados nacionales →

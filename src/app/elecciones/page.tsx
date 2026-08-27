@@ -13,6 +13,7 @@ import { PartyBadge } from "@/components/ui/Badge";
 import { CategoricalLegend } from "@/components/map/MapLegend";
 import ChoroplethMap from "@/components/map/ChoroplethMap";
 import PartyBars from "@/components/charts/PartyBars";
+import ShareButton from "@/components/share/ShareButton";
 
 export const metadata: Metadata = {
   title: "¿Cómo votó Uruguay?",
@@ -118,17 +119,23 @@ export default function EleccionesPage() {
 
       {/* Nacional 2024 */}
       <section aria-labelledby="nacional-2024" className="mt-8">
-        <figure className="rounded-2xl border border-line bg-surface p-4 shadow-card md:p-5">
-          <figcaption>
-            <h2 id="nacional-2024" className="font-display text-2xl font-bold">
-              Elección nacional 2024 — primera vuelta
-            </h2>
-            <p className="mt-0.5 text-sm text-ink-soft">
-              27 de octubre de 2024 · Porcentajes sobre el total de votos emitidos ·
-              Participación: {formatNumber(turnoutFor("nacional-2024") ?? 0, 2)}% de los
-              habilitados
-            </p>
-          </figcaption>
+        <figure data-share-card className="rounded-2xl border border-line bg-surface p-4 shadow-card md:p-5">
+          <div className="flex items-start justify-between gap-3">
+            <figcaption className="min-w-0">
+              <h2 id="nacional-2024" className="font-display text-2xl font-bold">
+                Elección nacional 2024 — primera vuelta
+              </h2>
+              <p className="mt-0.5 text-sm text-ink-soft">
+                27 de octubre de 2024 · Porcentajes sobre el total de votos emitidos ·
+                Participación: {formatNumber(turnoutFor("nacional-2024") ?? 0, 2)}% de los
+                habilitados
+              </p>
+            </figcaption>
+            <ShareButton
+              filename="eleccion-nacional-2024"
+              title="Elección nacional 2024 — primera vuelta"
+            />
+          </div>
           <div className="mt-4">
             <PartyBars
               rows={[
@@ -137,7 +144,7 @@ export default function EleccionesPage() {
               ]}
             />
           </div>
-          <details className="fold mt-3">
+          <details data-no-export className="fold mt-3">
             <summary className="pressable inline-block rounded-lg text-sm font-semibold text-primary">
               Ver datos
             </summary>
@@ -182,16 +189,22 @@ export default function EleccionesPage() {
 
       {/* Nacional 2024 por departamento */}
       <section aria-labelledby="nacional-2024-dept" className="mt-6">
-        <figure className="rounded-2xl border border-line bg-surface p-4 shadow-card md:p-5">
-          <figcaption>
-            <h2 id="nacional-2024-dept" className="font-display text-2xl font-bold">
-              ¿Qué partido fue el más votado en cada departamento?
-            </h2>
-            <p className="mt-0.5 text-sm text-ink-soft">
-              Primera vuelta 2024 · Calculado desde el desglose oficial por circuito de la
-              Corte Electoral · % sobre votos emitidos en cada departamento
-            </p>
-          </figcaption>
+        <figure data-share-card className="rounded-2xl border border-line bg-surface p-4 shadow-card md:p-5">
+          <div className="flex items-start justify-between gap-3">
+            <figcaption className="min-w-0">
+              <h2 id="nacional-2024-dept" className="font-display text-2xl font-bold">
+                ¿Qué partido fue el más votado en cada departamento?
+              </h2>
+              <p className="mt-0.5 text-sm text-ink-soft">
+                Primera vuelta 2024 · Calculado desde el desglose oficial por circuito de la
+                Corte Electoral · % sobre votos emitidos en cada departamento
+              </p>
+            </figcaption>
+            <ShareButton
+              filename="mapa-primera-vuelta-2024"
+              title="Partido más votado por departamento, primera vuelta 2024"
+            />
+          </div>
           <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_360px]">
             <div>
               <ChoroplethMap
@@ -239,14 +252,17 @@ export default function EleccionesPage() {
 
       {/* Balotaje */}
       <section aria-labelledby="balotaje" className="mt-6">
-        <figure className="rounded-2xl border border-line bg-surface p-4 shadow-card md:p-5">
-          <figcaption>
-            <h2 id="balotaje" className="font-display text-2xl font-bold">Balotaje 2024</h2>
-            <p className="mt-0.5 text-sm text-ink-soft">
-              24 de noviembre de 2024 · Porcentajes sobre votos válidos (escrutinio
-              definitivo) · Participación: {formatNumber(turnoutFor("balotaje-2024") ?? 0, 2)}%
-            </p>
-          </figcaption>
+        <figure data-share-card className="rounded-2xl border border-line bg-surface p-4 shadow-card md:p-5">
+          <div className="flex items-start justify-between gap-3">
+            <figcaption className="min-w-0">
+              <h2 id="balotaje" className="font-display text-2xl font-bold">Balotaje 2024</h2>
+              <p className="mt-0.5 text-sm text-ink-soft">
+                24 de noviembre de 2024 · Porcentajes sobre votos válidos (escrutinio
+                definitivo) · Participación: {formatNumber(turnoutFor("balotaje-2024") ?? 0, 2)}%
+              </p>
+            </figcaption>
+            <ShareButton filename="balotaje-2024" title="Balotaje 2024" />
+          </div>
           <div className="mt-4">
             <PartyBars
               rows={balotaje.map((r) => {
@@ -277,16 +293,22 @@ export default function EleccionesPage() {
 
       {/* Departamentales 2025 */}
       <section aria-labelledby="departamentales-2025" className="mt-6">
-        <figure className="rounded-2xl border border-line bg-surface p-4 shadow-card md:p-5">
-          <figcaption>
-            <h2 id="departamentales-2025" className="font-display text-2xl font-bold">
-              Departamentales 2025: ¿qué partido gobierna cada departamento?
-            </h2>
-            <p className="mt-0.5 text-sm text-ink-soft">
-              11 de mayo de 2025 · Participación: {formatNumber(turnoutFor("departamental-2025") ?? 0, 2)}% ·
-              Balance: PN 13 · FA 4 · PC 1 · CR 1 · % sobre votos válidos al lema
-            </p>
-          </figcaption>
+        <figure data-share-card className="rounded-2xl border border-line bg-surface p-4 shadow-card md:p-5">
+          <div className="flex items-start justify-between gap-3">
+            <figcaption className="min-w-0">
+              <h2 id="departamentales-2025" className="font-display text-2xl font-bold">
+                Departamentales 2025: ¿qué partido gobierna cada departamento?
+              </h2>
+              <p className="mt-0.5 text-sm text-ink-soft">
+                11 de mayo de 2025 · Participación: {formatNumber(turnoutFor("departamental-2025") ?? 0, 2)}% ·
+                Balance: PN 13 · FA 4 · PC 1 · CR 1 · % sobre votos válidos al lema
+              </p>
+            </figcaption>
+            <ShareButton
+              filename="departamentales-2025"
+              title="Departamentales 2025: partido de gobierno por departamento"
+            />
+          </div>
           <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_360px]">
             <div>
               <ChoroplethMap
@@ -336,15 +358,21 @@ export default function EleccionesPage() {
 
       {/* Municipales 2025 MVD */}
       <section aria-labelledby="municipales-2025" className="mt-6">
-        <figure className="rounded-2xl border border-line bg-surface p-4 shadow-card md:p-5">
-          <figcaption>
-            <h2 id="municipales-2025" className="font-display text-2xl font-bold">
-              Municipales 2025: los 8 municipios de Montevideo
-            </h2>
-            <p className="mt-0.5 text-sm text-ink-soft">
-              11 de mayo de 2025 · Balance: FA 6 · CR 2 · % sobre votos válidos al lema
-            </p>
-          </figcaption>
+        <figure data-share-card className="rounded-2xl border border-line bg-surface p-4 shadow-card md:p-5">
+          <div className="flex items-start justify-between gap-3">
+            <figcaption className="min-w-0">
+              <h2 id="municipales-2025" className="font-display text-2xl font-bold">
+                Municipales 2025: los 8 municipios de Montevideo
+              </h2>
+              <p className="mt-0.5 text-sm text-ink-soft">
+                11 de mayo de 2025 · Balance: FA 6 · CR 2 · % sobre votos válidos al lema
+              </p>
+            </figcaption>
+            <ShareButton
+              filename="municipales-montevideo-2025"
+              title="Municipales 2025: los 8 municipios de Montevideo"
+            />
+          </div>
           <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_360px]">
             <div>
               <ChoroplethMap
@@ -405,7 +433,7 @@ export default function EleccionesPage() {
           {historicElections.map((e) => {
             const winner = e.firstRound[0];
             return (
-              <details key={e.year} className="fold rounded-2xl border border-line bg-surface px-4 py-3 shadow-card">
+              <details key={e.year} data-share-card className="fold rounded-2xl border border-line bg-surface px-4 py-3 shadow-card">
                 <summary className="flex flex-wrap items-center gap-x-3 gap-y-1">
                   <span className="font-display text-xl font-bold">{e.year}</span>
                   <PartyBadge color={partyColor(e.president.partyId)} name={e.president.label} />
@@ -417,6 +445,12 @@ export default function EleccionesPage() {
                   </span>
                 </summary>
                 <div className="mt-4 space-y-4">
+                  <div className="-mb-2 flex justify-end">
+                    <ShareButton
+                      filename={`eleccion-nacional-${e.year}`}
+                      title={`Elección nacional ${e.year}`}
+                    />
+                  </div>
                   <div>
                     <h3 className="text-sm font-bold uppercase tracking-wide text-ink-faint">
                       Primera vuelta · {e.date.split("-").reverse().join("/")} · participación{" "}
