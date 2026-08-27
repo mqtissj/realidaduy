@@ -216,6 +216,26 @@ const CENSAL = [
     range: [40, 98],
     note: "Población de 12 a 17 años que asiste a educación media, sobre el total de esa edad. Censo 2011, elaboración Observatorio Territorio Uruguay (OPP).",
   },
+  {
+    datosId: 2833,
+    indicatorId: "nbi-confort",
+    option: "Al menos una NBI en artefactos de Confort",
+    range: [1, 60],
+    note: "Hogares con al menos una Necesidad Básica Insatisfecha en artefactos de confort (calefacción, refrigeración de alimentos o agua caliente para el baño). Censo 2011, elaboración Observatorio Territorio Uruguay (OPP).",
+  },
+  {
+    datosId: 2875,
+    indicatorId: "educacion-terciaria",
+    // Suma de las categorías terciarias del máximo nivel alcanzado (25+).
+    options: [
+      "Magisterio o Profesorado",
+      "Terciario no universitario",
+      "Universidad o similar",
+      "Postgrado (Diploma/Maestría/Doctorado)",
+    ],
+    range: [1, 50],
+    note: "Población de 25 años y más cuyo máximo nivel alcanzado es terciario: suma de Magisterio o Profesorado, Terciario no universitario, Universidad o similar y Postgrado. Censo 2011, elaboración Observatorio Territorio Uruguay (OPP).",
+  },
 ];
 
 function pickOption(tableHtml, option) {
@@ -225,6 +245,18 @@ function pickOption(tableHtml, option) {
     if (c[1].trim() === option) return Number(String(c[2]).replace(",", "."));
   }
   return undefined;
+}
+
+/** Valor de un indicador: una opción, o la suma de varias (todas presentes). */
+function pickValue(tableHtml, ind) {
+  if (!ind.options) return pickOption(tableHtml, ind.option);
+  let sum = 0;
+  for (const opt of ind.options) {
+    const v = pickOption(tableHtml, opt);
+    if (v === undefined) return undefined;
+    sum += v;
+  }
+  return sum;
 }
 
 const censalLines = [];
@@ -258,7 +290,7 @@ for (const ind of CENSAL) {
     let pendingRow = null;
     for (const t of dHtml.matchAll(/<table[^>]*>[\s\S]*?<\/table>/g)) {
       const row = (t[0].match(/data-row='([^']+)'/) || [])[1]?.trim() ?? null;
-      const val = pickOption(t[0], ind.option);
+      const val = pickValue(t[0], ind);
       if (row !== null && val === undefined) {
         pendingRow = row;
         continue;
@@ -314,7 +346,7 @@ for (const ind of CENSAL) {
     }
     html = String(html);
     for (const t of html.matchAll(/<table[^>]*data-row='([^']+)'[\s\S]*?<\/table>/g)) {
-      const val = pickOption(t[0], ind.option);
+      const val = pickValue(t[0], ind);
       if (val === undefined) continue;
       const nombre = t[1].trim();
       const muni = chunk.find((m) => normalize(m.nombre) === normalize(nombre));

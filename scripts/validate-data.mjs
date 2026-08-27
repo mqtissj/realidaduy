@@ -112,8 +112,10 @@ const deptWide = [
 ];
 for (const [indicatorId, period] of [
   ["nbi-vivienda", "2011"],
+  ["nbi-confort", "2011"],
   ["analfabetismo", "2011"],
   ["asistencia-media", "2011"],
+  ["educacion-terciaria", "2011"],
   ["tasa-desempleo", "2024"],
   ["informalidad", "2025"],
   ["ingreso-medio-hogar", "2023"],
