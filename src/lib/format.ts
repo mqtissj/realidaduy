@@ -36,6 +36,14 @@ export function formatCompact(value: number): string {
   }).format(value);
 }
 
+/** Formato compacto para las leyendas del mapa, según la unidad del indicador. */
+export function legendFormat(unit: string, decimals: number): (v: number) => string {
+  if (unit === "%") return (v) => `${formatNumber(v, Math.min(decimals, 1))}%`;
+  if (unit === "pesos") return (v) => `$ ${formatCompact(v)}`;
+  if (unit === "USD") return (v) => `US$ ${formatCompact(v)}`;
+  return (v) => formatCompact(v);
+}
+
 /** "¿Cómo evolucionó el desempleo?" → "como-evoluciono-el-desempleo" */
 export function toSlug(text: string): string {
   return text

@@ -14,6 +14,7 @@ import { CategoricalLegend } from "@/components/map/MapLegend";
 import ChoroplethMap from "@/components/map/ChoroplethMap";
 import PartyBars from "@/components/charts/PartyBars";
 import ShareButton from "@/components/share/ShareButton";
+import EmbedButton from "@/components/embed/EmbedButton";
 
 export const metadata: Metadata = {
   title: "¿Cómo votó Uruguay?",
@@ -304,10 +305,16 @@ export default function EleccionesPage() {
                 Balance: PN 13 · FA 4 · PC 1 · CR 1 · % sobre votos válidos al lema
               </p>
             </figcaption>
-            <ShareButton
-              filename="departamentales-2025"
-              title="Departamentales 2025: partido de gobierno por departamento"
-            />
+            <div data-no-export className="flex shrink-0 items-center gap-2">
+              <EmbedButton
+                title="Partido de gobierno departamental"
+                options={[{ label: "Mapa", path: "/embed/mapa/gobierno", height: 660 }]}
+              />
+              <ShareButton
+                filename="departamentales-2025"
+                title="Departamentales 2025: partido de gobierno por departamento"
+              />
+            </div>
           </div>
           <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_360px]">
             <div>

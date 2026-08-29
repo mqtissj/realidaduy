@@ -31,6 +31,16 @@ const allObservations: Observation[] = [
   ...worldBankSeries,
 ];
 
+/** Todas las observaciones de la plataforma (usado por las descargas CSV). */
+export function getAllObservations(): Observation[] {
+  return allObservations;
+}
+
+/** Todas las observaciones de un indicador, en todos los territorios. */
+export function getIndicatorObservations(indicatorId: string): Observation[] {
+  return allObservations.filter((o) => o.indicatorId === indicatorId);
+}
+
 /** Observaciones de un indicador en un territorio, ordenadas por período. */
 export function getObservations(indicatorId: string, territoryId: string): Observation[] {
   return allObservations

@@ -12,6 +12,7 @@ const LINKS = [
   { href: "/montevideo/municipios", title: "Municipios de Montevideo", body: "Los 8 de la capital, con mapa y población." },
   { href: "/elecciones", title: "Elecciones", body: "¿Cómo votó Uruguay? 2024 y 2025." },
   { href: "/fuentes", title: "Fuentes y metodología", body: "De dónde sale cada dato." },
+  { href: "/datos", title: "Descargar datos", body: "Todo en CSV abierto, con fuente y período." },
 ];
 
 export default function MasPage() {

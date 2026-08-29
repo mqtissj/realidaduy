@@ -30,6 +30,7 @@ export default function ShareButton({
   const [phase, setPhase] = useState<Phase>("idle");
   const [image, setImage] = useState<CapturedImage | null>(null);
   const [copied, setCopied] = useState(false);
+  const [tvPhase, setTvPhase] = useState<"idle" | "working" | "error">("idle");
   const wrapRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -91,6 +92,26 @@ export default function ShareButton({
       setPhase("ready");
     } catch {
       if (runRef.current === run) setPhase("error");
+    }
+  };
+
+  // Placa 16:9 para informativos: se genera aparte porque es otra composición
+  // (la tarjeta centrada sobre fondo de marca a 1920×1080).
+  const onTvPlate = async () => {
+    if (tvPhase === "working") return;
+    const card = wrapRef.current?.closest<HTMLElement>("[data-share-card]");
+    if (!card) {
+      setTvPhase("error");
+      return;
+    }
+    setTvPhase("working");
+    try {
+      const plate = await captureCard(card, { format: "tv" });
+      downloadImage(plate, `${filename}-1920x1080`);
+      setTvPhase("idle");
+    } catch {
+      setTvPhase("error");
+      setTimeout(() => setTvPhase("idle"), 2500);
     }
   };
 
@@ -159,6 +180,18 @@ export default function ShareButton({
               className={`${actionClass} bg-primary text-white hover:bg-primary-hover`}
             >
               Descargar PNG
+            </button>
+            <button
+              type="button"
+              onClick={onTvPlate}
+              disabled={tvPhase === "working"}
+              className={`${actionClass} border border-line text-ink-soft hover:border-celeste hover:text-primary disabled:opacity-60`}
+            >
+              {tvPhase === "working"
+                ? "Generando placa…"
+                : tvPhase === "error"
+                  ? "No se pudo"
+                  : "Placa TV 16:9 (1920×1080)"}
             </button>
             {canCopyImage() ? (
               <button

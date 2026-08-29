@@ -28,6 +28,7 @@ export default function Footer() {
           <p className="text-sm font-bold uppercase tracking-wide text-ink-faint">Transparencia</p>
           <ul className="mt-2 space-y-1 text-sm">
             <li><Link className="text-ink-soft hover:text-primary" href="/fuentes">Fuentes y metodología</Link></li>
+            <li><Link className="text-ink-soft hover:text-primary" href="/datos">Descargar datos (CSV)</Link></li>
             <li><Link className="text-ink-soft hover:text-primary" href="/indicadores">Diccionario de indicadores</Link></li>
             <li><Link className="text-ink-soft hover:text-primary" href="/terminos">Términos y condiciones</Link></li>
             <li><Link className="text-ink-soft hover:text-primary" href="/privacidad">Política de privacidad</Link></li>

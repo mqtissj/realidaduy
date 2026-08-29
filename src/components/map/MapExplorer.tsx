@@ -8,16 +8,8 @@ import { CategoricalLegend, SequentialLegend } from "@/components/map/MapLegend"
 import ShareButton from "@/components/share/ShareButton";
 import { PartyBadge } from "@/components/ui/Badge";
 import { quantileScale } from "@/lib/scale";
-import { formatCompact, formatNumber } from "@/lib/format";
+import { legendFormat } from "@/lib/format";
 import type { MetricSummary, TerritorySummary } from "@/lib/data/summaries";
-
-/** Formato compacto para leyendas según la unidad del indicador. */
-function legendFormat(unit: string, decimals: number) {
-  if (unit === "%") return (v: number) => `${formatNumber(v, Math.min(decimals, 1))}%`;
-  if (unit === "pesos") return (v: number) => `$ ${formatCompact(v)}`;
-  if (unit === "USD") return (v: number) => `US$ ${formatCompact(v)}`;
-  return (v: number) => formatCompact(v);
-}
 
 export default function MapExplorer({
   territories,

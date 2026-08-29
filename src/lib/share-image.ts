@@ -5,12 +5,14 @@
 // con la URL del sitio. La imagen siempre viaja con título y fuente porque
 // la tarjeta ya los contiene (un gráfico nunca se publica suelto).
 
+import { SITE_HOST } from "@/lib/site";
+
+export { SITE_HOST };
+
 export interface CapturedImage {
   dataUrl: string;
   blob: Blob;
 }
-
-export const SITE_HOST = "uruguaydata.vercel.app";
 
 /** Fondo efectivo del nodo: sube por los ancestros hasta un color opaco. */
 function effectiveBackground(node: HTMLElement): string {
@@ -61,11 +63,97 @@ function buildBrandFooter(): HTMLElement {
 let fontCssPromise: Promise<string> | null = null;
 
 /**
- * Captura una tarjeta como PNG a 2× de resolución.
+ * Formato de salida:
+ *  · "card" — la tarjeta tal cual, a 2× (para web, WhatsApp, documentos).
+ *  · "tv"   — placa 1920×1080 (16:9) con la tarjeta centrada sobre fondo de
+ *             marca, lista para entrar al aire o a una placa de informativo.
+ */
+export type ExportFormat = "card" | "tv";
+
+const TV = { width: 1920, height: 1080 };
+const BRAND_NAVY = "#1e3a5f";
+const BRAND_CELESTE = "#7fa3c4";
+const BRAND_CELESTE_SOFT = "#dde7f1";
+
+/** Familia tipográfica real detrás de una variable CSS (next/font la genera). */
+function fontStack(variable: string): string {
+  const value =
+    typeof document !== "undefined"
+      ? getComputedStyle(document.body).getPropertyValue(variable).trim()
+      : "";
+  return `${value ? `${value}, ` : ""}system-ui, sans-serif`;
+}
+
+/** Dibuja la tarjeta centrada sobre una placa 16:9 con la marca. */
+function composeTvPlate(img: HTMLImageElement, cardWidth: number, cardHeight: number, cardBg: string): HTMLCanvasElement {
+  const canvas = document.createElement("canvas");
+  canvas.width = TV.width;
+  canvas.height = TV.height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas no disponible");
+
+  ctx.fillStyle = BRAND_NAVY;
+  ctx.fillRect(0, 0, TV.width, TV.height);
+
+  const margin = 64;
+  const top = 128;
+  const bottom = 96;
+  const boxW = TV.width - margin * 2;
+  const boxH = TV.height - top - bottom;
+  const scale = Math.min(boxW / cardWidth, boxH / cardHeight);
+  const w = cardWidth * scale;
+  const h = cardHeight * scale;
+  const x = (TV.width - w) / 2;
+  const y = top + (boxH - h) / 2;
+
+  // Panel del color de fondo de la tarjeta, con esquinas redondeadas.
+  const pad = 28;
+  const radius = 24;
+  ctx.fillStyle = cardBg;
+  ctx.beginPath();
+  if (typeof ctx.roundRect === "function") {
+    ctx.roundRect(x - pad, y - pad, w + pad * 2, h + pad * 2, radius);
+  } else {
+    ctx.rect(x - pad, y - pad, w + pad * 2, h + pad * 2);
+  }
+  ctx.fill();
+
+  // El SVG se redibuja al tamaño final (no se escala un bitmap): queda nítido.
+  ctx.drawImage(img, x, y, w, h);
+
+  const display = fontStack("--font-bricolage");
+  const body = fontStack("--font-source-sans");
+
+  ctx.textBaseline = "alphabetic";
+  ctx.font = `800 46px ${display}`;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText("realidad", margin, 82);
+  const brandWidth = ctx.measureText("realidad").width;
+  ctx.fillStyle = BRAND_CELESTE;
+  ctx.fillText(".uy", margin + brandWidth, 82);
+
+  ctx.font = `400 26px ${body}`;
+  ctx.fillStyle = BRAND_CELESTE_SOFT;
+  ctx.fillText("Datos públicos con fuente, período y metodología a la vista", margin, TV.height - 44);
+  ctx.textAlign = "right";
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `700 26px ${body}`;
+  ctx.fillText(SITE_HOST, TV.width - margin, TV.height - 44);
+  ctx.textAlign = "left";
+
+  return canvas;
+}
+
+/**
+ * Captura una tarjeta como PNG: a 2× de resolución en formato "card", o como
+ * placa 1920×1080 en formato "tv".
  * El clon se monta fijo fuera del viewport para que las hojas de estilo le
  * apliquen igual que al original, sin tocar ni mover la página real.
  */
-export async function captureCard(card: HTMLElement): Promise<CapturedImage> {
+export async function captureCard(
+  card: HTMLElement,
+  { format = "card" }: { format?: ExportFormat } = {}
+): Promise<CapturedImage> {
   const { toSvg, getFontEmbedCSS } = await import("html-to-image");
 
   const clone = card.cloneNode(true) as HTMLElement;
@@ -75,7 +163,8 @@ export async function captureCard(card: HTMLElement): Promise<CapturedImage> {
   if (!clone.style.padding && getComputedStyle(card).padding === "0px") {
     clone.style.padding = "16px";
   }
-  clone.appendChild(buildBrandFooter());
+  // En la placa de TV la marca va en el fondo, no dentro de la tarjeta.
+  if (format === "card") clone.appendChild(buildBrandFooter());
 
   const holder = document.createElement("div");
   holder.setAttribute("aria-hidden", "true");
@@ -101,19 +190,26 @@ export async function captureCard(card: HTMLElement): Promise<CapturedImage> {
     const img = new Image();
     img.src = svgUrl;
     await img.decode();
-    const scale = 2;
-    const canvas = document.createElement("canvas");
-    canvas.width = width * scale;
-    canvas.height = height * scale;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("Canvas no disponible");
-    ctx.fillStyle = effectiveBackground(card);
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    // Safari a veces dibuja el primer intento sin las fuentes: repasar.
-    if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent)) {
-      await new Promise((r) => setTimeout(r, 150));
+    const background = effectiveBackground(card);
+
+    let canvas: HTMLCanvasElement;
+    if (format === "tv") {
+      canvas = composeTvPlate(img, width, height, background);
+    } else {
+      const scale = 2;
+      canvas = document.createElement("canvas");
+      canvas.width = width * scale;
+      canvas.height = height * scale;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Canvas no disponible");
+      ctx.fillStyle = background;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      // Safari a veces dibuja el primer intento sin las fuentes: repasar.
+      if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent)) {
+        await new Promise((r) => setTimeout(r, 150));
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      }
     }
     const dataUrl = canvas.toDataURL("image/png");
     return { dataUrl, blob: dataUrlToBlob(dataUrl) };

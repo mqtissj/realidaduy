@@ -5,6 +5,8 @@ import { activeIndicators, getIndicator } from "@/data/dictionary";
 import { getDepartmentRanking, getLatest, getSeries } from "@/lib/data";
 import { getSource } from "@/data/sources";
 import { formatNumber, formatValue } from "@/lib/format";
+import { downloadForIndicator } from "@/lib/downloads";
+import EmbedButton from "@/components/embed/EmbedButton";
 import { StatusBadge } from "@/components/ui/Badge";
 import Delta from "@/components/charts/Delta";
 import ChartCard from "@/components/charts/ChartCard";
@@ -46,6 +48,7 @@ export default async function IndicadorPage({
   const ranking = indicator.geographicLevel.includes("departamento")
     ? getDepartmentRanking(indicator.id)
     : [];
+  const csv = downloadForIndicator(indicator.slug);
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 md:px-6 md:py-10">
@@ -57,6 +60,43 @@ export default async function IndicadorPage({
       </nav>
       <h1 className="mt-2 font-display text-3xl font-bold md:text-4xl">{indicator.question}</h1>
       <p className="mt-1 text-ink-faint">{indicator.name}</p>
+
+      {/* Lo que un medio necesita: el dato crudo y el gráfico embebible. */}
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        {csv && csv.rows > 0 ? (
+          <a
+            href={`/datos/${csv.file}`}
+            download
+            className="pressable inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface px-2.5 py-1.5 text-xs font-semibold text-ink-soft transition-colors hover:border-celeste hover:text-primary"
+          >
+            <svg
+              aria-hidden
+              width="13"
+              height="13"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M8 1.8v8.4" />
+              <path d="M4.6 7.2 8 10.6l3.4-3.4" />
+              <path d="M2.2 13.2h11.6" />
+            </svg>
+            Descargar CSV · {formatNumber(csv.rows)} filas
+          </a>
+        ) : null}
+        {ranking.length >= 2 ? (
+          <EmbedButton
+            title={indicator.name}
+            options={[
+              { label: "Mapa", path: `/embed/mapa/${indicator.slug}`, height: 660 },
+              { label: "Ranking", path: `/embed/ranking/${indicator.slug}`, height: 860 },
+            ]}
+          />
+        ) : null}
+      </div>
 
       {/* Último dato */}
       <section aria-labelledby="ultimo-dato" className="mt-6">
