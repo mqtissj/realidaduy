@@ -18,12 +18,9 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-surface/95 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 md:px-6">
-        <Link href="/" className="flex items-baseline gap-2">
+        <Link href="/" className="flex items-baseline">
           <span className="font-display text-xl font-extrabold tracking-tight text-primary">
             realidad<span className="text-celeste-deep">.uy</span>
-          </span>
-          <span className="hidden text-xs font-semibold uppercase tracking-widest text-ink-faint sm:inline">
-            beta
           </span>
         </Link>
         <nav aria-label="Navegación principal" className="hidden md:block">
