@@ -1,6 +1,14 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, Source_Sans_3 } from "next/font/google";
-import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE, SITE_URL } from "@/lib/site";
+import {
+  SITE_AUTHOR,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_OG_IMAGE,
+  SITE_PUBLISHED,
+  SITE_TAGLINE,
+  SITE_URL,
+} from "@/lib/site";
 import "./globals.css";
 
 const bricolage = Bricolage_Grotesque({
@@ -36,19 +44,37 @@ export const metadata: Metadata = {
     "elecciones",
     "indicadores",
   ],
-  authors: [{ name: SITE_NAME }],
+  authors: [{ name: SITE_AUTHOR }],
+  creator: SITE_AUTHOR,
+  publisher: SITE_AUTHOR,
+  // La imagen se declara acá, y no por la convención de archivo
+  // opengraph-image, porque esa emite og:image:alt y og:image:type ANTES de
+  // og:image: fuera del orden que manda el spec de Open Graph, y los
+  // rastreadores estrictos (LinkedIn) descartan la imagen.
   openGraph: {
-    type: "website",
+    type: "article",
     locale: "es_UY",
     siteName: SITE_NAME,
     url: "/",
     title: `${SITE_NAME} — ${SITE_TAGLINE}`,
     description: SITE_DESCRIPTION,
+    publishedTime: SITE_PUBLISHED,
+    authors: [SITE_AUTHOR],
+    images: [
+      {
+        url: SITE_OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: `${SITE_NAME} — ${SITE_TAGLINE}`,
+        type: "image/png",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: `${SITE_NAME} — ${SITE_TAGLINE}`,
     description: SITE_DESCRIPTION,
+    images: [SITE_OG_IMAGE],
   },
   robots: {
     index: true,

@@ -19,6 +19,17 @@ export const SITE_NAME = "realidad.uy";
 
 export const SITE_TAGLINE = "Entendé Uruguay, territorio por territorio";
 
+export const SITE_AUTHOR = "Matías Filgueiras";
+
+/** Fecha de publicación del sitio bajo su dominio propio. */
+export const SITE_PUBLISHED = "2026-08-28";
+
+/**
+ * Imagen de vista previa de la home: archivo estático, sin query ni redirects.
+ * Los rastreadores de LinkedIn y WhatsApp son estrictos con esto.
+ */
+export const SITE_OG_IMAGE = "/og.png";
+
 export const SITE_DESCRIPTION =
   "Explorá la realidad política, económica y social de Uruguay con datos públicos verificables: mapas, indicadores, elecciones y comparaciones por departamento y municipio.";
 

@@ -6,6 +6,7 @@ import { getDepartmentRanking, getLatest, getSeries } from "@/lib/data";
 import { getSource } from "@/data/sources";
 import { formatNumber, formatValue } from "@/lib/format";
 import { downloadForIndicator } from "@/lib/downloads";
+import { SITE_NAME } from "@/lib/site";
 import EmbedButton from "@/components/embed/EmbedButton";
 import { StatusBadge } from "@/components/ui/Badge";
 import Delta from "@/components/charts/Delta";
@@ -30,6 +31,20 @@ export async function generateMetadata({
   return {
     title: indicator.name,
     description: `${indicator.question} ${indicator.plainDefinition}`,
+    openGraph: {
+      title: `${indicator.question} · ${SITE_NAME}`,
+      description: `${indicator.question} ${indicator.plainDefinition}`,
+      url: `/indicadores/${indicator.slug}`,
+      images: [
+        {
+          url: `/og/indicador/${indicator.slug}.png`,
+          width: 1200,
+          height: 630,
+          alt: `${indicator.name} en ${SITE_NAME}, con su último dato, período y fuente`,
+          type: "image/png",
+        },
+      ],
+    },
   };
 }
 

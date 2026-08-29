@@ -12,6 +12,7 @@ import MetricCard from "@/components/charts/MetricCard";
 import ShareButton from "@/components/share/ShareButton";
 import SourceNote from "@/components/ui/SourceNote";
 import StateView from "@/components/ui/StateView";
+import { SITE_NAME } from "@/lib/site";
 
 export function generateStaticParams() {
   return departments.map((d) => ({ slug: d.slug }));
@@ -25,9 +26,24 @@ export async function generateMetadata({
   const { slug } = await params;
   const dept = getDepartmentBySlug(slug);
   if (!dept) return {};
+  const description = `Datos públicos de ${dept.name}: población del Censo 2023, gobierno departamental 2025 y más, con fuentes verificables.`;
   return {
     title: `${dept.name} — Perfil territorial`,
-    description: `Datos públicos de ${dept.name}: población del Censo 2023, gobierno departamental 2025 y más, con fuentes verificables.`,
+    description,
+    openGraph: {
+      title: `${dept.name} · ${SITE_NAME}`,
+      description,
+      url: `/departamentos/${dept.slug}`,
+      images: [
+        {
+          url: `/og/departamento/${dept.slug}.png`,
+          width: 1200,
+          height: 630,
+          alt: `Perfil de ${dept.name} en ${SITE_NAME}`,
+          type: "image/png",
+        },
+      ],
+    },
   };
 }
 
