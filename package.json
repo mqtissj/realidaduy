@@ -11,7 +11,11 @@
     "start": "next start",
     "fetch:geo": "node scripts/ingest/fetch-geo.mjs",
     "validate:data": "node scripts/validate-data.mjs",
-    "fetch:ine": "node scripts/ingest/fetch-ine.mjs"
+    "fetch:ine": "node scripts/ingest/fetch-ine.mjs",
+    "fetch:worldbank": "node scripts/ingest/fetch-worldbank.mjs",
+    "fetch:seguridad": "node scripts/ingest/fetch-seguridad.mjs",
+    "fetch:elecciones": "node scripts/ingest/fetch-elecciones.mjs",
+    "fetch:mensual": "npm run fetch:ine && npm run fetch:worldbank && npm run fetch:seguridad && npm run fetch:elecciones"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.3.3",
