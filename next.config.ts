@@ -36,12 +36,24 @@ function headersFor({ embeddable }: { embeddable: boolean }) {
   ];
 }
 
+// Los mapas de public/geo son el archivo más pesado que descarga el navegador
+// (departamentos.json: 57 KB comprimido, y lo piden la home, /mapa, /elecciones
+// y cada perfil departamental). Next los sirve con max-age=0, así que el
+// navegador revalida en CADA navegación aunque los límites no cambien nunca.
+// Un día de caché firme y una semana de stale-while-revalidate: al regenerarlos
+// con `npm run fetch:geo`, el cambio llega como mucho un día después.
+const CACHE_GEO = {
+  key: "Cache-Control",
+  value: "public, max-age=86400, stale-while-revalidate=604800",
+};
+
 const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: "/embed/:path*", headers: headersFor({ embeddable: true }) },
-      // Todo lo que no sea /embed/… conserva las cabeceras estrictas.
-      { source: "/((?!embed/).*)", headers: headersFor({ embeddable: false }) },
+      { source: "/geo/:path*", headers: [...headersFor({ embeddable: false }), CACHE_GEO] },
+      // Todo lo demás conserva las cabeceras estrictas sin caché propia.
+      { source: "/((?!embed/|geo/).*)", headers: headersFor({ embeddable: false }) },
     ];
   },
 };
