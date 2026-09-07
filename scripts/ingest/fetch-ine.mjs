@@ -1,0 +1,313 @@
+// Ingesta de los indicadores MENSUALES del INE: IPC, ECH (actividad, empleo y
+// desempleo) e IMS. Son los únicos que cambian todos los meses y hasta ahora se
+// cargaban a mano, así que la tarea automática mensual no los tocaba.
+//
+// Genera src/data/observations/ine-mensual.ts con provenance completo.
+// Uso:
+//   node scripts/ingest/fetch-ine.mjs                # desde 2024-01 hasta hoy
+//   node scripts/ingest/fetch-ine.mjs --desde 2026-01
+//   node scripts/ingest/fetch-ine.mjs --fresh        # ignora la caché
+//
+// Fuente: cada informe técnico del INE tiene una URL predecible
+//   gub.uy/instituto-nacional-estadistica/comunicacion/publicaciones/<serie>-<mes>-<año>
+// y una frase resumen con las cifras. El script parsea esa frase.
+//
+// Filosofía (igual que el resto de la ingesta): ante la duda, romper. Si el INE
+// cambia la redacción, el script FALLA en vez de escribir datos incompletos en
+// silencio. Un archivo con menos observaciones que el anterior también aborta.
+
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
+const OUT = path.join(ROOT, "src", "data", "observations", "ine-mensual.ts");
+const CACHE = path.join(ROOT, "scripts", "ingest", ".cache", "ine");
+const BASE =
+  "https://www.gub.uy/instituto-nacional-estadistica/comunicacion/publicaciones";
+const TODAY = new Date().toISOString().slice(0, 10);
+
+// El WAF de gub.uy responde 403 a clientes sin User-Agent de navegador.
+const UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36";
+
+// "setiembre", no "septiembre": es la grafía que usa el INE en sus URLs.
+const MESES = [
+  "enero", "febrero", "marzo", "abril", "mayo", "junio",
+  "julio", "agosto", "setiembre", "octubre", "noviembre", "diciembre",
+];
+// El INE escribe las dos formas en el cuerpo de las páginas.
+const ALIAS_MES = { septiembre: "setiembre" };
+
+const args = process.argv.slice(2);
+const flag = (name) => args.includes(name);
+const opt = (name, fallback) => {
+  const i = args.indexOf(name);
+  return i >= 0 && args[i + 1] ? args[i + 1] : fallback;
+};
+const DESDE = opt("--desde", "2024-01");
+const FRESH = flag("--fresh");
+// Los últimos meses se re-consultan siempre: el INE a veces corrige un informe
+// después de publicarlo.
+const REVALIDAR_MESES = 3;
+
+/** Texto plano, sin acentos ni etiquetas: los regex quedan inmunes al encoding. */
+function normalize(html) {
+  return html
+    .replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/g, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** "0,24" → 0.24 (coma decimal del INE). */
+function num(raw, campo, url) {
+  const v = Number(raw.replace(/−/g, "-").replace(/\./g, "").replace(",", "."));
+  if (!Number.isFinite(v)) throw new Error(`No se pudo leer ${campo} ("${raw}") en ${url}`);
+  return v;
+}
+
+const RANGOS = {
+  "inflacion-interanual": [-10, 100],
+  "tasa-desempleo": [0, 40],
+  "tasa-empleo": [20, 80],
+  "tasa-actividad": [20, 90],
+  "indice-medio-salarios": [-20, 200],
+};
+
+function checkRango(indicatorId, value, url) {
+  const [min, max] = RANGOS[indicatorId];
+  if (value < min || value > max) {
+    throw new Error(`${indicatorId} = ${value} fuera del rango [${min}, ${max}] en ${url}`);
+  }
+}
+
+const SERIES = [
+  {
+    key: "ipc",
+    slug: "indice-precios-del-consumo-ipc",
+    // "El IPC de Agosto 2026 registro una variacion mensual de 0,24%,
+    //  acumulada en el ano 3,65% y en los ultimos 12 meses de 4,55%"
+    re: /variacion mensual de ([-−]?[\d.,]+) ?%,? acumulada en el ano (?:de )?(?:([-−]?[\d.,]+) ?% )?y en los ultimos 12 meses (?:de )?([-−]?[\d.,]+) ?%/i,
+    build([mensual, acumulada = null, interanual], ctx) {
+      const acum = acumulada ?? interanual;
+      return [
+        {
+          indicatorId: "inflacion-interanual",
+          value: interanual,
+          notes: `Variación mensual: ${ctx.fmt(mensual)}%. Acumulada en el año: ${ctx.fmt(acum)}%. Informe técnico del INE publicado el ${ctx.publicado}.`,
+        },
+      ];
+    },
+  },
+  {
+    key: "ech",
+    slug: "actividad-empleo-desempleo-ech",
+    // "la tasa de actividad se situo en 64,1%, la tasa de empleo en 59,6%
+    //  y la tasa de desempleo en 7,0%"
+    re: /tasa de actividad se situo en ([-−]?[\d.,]+) ?%,? la tasa de empleo en ([-−]?[\d.,]+) ?% y la tasa de desempleo en ([-−]?[\d.,]+) ?%/i,
+    build([actividad, empleo, desempleo], ctx) {
+      // Chequeo cruzado: desempleo = (actividad − empleo) / actividad × 100.
+      // Si el orden de captura se rompiera, esto lo detecta.
+      const esperado = ((actividad - empleo) / actividad) * 100;
+      if (Math.abs(esperado - desempleo) > 0.4) {
+        throw new Error(
+          `ECH ${ctx.period}: desempleo ${desempleo}% no cierra con actividad ${actividad}% y empleo ${empleo}% (esperado ~${esperado.toFixed(1)}%) en ${ctx.url}`
+        );
+      }
+      const nota = `Informe técnico del INE publicado el ${ctx.publicado}.`;
+      return [
+        { indicatorId: "tasa-actividad", value: actividad, notes: nota },
+        { indicatorId: "tasa-empleo", value: empleo, notes: nota },
+        { indicatorId: "tasa-desempleo", value: desempleo, notes: nota },
+      ];
+    },
+  },
+  {
+    key: "ims",
+    slug: "indice-medio-salarios",
+    slugSuffix: "ims",
+    re: /variacion mensual de ([-−]?[\d.,]+) ?%,? acumulada en el ano (?:de )?(?:([-−]?[\d.,]+) ?% )?y en los ultimos 12 meses (?:de )?([-−]?[\d.,]+) ?%/i,
+    build([mensual, acumulada = null, interanual], ctx) {
+      const acum = acumulada ?? interanual;
+      return [
+        {
+          indicatorId: "indice-medio-salarios",
+          value: interanual,
+          notes: `Variación nominal interanual. Mensual: ${ctx.fmt(mensual)}%; acumulada en el año: ${ctx.fmt(acum)}%. Informe técnico del INE publicado el ${ctx.publicado}.`,
+        },
+      ];
+    },
+  },
+];
+
+/**
+ * Período REAL del informe, leído del <title> de la página.
+ *
+ * No se puede confiar en el slug: /…-ipc-enero-2024 responde 200 y sirve el
+ * informe de DICIEMBRE 2023 (antes de 2025 el INE nombraba la publicación por
+ * el mes en que salía, no por el mes al que refiere). Tomar el período de la
+ * URL habría cargado los números de un mes con la etiqueta de otro.
+ */
+function periodoDelTitulo(html, url) {
+  const raw = /<title>([\s\S]*?)<\/title>/i.exec(html);
+  if (!raw) throw new Error(`Página sin <title>: ${url}`);
+  const titulo = normalize(raw[1]).split("|")[0];
+  const m = new RegExp(`\\b(${MESES.join("|")}|septiembre)\\s+(\\d{4})\\b`, "i").exec(titulo);
+  if (!m) throw new Error(`No se pudo leer el mes del título "${titulo}": ${url}`);
+  const mes = ALIAS_MES[m[1].toLowerCase()] ?? m[1].toLowerCase();
+  const idx = MESES.indexOf(mes);
+  return {
+    period: `${m[2]}-${String(idx + 1).padStart(2, "0")}`,
+    periodLabel: `${mes[0].toUpperCase()}${mes.slice(1)} ${m[2]}`,
+  };
+}
+
+function urlFor(serie, year, month) {
+  const slug = serie.slugSuffix ? `${serie.slug}-${serie.slugSuffix}` : serie.slug;
+  return `${BASE}/${slug}-${MESES[month - 1]}-${year}`;
+}
+
+async function getHtml(url, revalidar) {
+  await mkdir(CACHE, { recursive: true });
+  const file = path.join(CACHE, url.split("/").pop() + ".html");
+  if (!FRESH && !revalidar && existsSync(file)) return readFile(file, "utf8");
+
+  const res = await fetch(url, { headers: { "User-Agent": UA, "Accept-Language": "es-UY,es" } });
+  if (res.status === 404) return null; // todavía no publicado
+  if (!res.ok) throw new Error(`HTTP ${res.status} en ${url}`);
+  const html = await res.text();
+  await writeFile(file, html);
+  return html;
+}
+
+function mesesEntre(desde, hasta) {
+  const out = [];
+  const [y0, m0] = desde.split("-").map(Number);
+  const [y1, m1] = hasta.split("-").map(Number);
+  for (let y = y0, m = m0; y < y1 || (y === y1 && m <= m1); m === 12 ? ((y += 1), (m = 1)) : (m += 1)) {
+    out.push([y, m]);
+  }
+  return out;
+}
+
+const hoy = new Date();
+const HASTA = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}`;
+const meses = mesesEntre(DESDE, HASTA);
+const revalidarDesde = meses.length - REVALIDAR_MESES;
+
+// Clave `${indicatorId}|${period}` → observación. Dos URLs pueden resolver al
+// mismo informe (ver periodoDelTitulo), así que se deduplica por período real.
+const porClave = new Map();
+const fmt = (n) => String(n).replace(".", ",");
+
+for (const serie of SERIES) {
+  const periodos = new Set();
+  const faltantes = [];
+  for (const [idx, [year, month]] of meses.entries()) {
+    const url = urlFor(serie, year, month);
+    const html = await getHtml(url, idx >= revalidarDesde);
+    if (html === null) {
+      faltantes.push(`${year}-${String(month).padStart(2, "0")}`);
+      continue;
+    }
+    const texto = normalize(html);
+    const { period, periodLabel } = periodoDelTitulo(html, url);
+    // El informe puede referirse a un mes anterior al del slug: si cae fuera
+    // del rango pedido, se ignora en vez de ensuciar la serie.
+    if (period < DESDE || period > HASTA) continue;
+
+    const m = serie.re.exec(texto);
+    if (!m) {
+      throw new Error(
+        `No se pudo parsear ${serie.key} ${period}: el INE cambió la redacción. Revisar ${url}`
+      );
+    }
+    const valores = m
+      .slice(1, 4)
+      .map((raw, i) => (raw === undefined ? undefined : num(raw, `campo ${i + 1}`, url)));
+
+    const fecha = /informes tecnicos (\d{2}\/\d{2}\/\d{4})/i.exec(texto);
+    const publicado = fecha ? fecha[1] : "fecha no informada";
+    const ctx = { period, periodLabel, url, publicado, fmt };
+
+    for (const o of serie.build(valores, ctx)) {
+      checkRango(o.indicatorId, o.value, url);
+      const clave = `${o.indicatorId}|${period}`;
+      const previa = porClave.get(clave);
+      if (previa && previa.value !== o.value) {
+        throw new Error(
+          `${clave}: dos informes con valores distintos (${previa.value} en ${previa.sourceUrl}, ${o.value} en ${url})`
+        );
+      }
+      porClave.set(clave, {
+        ...o,
+        territoryId: "UY",
+        period,
+        periodLabel,
+        status: "OFFICIAL",
+        demo: false,
+        sourceUrl: url,
+        retrievedAt: TODAY,
+      });
+    }
+    periodos.add(period);
+  }
+  if (periodos.size === 0) {
+    throw new Error(`La serie ${serie.key} no devolvió ningún informe: ¿cambió la URL del INE?`);
+  }
+  const ultimosFaltantes = faltantes.slice(-2).join(", ");
+  console.log(
+    `${serie.key}: ${periodos.size} informes` +
+      (faltantes.length ? ` (sin publicar: ${faltantes.length}${ultimosFaltantes ? `, últimos ${ultimosFaltantes}` : ""})` : "")
+  );
+}
+
+const observaciones = [...porClave.values()];
+
+// Nunca achicar el archivo sin querer: si hay menos datos que antes, algo falló.
+if (existsSync(OUT) && !flag("--force")) {
+  const previo = (await readFile(OUT, "utf8")).match(/indicatorId:/g)?.length ?? 0;
+  if (observaciones.length < previo) {
+    throw new Error(
+      `Se generaron ${observaciones.length} observaciones y antes había ${previo}. Abortado; usar --force si el recorte es intencional.`
+    );
+  }
+}
+
+observaciones.sort(
+  (a, b) => a.indicatorId.localeCompare(b.indicatorId) || a.period.localeCompare(b.period)
+);
+
+const lineas = observaciones.map(
+  (o) =>
+    `  { indicatorId: ${JSON.stringify(o.indicatorId)}, territoryId: "UY", period: ${JSON.stringify(o.period)}, periodLabel: ${JSON.stringify(o.periodLabel)}, value: ${o.value}, status: "OFFICIAL", demo: false, sourceUrl: ${JSON.stringify(o.sourceUrl)}, retrievedAt: ${JSON.stringify(o.retrievedAt)}, notes: ${JSON.stringify(o.notes)} },`
+);
+
+const porIndicador = [...new Set(observaciones.map((o) => o.indicatorId))]
+  .map((id) => {
+    const serie = observaciones.filter((o) => o.indicatorId === id);
+    return `//   ${id}: ${serie.length} meses (${serie[0].period} → ${serie[serie.length - 1].period})`;
+  })
+  .join("\n");
+
+const file = `import type { Observation } from "@/lib/types";
+
+// GENERADO por scripts/ingest/fetch-ine.mjs — no editar a mano.
+// Última ejecución: ${TODAY}. Fuente: informes técnicos del INE (IPC, ECH e IMS),
+// una publicación por mes en gub.uy. El script valida el rango de cada valor y
+// que el desempleo cierre con las tasas de actividad y empleo antes de escribir.
+${porIndicador}
+
+export const ineMensualObservations: Observation[] = [
+${lineas.join("\n")}
+];
+`;
+
+await writeFile(OUT, file);
+console.log(`\n${observaciones.length} observaciones → ${OUT}`);

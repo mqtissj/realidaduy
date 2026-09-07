@@ -20,127 +20,7 @@ export const nationalObservations: Observation[] = [
     notes:
       "Resultados finales del Censo 2023 (publicados en diciembre de 2024). Cifra verificada dígito a dígito contra el PDF oficial del INE (auditoría 2026-08-26).",
   },
-  // ── Trabajo (ECH, INE) ─────────────────────────────────────
-  {
-    indicatorId: "tasa-desempleo",
-    territoryId: "UY",
-    period: "2026-05",
-    periodLabel: "Mayo 2026",
-    value: 7.6,
-    status: "OFFICIAL",
-    demo: false,
-    sourceUrl:
-      "https://www.gub.uy/instituto-nacional-estadistica/comunicacion/publicaciones/actividad-empleo-desempleo-ech-mayo-2026",
-    retrievedAt: "2026-09-07",
-    notes: "Informe técnico del INE publicado el 01/07/2026.",
-  },
-  {
-    indicatorId: "tasa-desempleo",
-    territoryId: "UY",
-    period: "2026-06",
-    periodLabel: "Junio 2026",
-    value: 7.0,
-    status: "OFFICIAL",
-    demo: false,
-    sourceUrl:
-      "https://www.gub.uy/instituto-nacional-estadistica/comunicacion/publicaciones/actividad-empleo-desempleo-ech-junio-2026",
-    retrievedAt: "2026-09-07",
-    notes: "Informe técnico del INE publicado el 29/07/2026.",
-  },
-  {
-    indicatorId: "tasa-desempleo",
-    territoryId: "UY",
-    period: "2026-07",
-    periodLabel: "Julio 2026",
-    value: 7.0,
-    status: "OFFICIAL",
-    demo: false,
-    sourceUrl:
-      "https://www.gub.uy/instituto-nacional-estadistica/comunicacion/publicaciones/actividad-empleo-desempleo-ech-julio-2026",
-    retrievedAt: "2026-09-07",
-    notes: "Informe técnico del INE publicado el 27/08/2026.",
-  },
-  {
-    indicatorId: "tasa-empleo",
-    territoryId: "UY",
-    period: "2026-06",
-    periodLabel: "Junio 2026",
-    value: 59.5,
-    status: "OFFICIAL",
-    demo: false,
-    sourceUrl:
-      "https://www.gub.uy/instituto-nacional-estadistica/comunicacion/publicaciones/actividad-empleo-desempleo-ech-junio-2026",
-    retrievedAt: "2026-09-07",
-    notes: "Informe técnico del INE publicado el 29/07/2026.",
-  },
-  {
-    indicatorId: "tasa-empleo",
-    territoryId: "UY",
-    period: "2026-07",
-    periodLabel: "Julio 2026",
-    value: 59.6,
-    status: "OFFICIAL",
-    demo: false,
-    sourceUrl:
-      "https://www.gub.uy/instituto-nacional-estadistica/comunicacion/publicaciones/actividad-empleo-desempleo-ech-julio-2026",
-    retrievedAt: "2026-09-07",
-    notes: "Informe técnico del INE publicado el 27/08/2026.",
-  },
-  {
-    indicatorId: "tasa-actividad",
-    territoryId: "UY",
-    period: "2026-06",
-    periodLabel: "Junio 2026",
-    value: 63.9,
-    status: "OFFICIAL",
-    demo: false,
-    sourceUrl:
-      "https://www.gub.uy/instituto-nacional-estadistica/comunicacion/publicaciones/actividad-empleo-desempleo-ech-junio-2026",
-    retrievedAt: "2026-09-07",
-    notes: "Informe técnico del INE publicado el 29/07/2026.",
-  },
-  {
-    indicatorId: "tasa-actividad",
-    territoryId: "UY",
-    period: "2026-07",
-    periodLabel: "Julio 2026",
-    value: 64.1,
-    status: "OFFICIAL",
-    demo: false,
-    sourceUrl:
-      "https://www.gub.uy/instituto-nacional-estadistica/comunicacion/publicaciones/actividad-empleo-desempleo-ech-julio-2026",
-    retrievedAt: "2026-09-07",
-    notes: "Informe técnico del INE publicado el 27/08/2026.",
-  },
   // ── Economía ───────────────────────────────────────────────
-  {
-    indicatorId: "inflacion-interanual",
-    territoryId: "UY",
-    period: "2026-07",
-    periodLabel: "Julio 2026",
-    value: 4.27,
-    status: "OFFICIAL",
-    demo: false,
-    sourceUrl:
-      "https://www.gub.uy/instituto-nacional-estadistica/comunicacion/publicaciones/indice-precios-del-consumo-ipc-julio-2026",
-    retrievedAt: "2026-09-07",
-    notes:
-      "Variación mensual: 0,07%. Acumulada en el año: 3,40%. Informe técnico del INE publicado el 05/08/2026.",
-  },
-  {
-    indicatorId: "inflacion-interanual",
-    territoryId: "UY",
-    period: "2026-08",
-    periodLabel: "Agosto 2026",
-    value: 4.55,
-    status: "OFFICIAL",
-    demo: false,
-    sourceUrl:
-      "https://www.gub.uy/instituto-nacional-estadistica/comunicacion/publicaciones/indice-precios-del-consumo-ipc-agosto-2026",
-    retrievedAt: "2026-09-07",
-    notes:
-      "Variación mensual: 0,24%. Acumulada en el año: 3,65%. Informe técnico del INE publicado el 03/09/2026.",
-  },
   {
     indicatorId: "pib-variacion",
     territoryId: "UY",
@@ -154,32 +34,6 @@ export const nationalObservations: Observation[] = [
     retrievedAt: "2026-08-25",
     notes:
       "Variación real interanual (BCU). La variación trimestral desestacionalizada fue +0,8%: es otra medida y no se mezcla con esta.",
-  },
-  {
-    indicatorId: "pib-per-capita",
-    territoryId: "UY",
-    period: "2024",
-    periodLabel: "2024",
-    value: 24308.5,
-    status: "SECONDARY",
-    demo: false,
-    sourceUrl:
-      "https://api.worldbank.org/v2/country/URY/indicator/NY.GDP.PCAP.CD?format=json&date=2020:2025",
-    retrievedAt: "2026-08-25",
-    notes: "Serie del Banco Mundial (fuente secundaria internacional), dólares corrientes.",
-  },
-  {
-    indicatorId: "pib-per-capita",
-    territoryId: "UY",
-    period: "2025",
-    periodLabel: "2025",
-    value: 25215.82,
-    status: "SECONDARY",
-    demo: false,
-    sourceUrl:
-      "https://api.worldbank.org/v2/country/URY/indicator/NY.GDP.PCAP.CD?format=json&date=2020:2025",
-    retrievedAt: "2026-08-25",
-    notes: "Serie del Banco Mundial (fuente secundaria internacional), dólares corrientes.",
   },
   {
     indicatorId: "salario-minimo",
@@ -206,47 +60,6 @@ export const nationalObservations: Observation[] = [
       "https://www.infobae.com/america/agencias/2026/07/01/el-salario-minimo-en-uruguay-aumenta-un-33-y-ronda-los-630-dolares/",
     retrievedAt: "2026-08-25",
     notes: "Ajuste de +3,3% desde el 1º de julio de 2026. Valor nominal.",
-  },
-  {
-    indicatorId: "indice-medio-salarios",
-    territoryId: "UY",
-    period: "2026-05",
-    periodLabel: "Mayo 2026",
-    value: 5.12,
-    status: "OFFICIAL",
-    demo: true,
-    sourceUrl:
-      "https://www.gub.uy/instituto-nacional-estadistica/comunicacion/publicaciones/indice-medio-salarios-ims-mayo-2026",
-    retrievedAt: "2026-08-25",
-    notes: "Variación nominal interanual. Acumulada en el año: 3,83%.",
-  },
-  {
-    indicatorId: "indice-medio-salarios",
-    territoryId: "UY",
-    period: "2026-06",
-    periodLabel: "Junio 2026",
-    value: 5.16,
-    status: "OFFICIAL",
-    demo: false,
-    sourceUrl:
-      "https://www5.ine.gub.uy/documents/Estad%C3%ADsticasecon%C3%B3micas/HTML/IMS/2026/IMS%20Junio%202026.html",
-    retrievedAt: "2026-08-26",
-    notes:
-      "Variación nominal interanual (boletín oficial del INE). Mensual: 0,04%; acumulada en el año: 3,87%. IMS nominal: 5,25% interanual.",
-  },
-  {
-    indicatorId: "indice-medio-salarios",
-    territoryId: "UY",
-    period: "2026-07",
-    periodLabel: "Julio 2026",
-    value: 5.71,
-    status: "OFFICIAL",
-    demo: false,
-    sourceUrl:
-      "https://www.gub.uy/instituto-nacional-estadistica/comunicacion/publicaciones/indice-medio-salarios-ims-julio-2026",
-    retrievedAt: "2026-09-07",
-    notes:
-      "Variación nominal interanual. Mensual: 0,90%; acumulada en el año: 4,80%. Informe técnico del INE publicado el 31/08/2026.",
   },
   // ── Sociedad ───────────────────────────────────────────────
   {

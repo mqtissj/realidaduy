@@ -13,6 +13,7 @@ const { seguridadObservations } = await import("../src/data/observations/segurid
 const { otuObservations } = await import("../src/data/observations/otu.ts");
 const { otuMunicipioObservations } = await import("../src/data/observations/otu-municipios.ts");
 const { otuCensalObservations } = await import("../src/data/observations/otu-censal.ts");
+const { ineMensualObservations } = await import("../src/data/observations/ine-mensual.ts");
 const { municipioObservations } = await import("../src/data/observations/municipios.ts");
 const { worldBankSeries } = await import("../src/data/observations/series-banco-mundial.ts");
 const { sources } = await import("../src/data/sources.ts");
@@ -25,6 +26,7 @@ const observations = [
   ...otuObservations,
   ...otuMunicipioObservations,
   ...otuCensalObservations,
+  ...ineMensualObservations,
   ...seguridadObservations,
   ...municipioObservations,
   ...worldBankSeries,
@@ -64,6 +66,21 @@ for (const o of observations) {
     errors.push(`value null sin status UNAVAILABLE: ${ref}`);
   if (o.value !== null && typeof o.value !== "number")
     errors.push(`value no numérico: ${ref}`);
+}
+
+// Duplicados: una misma observación (indicador + territorio + período) no puede
+// venir de dos archivos. Riesgo real desde que hay ingesta automática conviviendo
+// con carga manual.
+{
+  const vistas = new Map();
+  for (const o of observations) {
+    // Un dato oficial y una estimación secundaria del mismo período conviven a
+    // propósito (Censo 2023 vs Banco Mundial): getLatest prioriza el oficial.
+    const tier = o.status === "SECONDARY" ? "secundaria" : "primaria";
+    const k = `${o.indicatorId}|${o.territoryId}|${o.period}`;
+    if (vistas.has(`${k}|${tier}`)) errors.push(`Observación duplicada (${tier}): ${k}`);
+    else vistas.set(`${k}|${tier}`, o);
+  }
 }
 
 // Diccionario: fuentes válidas.
@@ -108,6 +125,7 @@ const deptWide = [
   ...departmentEchObservations,
   ...otuObservations,
   ...otuCensalObservations,
+  ...ineMensualObservations,
   ...seguridadObservations,
 ];
 for (const [indicatorId, period] of [
