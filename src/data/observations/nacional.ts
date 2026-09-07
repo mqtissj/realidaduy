@@ -27,13 +27,12 @@ export const nationalObservations: Observation[] = [
     period: "2026-05",
     periodLabel: "Mayo 2026",
     value: 7.6,
-    status: "CALCULATED",
-    demo: true,
+    status: "OFFICIAL",
+    demo: false,
     sourceUrl:
-      "https://www.montevideo.com.uy/Noticias/Desempleo-tuvo-una-baja-en-junio-con-respecto-a-mayo-y-se-ubico-en-el-7-0--segun-el-INE-uc970006",
-    retrievedAt: "2026-08-25",
-    notes:
-      "Derivado de la variación informada por el INE para junio (baja de 0,6 pp respecto a mayo).",
+      "https://www.gub.uy/instituto-nacional-estadistica/comunicacion/publicaciones/actividad-empleo-desempleo-ech-mayo-2026",
+    retrievedAt: "2026-09-07",
+    notes: "Informe técnico del INE publicado el 01/07/2026.",
   },
   {
     indicatorId: "tasa-desempleo",
@@ -42,11 +41,24 @@ export const nationalObservations: Observation[] = [
     periodLabel: "Junio 2026",
     value: 7.0,
     status: "OFFICIAL",
-    demo: true,
+    demo: false,
     sourceUrl:
-      "https://www.montevideo.com.uy/Noticias/Desempleo-tuvo-una-baja-en-junio-con-respecto-a-mayo-y-se-ubico-en-el-7-0--segun-el-INE-uc970006",
-    retrievedAt: "2026-08-25",
-    notes: "Vía prensa que cita el boletín ECH del INE (~144.900 personas desocupadas).",
+      "https://www.gub.uy/instituto-nacional-estadistica/comunicacion/publicaciones/actividad-empleo-desempleo-ech-junio-2026",
+    retrievedAt: "2026-09-07",
+    notes: "Informe técnico del INE publicado el 29/07/2026.",
+  },
+  {
+    indicatorId: "tasa-desempleo",
+    territoryId: "UY",
+    period: "2026-07",
+    periodLabel: "Julio 2026",
+    value: 7.0,
+    status: "OFFICIAL",
+    demo: false,
+    sourceUrl:
+      "https://www.gub.uy/instituto-nacional-estadistica/comunicacion/publicaciones/actividad-empleo-desempleo-ech-julio-2026",
+    retrievedAt: "2026-09-07",
+    notes: "Informe técnico del INE publicado el 27/08/2026.",
   },
   {
     indicatorId: "tasa-empleo",
@@ -55,11 +67,24 @@ export const nationalObservations: Observation[] = [
     periodLabel: "Junio 2026",
     value: 59.5,
     status: "OFFICIAL",
-    demo: true,
+    demo: false,
     sourceUrl:
-      "https://www.montevideo.com.uy/Noticias/Desempleo-tuvo-una-baja-en-junio-con-respecto-a-mayo-y-se-ubico-en-el-7-0--segun-el-INE-uc970006",
-    retrievedAt: "2026-08-25",
-    notes: "Montevideo: 60,8% · Interior: 58,6%.",
+      "https://www.gub.uy/instituto-nacional-estadistica/comunicacion/publicaciones/actividad-empleo-desempleo-ech-junio-2026",
+    retrievedAt: "2026-09-07",
+    notes: "Informe técnico del INE publicado el 29/07/2026.",
+  },
+  {
+    indicatorId: "tasa-empleo",
+    territoryId: "UY",
+    period: "2026-07",
+    periodLabel: "Julio 2026",
+    value: 59.6,
+    status: "OFFICIAL",
+    demo: false,
+    sourceUrl:
+      "https://www.gub.uy/instituto-nacional-estadistica/comunicacion/publicaciones/actividad-empleo-desempleo-ech-julio-2026",
+    retrievedAt: "2026-09-07",
+    notes: "Informe técnico del INE publicado el 27/08/2026.",
   },
   {
     indicatorId: "tasa-actividad",
@@ -68,11 +93,24 @@ export const nationalObservations: Observation[] = [
     periodLabel: "Junio 2026",
     value: 63.9,
     status: "OFFICIAL",
-    demo: true,
+    demo: false,
     sourceUrl:
-      "https://www.montevideo.com.uy/Noticias/Desempleo-tuvo-una-baja-en-junio-con-respecto-a-mayo-y-se-ubico-en-el-7-0--segun-el-INE-uc970006",
-    retrievedAt: "2026-08-25",
-    notes: "Montevideo: 65,3% · Interior: 63,1%.",
+      "https://www.gub.uy/instituto-nacional-estadistica/comunicacion/publicaciones/actividad-empleo-desempleo-ech-junio-2026",
+    retrievedAt: "2026-09-07",
+    notes: "Informe técnico del INE publicado el 29/07/2026.",
+  },
+  {
+    indicatorId: "tasa-actividad",
+    territoryId: "UY",
+    period: "2026-07",
+    periodLabel: "Julio 2026",
+    value: 64.1,
+    status: "OFFICIAL",
+    demo: false,
+    sourceUrl:
+      "https://www.gub.uy/instituto-nacional-estadistica/comunicacion/publicaciones/actividad-empleo-desempleo-ech-julio-2026",
+    retrievedAt: "2026-09-07",
+    notes: "Informe técnico del INE publicado el 27/08/2026.",
   },
   // ── Economía ───────────────────────────────────────────────
   {
@@ -82,11 +120,26 @@ export const nationalObservations: Observation[] = [
     periodLabel: "Julio 2026",
     value: 4.27,
     status: "OFFICIAL",
-    demo: true,
+    demo: false,
     sourceUrl:
-      "https://www.infobae.com/america/agencias/2026/08/05/la-inflacion-en-uruguay-sube-a-427-en-julio/",
-    retrievedAt: "2026-08-25",
-    notes: "Variación mensual: 0,07%. Acumulada en el año: 3,40%.",
+      "https://www.gub.uy/instituto-nacional-estadistica/comunicacion/publicaciones/indice-precios-del-consumo-ipc-julio-2026",
+    retrievedAt: "2026-09-07",
+    notes:
+      "Variación mensual: 0,07%. Acumulada en el año: 3,40%. Informe técnico del INE publicado el 05/08/2026.",
+  },
+  {
+    indicatorId: "inflacion-interanual",
+    territoryId: "UY",
+    period: "2026-08",
+    periodLabel: "Agosto 2026",
+    value: 4.55,
+    status: "OFFICIAL",
+    demo: false,
+    sourceUrl:
+      "https://www.gub.uy/instituto-nacional-estadistica/comunicacion/publicaciones/indice-precios-del-consumo-ipc-agosto-2026",
+    retrievedAt: "2026-09-07",
+    notes:
+      "Variación mensual: 0,24%. Acumulada en el año: 3,65%. Informe técnico del INE publicado el 03/09/2026.",
   },
   {
     indicatorId: "pib-variacion",
@@ -180,6 +233,20 @@ export const nationalObservations: Observation[] = [
     retrievedAt: "2026-08-26",
     notes:
       "Variación nominal interanual (boletín oficial del INE). Mensual: 0,04%; acumulada en el año: 3,87%. IMS nominal: 5,25% interanual.",
+  },
+  {
+    indicatorId: "indice-medio-salarios",
+    territoryId: "UY",
+    period: "2026-07",
+    periodLabel: "Julio 2026",
+    value: 5.71,
+    status: "OFFICIAL",
+    demo: false,
+    sourceUrl:
+      "https://www.gub.uy/instituto-nacional-estadistica/comunicacion/publicaciones/indice-medio-salarios-ims-julio-2026",
+    retrievedAt: "2026-09-07",
+    notes:
+      "Variación nominal interanual. Mensual: 0,90%; acumulada en el año: 4,80%. Informe técnico del INE publicado el 31/08/2026.",
   },
   // ── Sociedad ───────────────────────────────────────────────
   {

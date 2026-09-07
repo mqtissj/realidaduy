@@ -56,7 +56,7 @@ export const dictionary: Indicator[] = [
     isCalculated: false,
     reading: "lowerIsBetter",
     decimals: 1,
-    lastUpdated: "2026-08-25",
+    lastUpdated: "2026-09-07",
     status: "active",
   },
   {
@@ -80,7 +80,7 @@ export const dictionary: Indicator[] = [
     isCalculated: false,
     reading: "higherIsBetter",
     decimals: 1,
-    lastUpdated: "2026-08-25",
+    lastUpdated: "2026-09-07",
     status: "active",
   },
   {
@@ -105,7 +105,7 @@ export const dictionary: Indicator[] = [
     isCalculated: false,
     reading: "neutral",
     decimals: 1,
-    lastUpdated: "2026-08-25",
+    lastUpdated: "2026-09-07",
     status: "active",
   },
   // ── Economía ───────────────────────────────────────────────
@@ -130,7 +130,7 @@ export const dictionary: Indicator[] = [
     isCalculated: false,
     reading: "neutral",
     decimals: 2,
-    lastUpdated: "2026-08-25",
+    lastUpdated: "2026-09-07",
     status: "active",
   },
   {
@@ -230,7 +230,7 @@ export const dictionary: Indicator[] = [
     isCalculated: false,
     reading: "neutral",
     decimals: 2,
-    lastUpdated: "2026-08-25",
+    lastUpdated: "2026-09-07",
     status: "active",
   },
   // ── Sociedad ───────────────────────────────────────────────
