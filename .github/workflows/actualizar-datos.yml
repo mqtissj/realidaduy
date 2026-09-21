@@ -63,7 +63,10 @@ jobs:
             echo "Sin cambios de datos este mes."
           else
             git commit -m "data: actualización automática mensual (INE, Banco Mundial, seguridad, elecciones)"
-            # La tarea local de Claude también puede pushear el día 5.
-            git pull --rebase origin main
+            # La tarea local de Claude también puede pushear el día 5. En el runner
+            # quedan archivos versionados modificados que no se commitean (los
+            # lista git status); --autostash los aparta para que git acepte rebasar.
+            git status --short
+            git pull --rebase --autostash origin main
             git push
           fi
