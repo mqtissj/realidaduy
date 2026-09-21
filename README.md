@@ -13,12 +13,13 @@ fuente, período y metodología a la vista.
 - **Deploy:** conectar este repo en [vercel.com/new](https://vercel.com/new) (framework: Next.js,
   sin configuración extra). Cada push a `main` redeploya solo.
 - **Datos:** el workflow [`actualizar-datos.yml`](.github/workflows/actualizar-datos.yml)
-  corre el día 5 de cada mes: ingesta Banco Mundial + seguridad (M. Interior) +
-  elecciones (Corte Electoral, con verificación automática contra el escrutinio),
-  valida, compila y commitea — lo que dispara el redeploy. También se puede lanzar a
-  mano desde la pestaña Actions ("Run workflow").
-- **Titulares del INE** (desempleo mensual, IPC, pobreza): los actualiza la tarea
-  programada local de Claude (día 5, 10:00) porque requieren leer boletines/prensa.
+  corre el día 5 de cada mes: ingesta INE (IPC, ECH e IMS, desde los informes
+  técnicos) + Banco Mundial + seguridad (M. Interior) + elecciones (Corte Electoral,
+  con verificación automática contra el escrutinio), valida, compila y commitea — lo
+  que dispara el redeploy. También se puede lanzar a mano desde la pestaña Actions
+  ("Run workflow").
+- **Lo que no tiene script** (PIB trimestral del BCU, pobreza, salario mínimo, datos
+  departamentales): lo revisa la tarea programada local de Claude (día 5, 10:00).
 
 ## Comandos
 
@@ -27,6 +28,7 @@ npm run dev            # servidor de desarrollo
 npm run build          # build de producción (41 páginas estáticas)
 npm run start          # servir el build
 npm run fetch:geo      # ingesta de geometrías (IDE + cartografía censal INE)
+npm run fetch:mensual  # ingesta mensual: INE, Banco Mundial, seguridad y elecciones
 npm run validate:data  # validación de datos (integridad, sumas, outliers)
 ```
 

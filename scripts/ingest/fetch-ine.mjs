@@ -173,12 +173,32 @@ function urlFor(serie, year, month) {
   return `${BASE}/${slug}-${MESES[month - 1]}-${year}`;
 }
 
+// La corrida mensual de GitHub no tiene a nadie mirando: un error pasajero de
+// gub.uy no puede tirarla. Errores de red, 429 y 5xx se reintentan dos veces;
+// un 404 no, porque significa que el informe todavía no salió.
+const ESPERAS_MS = [3000, 10000];
+
+async function pedir(url) {
+  for (let intento = 0; ; intento++) {
+    const ultimo = intento === ESPERAS_MS.length;
+    try {
+      const res = await fetch(url, { headers: { "User-Agent": UA, "Accept-Language": "es-UY,es" } });
+      if (ultimo || (res.status !== 429 && res.status < 500)) return res;
+      console.warn(`HTTP ${res.status} en ${url}: reintento`);
+    } catch (err) {
+      if (ultimo) throw err;
+      console.warn(`${err.message} en ${url}: reintento`);
+    }
+    await new Promise((r) => setTimeout(r, ESPERAS_MS[intento]));
+  }
+}
+
 async function getHtml(url, revalidar) {
   await mkdir(CACHE, { recursive: true });
   const file = path.join(CACHE, url.split("/").pop() + ".html");
   if (!FRESH && !revalidar && existsSync(file)) return readFile(file, "utf8");
 
-  const res = await fetch(url, { headers: { "User-Agent": UA, "Accept-Language": "es-UY,es" } });
+  const res = await pedir(url);
   if (res.status === 404) return null; // todavía no publicado
   if (!res.ok) throw new Error(`HTTP ${res.status} en ${url}`);
   const html = await res.text();
