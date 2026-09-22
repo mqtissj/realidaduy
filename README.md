@@ -40,7 +40,10 @@ completo por observación (fuente, período, estado, URL, notas metodológicas).
 
 ## Documentación
 
-La revisión de seguridad está en [`docs/security-review.md`](docs/security-review.md).
+La **metodología completa** —jerarquía de fuentes, estados del dato, las tres capas de
+verificación y las limitaciones declaradas— está en
+[`docs/metodologia.md`](docs/metodologia.md). Es el documento de referencia para revisión
+externa. La revisión de seguridad está en [`docs/security-review.md`](docs/security-review.md).
 El paquete de planificación completo (arquitectura, data dictionary, fuentes, roadmap)
 está publicado como artifact del proyecto.
 
