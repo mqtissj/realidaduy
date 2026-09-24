@@ -77,7 +77,7 @@ Dos decisiones de diseño que importan para la revisión:
   representable del sistema, no un hueco. Esto es lo que permite cumplir el principio 1
   sin excepciones.
 
-Cobertura actual: **1.242 observaciones**, 21 indicadores activos, 3 niveles territoriales
+Cobertura actual: **1.315 observaciones**, 21 indicadores activos, 3 niveles territoriales
 (país, 19 departamentos, 136 municipios).
 
 ---
@@ -121,7 +121,7 @@ distintivo visible junto al valor.
 | `SECONDARY` | Fuente internacional, no primaria nacional | PIB per cápita 1960–2024 (BM) |
 | `UNAVAILABLE` | No existe dato público a ese nivel | Pobreza a nivel municipal |
 
-Distribución actual: **1.039 `OFFICIAL` · 71 `CALCULATED` · 130 `SECONDARY`**.
+Distribución actual: **1.114 `OFFICIAL` · 71 `CALCULATED` · 130 `SECONDARY`**.
 
 **Sobre los `CALCULATED`.** Son el punto que más merece escrutinio externo, porque es donde
 la plataforma agrega operaciones propias. Todos son tasas por población (delitos cada 100.000
@@ -206,7 +206,7 @@ Independiente de lo anterior, cada observación registra si fue **cotejada a man
 boletín oficial**. Mientras `demo: true`, la interfaz muestra el distintivo
 **"Pendiente de validación"**.
 
-Estado actual: **1.238 verificadas, 4 pendientes** (0,3 %). Las 4 pendientes son datos cuya
+Estado actual: **1.312 verificadas, 3 pendientes** (0,2 %). Las 3 pendientes son datos cuya
 cifra circuló primero en prensa citando al organismo y todavía no están en el boletín
 publicado: PIB variación 2026-Q1, salario mínimo 2026-07 y pobreza 2025. Se muestran
 marcadas o no se muestran; no se muestran como si fueran oficiales.
