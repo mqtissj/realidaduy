@@ -14,7 +14,7 @@ export default function PrivacidadPage() {
       <h1 className="mt-2 font-display text-3xl font-bold md:text-4xl">
         Política de privacidad
       </h1>
-      <p className="mt-1 text-sm text-ink-faint">Última actualización: 26 de agosto de 2026</p>
+      <p className="mt-1 text-sm text-ink-faint">Última actualización: 30 de septiembre de 2026</p>
 
       <div className="mt-8 space-y-8 text-ink-soft">
         <section aria-labelledby="resumen">
@@ -90,16 +90,17 @@ export default function PrivacidadPage() {
             Contacto
           </h2>
           <p className="mt-2">
-            Consultas sobre privacidad: a través del repositorio público del proyecto en{" "}
+            Consultas sobre privacidad:{" "}
             <a
               className="font-semibold text-primary underline decoration-line underline-offset-2 hover:decoration-primary"
-              href="https://github.com/mqtissj/realidaduy"
+              href="https://github.com/mqtissj/realidaduy/issues"
               target="_blank"
               rel="noopener noreferrer"
             >
-              GitHub
-            </a>
-            .
+              abrí un issue
+            </a>{" "}
+            en el repositorio público del proyecto en GitHub. Los issues son públicos: no
+            incluyas datos personales en el mensaje.
           </p>
         </section>
       </div>
