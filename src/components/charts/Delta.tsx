@@ -3,7 +3,7 @@ import { formatDelta } from "@/lib/format";
 
 /**
  * Variación con flecha + texto (nunca solo color). El color se aplica
- * únicamente si el indicador tiene lectura consensuada (docs/03).
+ * únicamente si el indicador tiene lectura consensuada.
  */
 export default function Delta({
   delta,

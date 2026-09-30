@@ -1,4 +1,4 @@
-// Validación de datos previa a publicación (docs/04, brief §26).
+// Validación de datos previa a publicación.
 // Uso: npm run validate:data
 // Importa los módulos de datos TypeScript directamente (Node >=23.6 con
 // type-stripping; los módulos de datos solo usan `import type`, que se borra).

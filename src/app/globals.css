@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Design tokens — docs/03-design-system.md */
+/* Design tokens */
 @theme {
   --color-canvas: #f5f7f8;
   --color-surface: #ffffff;

@@ -1,6 +1,6 @@
 import type { Indicator } from "@/lib/types";
 
-// Data Dictionary — fuente de verdad (resumen humano en docs/05-data-dictionary.md).
+// Data Dictionary — fuente de verdad.
 // Regla: reading solo juzga dirección cuando existe consenso amplio (desempleo ↓ mejor);
 // en indicadores discutibles (inflación, PIB, actividad) es "neutral" y la UI no colorea.
 

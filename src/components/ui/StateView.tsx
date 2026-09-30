@@ -1,4 +1,4 @@
-// Estados estándar (docs/02, brief §27 y §43). Nunca un cero ni un guion ambiguo.
+// Estados estándar. Nunca un cero ni un guion ambiguo.
 
 const MESSAGES = {
   nodata: "No hay datos públicos disponibles para este nivel territorial.",

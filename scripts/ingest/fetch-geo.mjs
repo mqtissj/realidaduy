@@ -1,4 +1,4 @@
-// Ingesta reproducible de geometrías territoriales (docs/06-fuentes.md).
+// Ingesta reproducible de geometrías territoriales.
 //
 //  1. Límites departamentales (19): GeoJSON oficial IDE/Servicio Geográfico Militar
 //     publicado en catalogodatos.gub.uy (licencia de Datos Abiertos Uruguay).

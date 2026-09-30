@@ -1,6 +1,5 @@
 import type { Source } from "@/lib/types";
 
-// Estrategia completa en docs/06-fuentes.md.
 export const sources: Source[] = [
   {
     id: "ine",
