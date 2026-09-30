@@ -1,4 +1,4 @@
-// Modelo de datos central — ver docs/04-modelo-de-datos.md
+// Modelo de datos central.
 // Regla dura: una Observation sin fuente, período o estado no compila.
 
 export type Category =
@@ -94,7 +94,7 @@ export interface Observation {
   status: DataStatus;
   /**
    * true ⇒ la UI muestra el distintivo "Pendiente de validación".
-   * Solo pasa a false tras verificación humana contra la fuente (docs/05).
+   * Solo pasa a false tras verificación humana contra la fuente.
    */
   demo: boolean;
   /** URL del dato concreto (boletín, tabla, API). */

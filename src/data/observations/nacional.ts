@@ -2,7 +2,7 @@ import type { Observation } from "@/lib/types";
 
 // Valores de titulares nacionales. Investigación verificada el 2026-08-25.
 // demo: true ⇒ el valor proviene de prensa que cita al organismo oficial y
-// está PENDIENTE DE VALIDACIÓN humana contra el boletín original (docs/05).
+// está PENDIENTE DE VALIDACIÓN humana contra el boletín original.
 
 export const nationalObservations: Observation[] = [
   // ── Población ──────────────────────────────────────────────

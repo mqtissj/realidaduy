@@ -7,7 +7,7 @@
 //    con y sin tentativa)
 //
 // Salida: src/data/observations/seguridad.ts
-// Regla del brief §17: nunca un ranking de seguridad sin población, período y
+// Regla del proyecto: nunca un ranking de seguridad sin población, período y
 // metodología — por eso se publican TASAS con la fórmula documentada.
 //
 // Uso: node scripts/ingest/fetch-seguridad.mjs
