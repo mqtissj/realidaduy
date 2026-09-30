@@ -208,4 +208,16 @@ body::after {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+
+  /* Reveal y PartyBars salen del servidor con su estado inicial en línea
+     (opacity 0, width 0): acá se muestran directo en su estado final, sin
+     depender de JS ni de la hidratación. */
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  [data-bar] {
+    width: var(--bar-w) !important;
+  }
 }

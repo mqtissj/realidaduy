@@ -1,8 +1,14 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 
-/* Aparición sutil al entrar al viewport. Estático con prefers-reduced-motion. */
+/*
+ * Aparición sutil al entrar al viewport. Con prefers-reduced-motion se ve fijo
+ * desde el primer momento: lo resuelve globals.css ([data-reveal]), no
+ * useReducedMotion. El servidor no conoce esa preferencia y manda el estado
+ * inicial en línea (opacity 0); si el cliente cambiaba de elemento, la
+ * hidratación no corregía ese estilo y el contenido quedaba invisible.
+ */
 
 export default function Reveal({
   children,
@@ -13,10 +19,9 @@ export default function Reveal({
   delay?: number;
   className?: string;
 }) {
-  const reduce = useReducedMotion();
-  if (reduce) return <div className={className}>{children}</div>;
   return (
     <motion.div
+      data-reveal
       className={className}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}

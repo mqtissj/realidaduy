@@ -88,10 +88,14 @@ export const metadata: Metadata = {
   },
 };
 
+// Las variables de fuente van en <html>: globals.css (@theme) arma --font-body y
+// --font-display en :root a partir de ellas. Puestas en <body>, en :root no
+// existían, esas dos variables quedaban inválidas y todo el sitio caía a la
+// fuente del sistema.
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es">
-      <body className={`${bricolage.variable} ${sourceSans.variable} min-h-dvh flex flex-col`}>
+    <html lang="es" className={`${bricolage.variable} ${sourceSans.variable}`}>
+      <body className="min-h-dvh flex flex-col">
         {children}
       </body>
     </html>
