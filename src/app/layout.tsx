@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Source_Sans_3 } from "next/font/google";
+import localFont from "next/font/local";
 import {
   SITE_AUTHOR,
   SITE_DESCRIPTION,
@@ -11,16 +11,21 @@ import {
 } from "@/lib/site";
 import "./globals.css";
 
-const bricolage = Bricolage_Grotesque({
-  subsets: ["latin"],
+// Las fuentes viven en src/app/fonts (subconjunto latin de Google Fonts, licencia
+// OFL) en vez de bajarse de Google en cada build: a veces Google responde con
+// links sin extensión (fonts.gstatic.com/l/font?kit=…) y next/font/google corta
+// el build con "Cannot read properties of null (reading '1')". Son archivos
+// variables: uno por familia cubre todos los pesos que usa el sitio.
+const bricolage = localFont({
+  src: "./fonts/bricolage-grotesque-latin.woff2",
+  weight: "500 800",
   variable: "--font-bricolage",
-  weight: ["500", "600", "700", "800"],
 });
 
-const sourceSans = Source_Sans_3({
-  subsets: ["latin"],
+const sourceSans = localFont({
+  src: "./fonts/source-sans-3-latin.woff2",
+  weight: "400 700",
   variable: "--font-source-sans",
-  weight: ["400", "600", "700"],
 });
 
 // metadataBase resuelve las URLs relativas (canónica, OG, sitemap) contra el
