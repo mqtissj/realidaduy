@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion, type MotionStyle } from "motion/react";
 import { formatNumber } from "@/lib/format";
 
 export interface PartyBarRow {
@@ -13,7 +13,10 @@ export interface PartyBarRow {
 /**
  * Barras horizontales de resultados electorales: color partidario como
  * codificación de categoría, siempre con etiqueta de texto y porcentaje.
- * Crecen una única vez al entrar en pantalla (estáticas con reduced-motion).
+ * Crecen una única vez al entrar en pantalla. Con reduced-motion se ven con su
+ * ancho final desde el principio: lo resuelve globals.css ([data-bar] y
+ * --bar-w), porque el servidor manda width 0 en línea y la hidratación no lo
+ * corregía si el cliente cambiaba de elemento.
  */
 export default function PartyBars({
   rows,
@@ -22,7 +25,6 @@ export default function PartyBars({
   rows: PartyBarRow[];
   compact?: boolean;
 }) {
-  const reduce = useReducedMotion();
   const max = Math.max(...rows.map((r) => r.pct), 1);
   return (
     <div className={compact ? "space-y-1.5" : "space-y-2"}>
@@ -39,21 +41,16 @@ export default function PartyBars({
           >
             <span className="truncate font-semibold">{r.name}</span>
             <span aria-hidden className="h-5 overflow-hidden rounded-r-sm bg-canvas">
-              {reduce ? (
-                <span
-                  className="block h-full rounded-r-sm border-y border-r border-ink/10"
-                  style={{ width: widthPct, background: r.color }}
-                />
-              ) : (
-                <motion.span
-                  className="block h-full rounded-r-sm border-y border-r border-ink/10"
-                  style={{ background: r.color }}
-                  initial={{ width: 0 }}
-                  whileInView={{ width: widthPct }}
-                  viewport={{ once: true, amount: 0.6 }}
-                  transition={{ duration: 0.7, delay: i * 0.045, ease: [0.23, 1, 0.32, 1] }}
-                />
-              )}
+              <motion.span
+                data-bar
+                className="block h-full rounded-r-sm border-y border-r border-ink/10"
+                // --bar-w: ancho final para reduced-motion (MotionStyle no tipa variables CSS).
+                style={{ background: r.color, "--bar-w": widthPct } as MotionStyle}
+                initial={{ width: 0 }}
+                whileInView={{ width: widthPct }}
+                viewport={{ once: true, amount: 0.6 }}
+                transition={{ duration: 0.7, delay: i * 0.045, ease: [0.23, 1, 0.32, 1] }}
+              />
             </span>
             <span className="tnum font-bold">{formatNumber(r.pct, 2)}%</span>
           </div>
