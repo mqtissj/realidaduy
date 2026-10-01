@@ -13,6 +13,7 @@ import { otuCensalObservations } from "@/data/observations/otu-censal";
 import { ineMensualObservations } from "@/data/observations/ine-mensual";
 import { seguridadObservations } from "@/data/observations/seguridad";
 import { worldBankSeries } from "@/data/observations/series-banco-mundial";
+import { prismaObservations } from "@/data/observations/prisma";
 import { departments, getTerritoryById } from "@/data/territories";
 
 export { dictionary, getIndicator };
@@ -31,6 +32,7 @@ const allObservations: Observation[] = [
   ...seguridadObservations,
   ...municipioObservations,
   ...worldBankSeries,
+  ...prismaObservations,
 ];
 
 /** Todas las observaciones de la plataforma (usado por las descargas CSV). */

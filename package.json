@@ -13,9 +13,10 @@
     "validate:data": "node scripts/validate-data.mjs",
     "fetch:ine": "node scripts/ingest/fetch-ine.mjs",
     "fetch:worldbank": "node scripts/ingest/fetch-worldbank.mjs",
+    "fetch:prisma": "node scripts/ingest/fetch-prisma.mjs",
     "fetch:seguridad": "node scripts/ingest/fetch-seguridad.mjs",
     "fetch:elecciones": "node scripts/ingest/fetch-elecciones.mjs",
-    "fetch:mensual": "npm run fetch:ine && npm run fetch:worldbank && npm run fetch:seguridad && npm run fetch:elecciones"
+    "fetch:mensual": "npm run fetch:ine && npm run fetch:worldbank && npm run fetch:prisma && npm run fetch:seguridad && npm run fetch:elecciones"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.3.3",

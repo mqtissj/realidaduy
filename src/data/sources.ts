@@ -52,6 +52,15 @@ export const sources: Source[] = [
     provides: "Indicadores territoriales por departamento y municipio.",
   },
   {
+    id: "prisma",
+    name: "PRISMA — Portal de indicadores de ciencia, tecnología e innovación (ANII)",
+    shortName: "PRISMA (ANII)",
+    url: "https://prisma.uy/",
+    type: "official",
+    provides:
+      "PBI anual a precios constantes de 2016 (dato del BCU), desde 2006. Datos públicos: se usan citando el portal.",
+  },
+  {
     id: "banco-mundial",
     name: "Banco Mundial — Indicadores de Desarrollo Mundial",
     shortName: "Banco Mundial",

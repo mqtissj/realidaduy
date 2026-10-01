@@ -21,10 +21,12 @@ import type { Indicator, Observation } from "@/lib/types";
 
 // Hosts de datos que no pertenecen al organismo del indicador: la serie
 // histórica del Banco Mundial vive dentro de indicadores del INE, y la columna
-// "fuente" del CSV no puede atribuírsela al INE.
+// "fuente" del CSV no puede atribuírsela al INE. El PBI anual que publica PRISMA
+// es del BCU, pero la condición de uso es citar el portal.
 const FOREIGN_HOSTS: Array<[RegExp, string]> = [
   [/(^|\.)worldbank\.org$/i, "banco-mundial"],
   [/(^|\.)bancomundial\.org$/i, "banco-mundial"],
+  [/(^|\.)prisma\.uy$/i, "prisma"],
 ];
 
 function sourceNameFor(indicator: Indicator | undefined, obs: Observation): string {
