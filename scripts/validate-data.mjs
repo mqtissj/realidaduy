@@ -16,6 +16,7 @@ const { otuCensalObservations } = await import("../src/data/observations/otu-cen
 const { ineMensualObservations } = await import("../src/data/observations/ine-mensual.ts");
 const { municipioObservations } = await import("../src/data/observations/municipios.ts");
 const { worldBankSeries } = await import("../src/data/observations/series-banco-mundial.ts");
+const { prismaObservations } = await import("../src/data/observations/prisma.ts");
 const { sources } = await import("../src/data/sources.ts");
 const { parties, elections, electionResults } = await import("../src/data/elections.ts");
 
@@ -30,6 +31,7 @@ const observations = [
   ...seguridadObservations,
   ...municipioObservations,
   ...worldBankSeries,
+  ...prismaObservations,
 ];
 
 // Población municipal: cobertura razonable (interior + los 8 de Montevideo) y
@@ -191,6 +193,21 @@ for (const [id, serie] of seriesByIndicator) {
   for (const o of serie) {
     const z = Math.abs((o.value - mean) / sd);
     if (z > 3) warnings.push(`Outlier |z|=${z.toFixed(1)} en ${id} ${o.period} (${o.value})`);
+  }
+}
+
+// 8: el PBI de PRISMA (BCU, base 2016) contra el del Banco Mundial (aviso, no
+// error). Miden lo mismo: desde 2017 coinciden en ±0,2 puntos y antes difieren
+// hasta un punto. Una diferencia mayor indica que una de las dos series cambió
+// de unidad o de definición.
+{
+  const bm = new Map(
+    worldBankSeries.filter((o) => o.indicatorId === "pib-variacion").map((o) => [o.period, o.value])
+  );
+  for (const o of prismaObservations) {
+    const w = bm.get(o.period);
+    if (w !== undefined && Math.abs(o.value - w) > 1.5)
+      warnings.push(`PIB ${o.period}: PRISMA ${o.value}% vs Banco Mundial ${w}%`);
   }
 }
 

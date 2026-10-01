@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { activeIndicators, getIndicator } from "@/data/dictionary";
-import { getDepartmentRanking, getLatest, getSeries } from "@/lib/data";
-import { getSource } from "@/data/sources";
+import { getDepartmentRanking, getHistorySeries, getLatest } from "@/lib/data";
+import { getObservationSource, getSource } from "@/data/sources";
 import { formatNumber, formatValue } from "@/lib/format";
 import { downloadForIndicator } from "@/lib/downloads";
 import { SITE_NAME } from "@/lib/site";
@@ -59,7 +59,9 @@ export default async function IndicadorPage({
 
   const latest = getLatest(indicator.id, "UY");
   const source = getSource(indicator.sourceId);
-  const wbSeries = getSeries(indicator.id, "UY", { status: "SECONDARY", periodLength: 4 });
+  const history = getHistorySeries(indicator.id, "UY");
+  const historyOfficial = history[0]?.status !== "SECONDARY";
+  const historySource = history[0] ? getObservationSource(indicator.sourceId, history[0]) : undefined;
   const ranking = indicator.geographicLevel.includes("departamento")
     ? getDepartmentRanking(indicator.id)
     : [];
@@ -168,23 +170,27 @@ export default async function IndicadorPage({
         <h2 id="evolucion" className="sr-only">
           Evolución histórica
         </h2>
-        {wbSeries.length >= 4 ? (
+        {history.length >= 4 ? (
           <ChartCard
             question={`${indicator.question} — evolución`}
-            subtitle="Serie anual comparable (fuente secundaria internacional)"
-            sourceLine={`Fuente: Banco Mundial · ${wbSeries[0].period}–${wbSeries[wbSeries.length - 1].period} · Serie anual`}
-            note={wbSeries[0].notes}
+            subtitle={
+              historyOfficial
+                ? "Serie anual oficial"
+                : "Serie anual comparable (fuente secundaria internacional)"
+            }
+            sourceLine={`Fuente: ${historySource?.shortName ?? ""} · ${history[0].period}–${history[history.length - 1].period} · Serie anual`}
+            note={history[0].notes}
             table={{
               caption: `Evolución anual de ${indicator.name}`,
               head: ["Año", indicator.name],
-              rows: wbSeries.map((o) => [
+              rows: history.map((o) => [
                 o.period,
                 formatValue(o.value!, indicator.unit, indicator.decimals),
               ]),
             }}
           >
             <LineChart
-              data={wbSeries.map((o) => ({ x: o.period, y: o.value! }))}
+              data={history.map((o) => ({ x: o.period, y: o.value! }))}
               unit={indicator.unit}
               decimals={indicator.decimals}
             />

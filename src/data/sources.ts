@@ -1,4 +1,4 @@
-import type { Source } from "@/lib/types";
+import type { Observation, Source } from "@/lib/types";
 
 export const sources: Source[] = [
   {
@@ -52,6 +52,15 @@ export const sources: Source[] = [
     provides: "Indicadores territoriales por departamento y municipio.",
   },
   {
+    id: "prisma",
+    name: "PRISMA — Portal de indicadores de ciencia, tecnología e innovación (ANII)",
+    shortName: "PRISMA (ANII)",
+    url: "https://prisma.uy/",
+    type: "official",
+    provides:
+      "PBI anual a precios constantes de 2016 (dato del BCU), desde 2006. Datos públicos: se usan citando el portal.",
+  },
+  {
     id: "banco-mundial",
     name: "Banco Mundial — Indicadores de Desarrollo Mundial",
     shortName: "Banco Mundial",
@@ -64,4 +73,30 @@ export const sources: Source[] = [
 
 export function getSource(id: string): Source | undefined {
   return sources.find((s) => s.id === id);
+}
+
+// Hosts de datos que no pertenecen al organismo del indicador: la serie
+// histórica del Banco Mundial vive dentro de indicadores del INE, y no se le
+// puede atribuir al INE. El PBI anual que publica PRISMA es del BCU, pero la
+// condición de uso es citar el portal.
+const FOREIGN_HOSTS: Array<[RegExp, string]> = [
+  [/(^|\.)worldbank\.org$/i, "banco-mundial"],
+  [/(^|\.)bancomundial\.org$/i, "banco-mundial"],
+  [/(^|\.)prisma\.uy$/i, "prisma"],
+];
+
+/** Fuente a citar para una observación: la del host de su URL si es una de
+ * FOREIGN_HOSTS, si no la del indicador. */
+export function getObservationSource(
+  indicatorSourceId: string | undefined,
+  obs: Observation
+): Source | undefined {
+  try {
+    const host = new URL(obs.sourceUrl).hostname;
+    const foreign = FOREIGN_HOSTS.find(([re]) => re.test(host));
+    if (foreign) return getSource(foreign[1]);
+  } catch {
+    // sourceUrl mal formada: se cae al organismo del indicador.
+  }
+  return indicatorSourceId ? getSource(indicatorSourceId) : undefined;
 }
