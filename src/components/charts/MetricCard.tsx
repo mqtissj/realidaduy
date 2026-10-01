@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getIndicator } from "@/data/dictionary";
-import { getLatest, getSeries } from "@/lib/data";
+import { getHistorySeries, getLatest } from "@/lib/data";
 import { getSource } from "@/data/sources";
 import Delta from "@/components/charts/Delta";
 import StateView from "@/components/ui/StateView";
@@ -26,10 +26,10 @@ export default function MetricCard({
   const latest = getLatest(indicatorId, territoryId);
   const source = getSource(indicator.sourceId);
   const target = href ?? `/indicadores/${indicator.slug}`;
-  // Serie anual comparable (Banco Mundial) para el mini-gráfico decorativo.
-  const series = getSeries(indicatorId, territoryId, { status: "SECONDARY", periodLength: 4 })
-    .map((o) => o.value)
-    .filter((v): v is number => v !== null);
+  // Serie anual para el mini-gráfico decorativo: la misma del gráfico de
+  // evolución (oficial si la hay, si no Banco Mundial).
+  const history = getHistorySeries(indicatorId, territoryId);
+  const series = history.map((o) => o.value).filter((v): v is number => v !== null);
 
   const latestValue = latest?.obs.value;
   if (!latest || latestValue === null || latestValue === undefined) {
@@ -79,7 +79,7 @@ export default function MetricCard({
           <p className="mt-auto pt-2 text-xs text-ink-faint">
             {obs.periodLabel} · {source?.shortName ?? indicator.sourceId}
             {series.length >= 4 ? (
-              <span className="text-ink-faint/70"> · serie desde 2000</span>
+              <span className="text-ink-faint/70"> · serie desde {history[0].period}</span>
             ) : null}
           </p>
         </TextureCardContent>

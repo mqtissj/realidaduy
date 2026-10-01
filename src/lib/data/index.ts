@@ -68,6 +68,20 @@ export function getSeries(
   return obs.filter((o) => o.period.length === len);
 }
 
+/**
+ * Serie anual del gráfico de evolución y del sparkline. Si hay una serie
+ * oficial de al menos 4 años y toda de la misma fuente (hoy, solo el PIB del BCU
+ * vía PRISMA), se usa esa; si no, la del Banco Mundial (secundaria). Nunca
+ * mezcla las dos: miden lo mismo con bases distintas.
+ */
+export function getHistorySeries(indicatorId: string, territoryId: string): Observation[] {
+  const annual = getSeries(indicatorId, territoryId, { periodLength: 4 });
+  const official = annual.filter((o) => o.status !== "SECONDARY");
+  const hosts = new Set(official.map((o) => o.sourceUrl.split("/")[2]));
+  if (official.length >= 4 && hosts.size === 1) return official;
+  return annual.filter((o) => o.status === "SECONDARY");
+}
+
 export interface LatestResult {
   obs: Observation;
   /** Observación inmediatamente anterior de la misma granularidad, si existe. */

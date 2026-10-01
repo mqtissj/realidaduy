@@ -46,6 +46,7 @@ if (meta.fuentes_de_datos !== "BCU") fail(`la fuente ahora es "${meta.fuentes_de
 if (!/pesos constantes de 2016/.test(meta.subtitulo ?? ""))
   fail(`la serie ya no está en pesos constantes de 2016 ("${meta.subtitulo}")`);
 const actualizadoEnPrisma = String(meta.fecha_de_actualizacion).slice(0, 10);
+const actualizadoLegible = actualizadoEnPrisma.split("-").reverse().join("/");
 
 // 2. La serie: año, PBI en millones de pesos constantes de 2016 y crecimiento
 // anual en %.
@@ -78,7 +79,7 @@ const covid = obs.find((o) => o.periodo === "2020");
 if (!covid || covid.valor > -7 || covid.valor < -8)
   fail(`la caída de 2020 no es la esperada (${covid?.valor}); revisar la serie`);
 
-const nota = `Variación real anual del PBI, a precios constantes de 2016. Dato del BCU publicado por PRISMA (ANII), actualizado en el portal el ${actualizadoEnPrisma}. Serie anual: no se mezcla con la variación trimestral en un mismo gráfico.`;
+const nota = `Variación real anual del PBI, a precios constantes de 2016. Dato del BCU publicado por PRISMA (ANII), actualizado en el portal el ${actualizadoLegible}. Serie anual: no se mezcla con la variación trimestral en un mismo gráfico.`;
 const lines = obs.map(
   (o) =>
     `  { indicatorId: "pib-variacion", territoryId: "UY", period: ${JSON.stringify(o.periodo)}, periodLabel: ${JSON.stringify(o.periodo)}, value: ${o.valor}, status: "OFFICIAL", demo: false, sourceUrl: ${JSON.stringify(PAGE)}, retrievedAt: ${JSON.stringify(TODAY)}, notes: ${JSON.stringify(nota)} },`

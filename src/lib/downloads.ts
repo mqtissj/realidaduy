@@ -6,7 +6,7 @@
 // "realidad.uy/datos/desempleo.csv" en una nota y el link va a seguir andando.
 
 import { activeIndicators, getIndicator } from "@/data/dictionary";
-import { getSource } from "@/data/sources";
+import { getObservationSource, getSource } from "@/data/sources";
 import { electionResults, getElection, getParty } from "@/data/elections";
 import { getTerritoryById } from "@/data/territories";
 import { getAllObservations, getIndicatorObservations } from "@/lib/data";
@@ -19,25 +19,10 @@ import {
 } from "@/lib/csv";
 import type { Indicator, Observation } from "@/lib/types";
 
-// Hosts de datos que no pertenecen al organismo del indicador: la serie
-// histórica del Banco Mundial vive dentro de indicadores del INE, y la columna
-// "fuente" del CSV no puede atribuírsela al INE. El PBI anual que publica PRISMA
-// es del BCU, pero la condición de uso es citar el portal.
-const FOREIGN_HOSTS: Array<[RegExp, string]> = [
-  [/(^|\.)worldbank\.org$/i, "banco-mundial"],
-  [/(^|\.)bancomundial\.org$/i, "banco-mundial"],
-  [/(^|\.)prisma\.uy$/i, "prisma"],
-];
-
+// La columna "fuente" del CSV cita a quien publica cada fila (Banco Mundial,
+// PRISMA), no siempre al organismo del indicador.
 function sourceNameFor(indicator: Indicator | undefined, obs: Observation): string {
-  try {
-    const host = new URL(obs.sourceUrl).hostname;
-    const foreign = FOREIGN_HOSTS.find(([re]) => re.test(host));
-    if (foreign) return getSource(foreign[1])?.name ?? "";
-  } catch {
-    // sourceUrl mal formada: se cae al organismo del indicador.
-  }
-  return indicator ? (getSource(indicator.sourceId)?.name ?? "") : "";
+  return getObservationSource(indicator?.sourceId, obs)?.name ?? "";
 }
 
 const observationCtx: CsvContext = {
