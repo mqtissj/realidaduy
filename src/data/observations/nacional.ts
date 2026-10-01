@@ -21,20 +21,7 @@ export const nationalObservations: Observation[] = [
       "Resultados finales del Censo 2023 (publicados en diciembre de 2024). Cifra verificada dígito a dígito contra el PDF oficial del INE (auditoría 2026-08-26).",
   },
   // ── Economía ───────────────────────────────────────────────
-  {
-    indicatorId: "pib-variacion",
-    territoryId: "UY",
-    period: "2026-Q1",
-    periodLabel: "1er trimestre 2026",
-    value: 0.9,
-    status: "OFFICIAL",
-    demo: true,
-    sourceUrl:
-      "https://www.ambito.com/uruguay/la-economia-crecio-09-el-primer-trimestre-pesar-la-caida-del-campo-y-la-construccion-n6288981",
-    retrievedAt: "2026-08-25",
-    notes:
-      "Variación real interanual (BCU). La variación trimestral desestacionalizada fue +0,8%: es otra medida y no se mezcla con esta.",
-  },
+  // El PIB trimestral sale del BCU con scripts/ingest/fetch-bcu-pib.mjs.
   {
     indicatorId: "salario-minimo",
     territoryId: "UY",

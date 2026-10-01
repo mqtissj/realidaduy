@@ -14,6 +14,7 @@ import { ineMensualObservations } from "@/data/observations/ine-mensual";
 import { seguridadObservations } from "@/data/observations/seguridad";
 import { worldBankSeries } from "@/data/observations/series-banco-mundial";
 import { prismaObservations } from "@/data/observations/prisma";
+import { bcuPibObservations } from "@/data/observations/bcu-pib";
 import { departments, getTerritoryById } from "@/data/territories";
 
 export { dictionary, getIndicator };
@@ -33,6 +34,7 @@ const allObservations: Observation[] = [
   ...municipioObservations,
   ...worldBankSeries,
   ...prismaObservations,
+  ...bcuPibObservations,
 ];
 
 /** Todas las observaciones de la plataforma (usado por las descargas CSV). */
