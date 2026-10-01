@@ -14,6 +14,7 @@ import { ineMensualObservations } from "@/data/observations/ine-mensual";
 import { seguridadObservations } from "@/data/observations/seguridad";
 import { worldBankSeries } from "@/data/observations/series-banco-mundial";
 import { prismaObservations } from "@/data/observations/prisma";
+import { bcuPibObservations } from "@/data/observations/bcu-pib";
 import { departments, getTerritoryById } from "@/data/territories";
 
 export { dictionary, getIndicator };
@@ -33,6 +34,7 @@ const allObservations: Observation[] = [
   ...municipioObservations,
   ...worldBankSeries,
   ...prismaObservations,
+  ...bcuPibObservations,
 ];
 
 /** Todas las observaciones de la plataforma (usado por las descargas CSV). */
@@ -70,15 +72,18 @@ export function getSeries(
 
 /**
  * Serie anual del gráfico de evolución y del sparkline. Si hay una serie
- * oficial de al menos 4 años y toda de la misma fuente (hoy, solo el PIB del BCU
- * vía PRISMA), se usa esa; si no, la del Banco Mundial (secundaria). Nunca
- * mezcla las dos: miden lo mismo con bases distintas.
+ * oficial de al menos 4 años consecutivos, se usa esa; si no, la del Banco
+ * Mundial (secundaria). Nunca mezcla oficial con secundaria: miden lo mismo con
+ * bases distintas. La oficial puede venir de dos archivos cuando es la misma
+ * serie empalmada: hoy, el PIB del BCU (PRISMA hasta 2016, BCU desde 2017).
  */
 export function getHistorySeries(indicatorId: string, territoryId: string): Observation[] {
   const annual = getSeries(indicatorId, territoryId, { periodLength: 4 });
   const official = annual.filter((o) => o.status !== "SECONDARY");
-  const hosts = new Set(official.map((o) => o.sourceUrl.split("/")[2]));
-  if (official.length >= 4 && hosts.size === 1) return official;
+  const consecutive = official.every(
+    (o, i) => i === 0 || Number(o.period) === Number(official[i - 1].period) + 1
+  );
+  if (official.length >= 4 && consecutive) return official;
   return annual.filter((o) => o.status === "SECONDARY");
 }
 

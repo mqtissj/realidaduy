@@ -3,7 +3,11 @@
 // PRISMA lo publica procesado. Los datos de PRISMA son públicos y la condición
 // de uso es citar el portal: cada observación lleva la página de PRISMA como
 // sourceUrl y lo dice en la nota.
-// Genera src/data/observations/prisma.ts.
+// Genera src/data/observations/prisma.ts, solo con los años hasta 2016: desde
+// 2017 el PIB anual sale de la serie trimestral del BCU (fetch-bcu-pib.mjs), que
+// trae las revisiones posteriores a la última carga de PRISMA. Es la misma serie
+// del BCU con base 2016: de 2016 a 2021 los niveles coinciden exacto, así que el
+// empalme no tiene salto.
 //
 // PRISMA no tiene una API documentada: el portal arma sus gráficos con
 // consultas CDA de Pentaho, que son públicas. Si cambian el nombre de una
@@ -79,8 +83,12 @@ const covid = obs.find((o) => o.periodo === "2020");
 if (!covid || covid.valor > -7 || covid.valor < -8)
   fail(`la caída de 2020 no es la esperada (${covid?.valor}); revisar la serie`);
 
+const ULTIMO_ANIO = 2016;
+const tramo = obs.filter((o) => Number(o.periodo) <= ULTIMO_ANIO);
+if (tramo[tramo.length - 1]?.periodo !== String(ULTIMO_ANIO)) fail(`falta el año ${ULTIMO_ANIO}`);
+
 const nota = `Variación real anual del PBI, a precios constantes de 2016. Dato del BCU publicado por PRISMA (ANII), actualizado en el portal el ${actualizadoLegible}. Serie anual: no se mezcla con la variación trimestral en un mismo gráfico.`;
-const lines = obs.map(
+const lines = tramo.map(
   (o) =>
     `  { indicatorId: "pib-variacion", territoryId: "UY", period: ${JSON.stringify(o.periodo)}, periodLabel: ${JSON.stringify(o.periodo)}, value: ${o.valor}, status: "OFFICIAL", demo: false, sourceUrl: ${JSON.stringify(PAGE)}, retrievedAt: ${JSON.stringify(TODAY)}, notes: ${JSON.stringify(nota)} },`
 );
@@ -90,7 +98,8 @@ const file = `import type { Observation } from "@/lib/types";
 // GENERADO por scripts/ingest/fetch-prisma.mjs — no editar a mano.
 // Última ejecución: ${TODAY}. Fuente: PRISMA, portal de indicadores de la ANII
 // (prisma.uy), que publica el PBI anual del BCU a precios constantes de 2016.
-// Datos públicos; la condición de uso es citar el portal.
+// Datos públicos; la condición de uso es citar el portal. Solo hasta
+// ${ULTIMO_ANIO}: desde ${ULTIMO_ANIO + 1} el PIB anual sale del BCU (bcu-pib.ts).
 
 export const prismaObservations: Observation[] = [
 ${lines.join("\n")}
@@ -99,5 +108,5 @@ ${lines.join("\n")}
 
 await writeFile(OUT, file);
 console.log(
-  `pbi_uy → pib-variacion: ${obs.length} años (${obs[0].periodo}–${obs[obs.length - 1].periodo}), actualizado en PRISMA el ${actualizadoEnPrisma}`
+  `pbi_uy → pib-variacion: ${tramo.length} años (${tramo[0].periodo}–${ULTIMO_ANIO}) de ${obs.length} publicados, actualizado en PRISMA el ${actualizadoEnPrisma}`
 );

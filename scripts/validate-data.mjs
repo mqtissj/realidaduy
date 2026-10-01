@@ -17,6 +17,7 @@ const { ineMensualObservations } = await import("../src/data/observations/ine-me
 const { municipioObservations } = await import("../src/data/observations/municipios.ts");
 const { worldBankSeries } = await import("../src/data/observations/series-banco-mundial.ts");
 const { prismaObservations } = await import("../src/data/observations/prisma.ts");
+const { bcuPibObservations } = await import("../src/data/observations/bcu-pib.ts");
 const { sources } = await import("../src/data/sources.ts");
 const { parties, elections, electionResults } = await import("../src/data/elections.ts");
 
@@ -32,6 +33,7 @@ const observations = [
   ...municipioObservations,
   ...worldBankSeries,
   ...prismaObservations,
+  ...bcuPibObservations,
 ];
 
 // Población municipal: cobertura razonable (interior + los 8 de Montevideo) y
@@ -196,18 +198,25 @@ for (const [id, serie] of seriesByIndicator) {
   }
 }
 
-// 8: el PBI de PRISMA (BCU, base 2016) contra el del Banco Mundial (aviso, no
-// error). Miden lo mismo: desde 2017 coinciden en ±0,2 puntos y antes difieren
-// hasta un punto. Una diferencia mayor indica que una de las dos series cambió
-// de unidad o de definición.
+// 8: PIB anual oficial. Es un empalme: PRISMA hasta 2016 y BCU desde 2017, sin
+// huecos ni años repetidos (si no, el gráfico de evolución vuelve al Banco
+// Mundial). Contra el Banco Mundial es un aviso, no un error: miden lo mismo,
+// desde 2017 coinciden en ±0,2 puntos y antes difieren hasta un punto. Una
+// diferencia mayor indica que una serie cambió de unidad o de definición.
 {
+  const prismaAnual = prismaObservations.map((o) => Number(o.period));
+  const bcuAnual = bcuPibObservations.filter((o) => o.period.length === 4).map((o) => Number(o.period));
+  if (Math.max(...prismaAnual) + 1 !== Math.min(...bcuAnual))
+    errors.push(
+      `PIB anual: el empalme no es continuo (PRISMA hasta ${Math.max(...prismaAnual)}, BCU desde ${Math.min(...bcuAnual)})`
+    );
   const bm = new Map(
     worldBankSeries.filter((o) => o.indicatorId === "pib-variacion").map((o) => [o.period, o.value])
   );
-  for (const o of prismaObservations) {
+  for (const o of [...prismaObservations, ...bcuPibObservations]) {
     const w = bm.get(o.period);
     if (w !== undefined && Math.abs(o.value - w) > 1.5)
-      warnings.push(`PIB ${o.period}: PRISMA ${o.value}% vs Banco Mundial ${w}%`);
+      warnings.push(`PIB ${o.period}: oficial ${o.value}% vs Banco Mundial ${w}%`);
   }
 }
 

@@ -61,7 +61,19 @@ export default async function IndicadorPage({
   const source = getSource(indicator.sourceId);
   const history = getHistorySeries(indicator.id, "UY");
   const historyOfficial = history[0]?.status !== "SECONDARY";
-  const historySource = history[0] ? getObservationSource(indicator.sourceId, history[0]) : undefined;
+  // Tramos por fuente, para citar cada una con sus años (el PIB empalma PRISMA
+  // hasta 2016 y BCU desde 2017).
+  const historySegments: { name: string; from: string; to: string }[] = [];
+  for (const o of history) {
+    const name = getObservationSource(indicator.sourceId, o)?.shortName ?? "";
+    const last = historySegments[historySegments.length - 1];
+    if (last?.name === name) last.to = o.period;
+    else historySegments.push({ name, from: o.period, to: o.period });
+  }
+  const historySourceLine =
+    historySegments.length === 1
+      ? `${historySegments[0].name} · ${historySegments[0].from}–${historySegments[0].to}`
+      : historySegments.map((s) => `${s.name} ${s.from}–${s.to}`).join(" y ");
   const ranking = indicator.geographicLevel.includes("departamento")
     ? getDepartmentRanking(indicator.id)
     : [];
@@ -178,8 +190,8 @@ export default async function IndicadorPage({
                 ? "Serie anual oficial"
                 : "Serie anual comparable (fuente secundaria internacional)"
             }
-            sourceLine={`Fuente: ${historySource?.shortName ?? ""} · ${history[0].period}–${history[history.length - 1].period} · Serie anual`}
-            note={history[0].notes}
+            sourceLine={`Fuente: ${historySourceLine} · Serie anual`}
+            note={[...new Set(history.map((o) => o.notes).filter(Boolean))].join(" ")}
             table={{
               caption: `Evolución anual de ${indicator.name}`,
               head: ["Año", indicator.name],

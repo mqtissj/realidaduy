@@ -14,12 +14,12 @@ fuente, período y metodología a la vista.
   sin configuración extra). Cada push a `main` redeploya solo.
 - **Datos:** el workflow [`actualizar-datos.yml`](.github/workflows/actualizar-datos.yml)
   corre el día 5 de cada mes: ingesta INE (IPC, ECH e IMS, desde los informes
-  técnicos) + Banco Mundial + PBI anual de PRISMA (ANII) + seguridad (M. Interior) +
-  elecciones (Corte Electoral, con verificación automática contra el escrutinio), valida,
-  compila y commitea — lo que dispara el redeploy. También se puede lanzar a mano desde la
-  pestaña Actions ("Run workflow").
-- **Lo que no tiene script** (PIB trimestral del BCU, pobreza, salario mínimo, datos
-  departamentales): lo revisa la tarea programada local de Claude (día 5, 10:00).
+  técnicos) + Banco Mundial + PBI anual de PRISMA (ANII) + PIB trimestral del BCU +
+  seguridad (M. Interior) + elecciones (Corte Electoral, con verificación automática contra
+  el escrutinio), valida, compila y commitea — lo que dispara el redeploy. También se puede
+  lanzar a mano desde la pestaña Actions ("Run workflow").
+- **Lo que no tiene script** (pobreza, salario mínimo, datos departamentales): lo revisa la
+  tarea programada local de Claude (día 5, 10:00).
 
 ## Comandos
 
@@ -28,7 +28,7 @@ npm run dev            # servidor de desarrollo
 npm run build          # build de producción (41 páginas estáticas)
 npm run start          # servir el build
 npm run fetch:geo      # ingesta de geometrías (IDE + cartografía censal INE)
-npm run fetch:mensual  # ingesta mensual: INE, Banco Mundial, PRISMA, seguridad y elecciones
+npm run fetch:mensual  # ingesta mensual: INE, Banco Mundial, PRISMA, BCU, seguridad y elecciones
 npm run validate:data  # validación de datos (integridad, sumas, outliers)
 ```
 
@@ -56,11 +56,14 @@ está publicado como artifact del proyecto.
 
 ## Datos y licencias
 
-- Indicadores: INE, BCU, MTSS, Corte Electoral (ver `/fuentes` en la app).
+- Indicadores: INE, BCU, MTSS, Corte Electoral (ver `/fuentes` en la app). El PIB trimestral
+  sale de la planilla del BCU; el script trae los certificados intermedios que el servidor del
+  BCU no manda (`scripts/ingest/certs/`).
 - Series históricas comparables: Banco Mundial (fuente secundaria, siempre etiquetada).
-- PBI anual oficial (BCU, a precios constantes de 2016): vía [PRISMA](https://prisma.uy), el
-  portal de indicadores de la ANII. Datos públicos; se usan citando el portal. Es la serie
-  del gráfico de evolución del PIB.
+- PBI anual oficial (BCU, a precios constantes de 2016), en el gráfico de evolución del PIB:
+  hasta 2016 vía [PRISMA](https://prisma.uy), el portal de indicadores de la ANII (datos
+  públicos; se usan citando el portal), y desde 2017 la suma de los trimestres del BCU, que
+  trae sus últimas revisiones.
 - Límites departamentales: IDE / Servicio Geográfico Militar vía catalogodatos.gub.uy
   (Licencia de Datos Abiertos Uruguay).
 - Municipios de Montevideo: derivados de la cartografía censal INE 2023 (CCZ) según la

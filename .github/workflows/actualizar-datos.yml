@@ -4,9 +4,10 @@
 #
 # Qué actualiza: los indicadores mensuales del INE (IPC, ECH e IMS, leídos de
 # sus informes técnicos), series del Banco Mundial, el PBI anual que publica
-# PRISMA (ANII), tasas de seguridad (M. Interior) y resultados electorales
-# (Corte Electoral; con asserts contra el escrutinio). Lo que no tiene script (PIB trimestral del BCU, pobreza, salario
-# mínimo, datos departamentales) lo revisa la tarea local de Claude (día 5).
+# PRISMA (ANII), el PIB trimestral del BCU, tasas de seguridad (M. Interior) y
+# resultados electorales (Corte Electoral; con asserts contra el escrutinio).
+# Lo que no tiene script (pobreza, salario mínimo, datos departamentales) lo
+# revisa la tarea local de Claude (día 5).
 
 name: Actualizar datos
 
@@ -49,6 +50,14 @@ jobs:
         continue-on-error: true
         run: node scripts/ingest/fetch-prisma.mjs
 
+      # El BCU publica un trimestre nuevo en marzo, junio, setiembre y diciembre.
+      # Mismo criterio que PRISMA: si falla (por ejemplo, porque el BCU cambió de
+      # certificado), el paso queda en rojo y la corrida sigue con el archivo
+      # anterior.
+      - name: Ingesta BCU (PIB trimestral)
+        continue-on-error: true
+        run: node scripts/ingest/fetch-bcu-pib.mjs
+
       - name: Ingesta seguridad (Ministerio del Interior)
         run: node scripts/ingest/fetch-seguridad.mjs
 
@@ -65,11 +74,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add src/data/observations/ine-mensual.ts src/data/observations/series-banco-mundial.ts src/data/observations/prisma.ts src/data/observations/seguridad.ts src/data/elecciones-generadas.ts
+          git add src/data/observations/ine-mensual.ts src/data/observations/series-banco-mundial.ts src/data/observations/prisma.ts src/data/observations/bcu-pib.ts src/data/observations/seguridad.ts src/data/elecciones-generadas.ts
           if git diff --cached --quiet; then
             echo "Sin cambios de datos este mes."
           else
-            git commit -m "data: actualización automática mensual (INE, Banco Mundial, PRISMA, seguridad, elecciones)"
+            git commit -m "data: actualización automática mensual (INE, Banco Mundial, PRISMA, BCU, seguridad, elecciones)"
             # La tarea local de Claude también puede pushear el día 5. En el runner
             # quedan archivos versionados modificados que no se commitean (los
             # lista git status); --autostash los aparta para que git acepte rebasar.
