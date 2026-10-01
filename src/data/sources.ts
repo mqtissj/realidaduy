@@ -58,7 +58,7 @@ export const sources: Source[] = [
     url: "https://prisma.uy/",
     type: "official",
     provides:
-      "PBI anual a precios constantes de 2016 (dato del BCU), desde 2006. Datos públicos: se usan citando el portal.",
+      "PBI anual 2006–2016 a precios constantes de 2016 (dato del BCU). Datos públicos: se usan citando el portal.",
   },
   {
     id: "banco-mundial",

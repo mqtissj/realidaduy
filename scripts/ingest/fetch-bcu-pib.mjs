@@ -3,6 +3,9 @@
 // precios constantes de 2016 de las cuentas nacionales. Es la cifra que el BCU
 // da como titular: antes de escribir, el script la compara contra el texto de
 // su página "Último informe disponible".
+// También calcula la variación anual (suma de los cuatro trimestres contra la del
+// año anterior), que desde 2017 alimenta el gráfico de evolución del PIB; hasta
+// 2016 ese gráfico usa PRISMA (fetch-prisma.mjs).
 // Genera src/data/observations/bcu-pib.ts.
 //
 // El BCU no manda la cadena completa de certificados: los intermedios están en
@@ -127,6 +130,19 @@ const obs = serie.slice(4).map((s, i) => ({
 }));
 const ultimo = obs[obs.length - 1];
 
+// Variación anual: solo años con los cuatro trimestres, contra el año anterior
+// completo.
+const porAnio = new Map();
+for (const s of serie) porAnio.set(s.anio, [...(porAnio.get(s.anio) ?? []), s.nivel]);
+const anuales = [...porAnio]
+  .filter(([anio, niveles]) => niveles.length === 4 && porAnio.get(anio - 1)?.length === 4)
+  .map(([anio, niveles]) => {
+    const suma = (n) => n.reduce((a, b) => a + b, 0);
+    const v = (suma(niveles) / suma(porAnio.get(anio - 1)) - 1) * 100;
+    return { periodo: String(anio), valor: Number(v.toFixed(1)) || 0 };
+  });
+if (anuales[0]?.periodo !== "2017") fail(`la serie anual arranca en ${anuales[0]?.periodo}, no en 2017`);
+
 // 4. Control contra el titular que publica el BCU ("En el segundo trimestre de
 // 2026 el Producto Interno Bruto (PIB) se contrajo 0,5% con relación al mismo
 // trimestre de 2025"). Si el texto no aparece, avisa; si aparece y no coincide
@@ -154,17 +170,24 @@ if (!t) {
 
 const nota =
   "Variación real interanual del PIB: contra el mismo trimestre del año anterior, a precios constantes de 2016. Calculada sobre la serie trimestral del BCU (cifras preliminares, que el BCU revisa con cada publicación). La variación desestacionalizada contra el trimestre anterior es otra medida y no se mezcla con esta.";
-const lines = obs.map(
-  (o) =>
-    `  { indicatorId: "pib-variacion", territoryId: "UY", period: ${JSON.stringify(o.periodo)}, periodLabel: ${JSON.stringify(o.etiqueta)}, value: ${o.valor}, status: "OFFICIAL", demo: false, sourceUrl: ${JSON.stringify(XLSX)}, retrievedAt: ${JSON.stringify(TODAY)}, notes: ${JSON.stringify(nota)} },`
-);
+const notaAnual =
+  "Desde 2017, variación real anual del PIB: suma de los cuatro trimestres del BCU contra la del año anterior, a precios constantes de 2016 (última versión publicada; cifras preliminares). Hasta 2016, la misma serie del BCU publicada por PRISMA: de 2016 a 2021 las dos coinciden exacto.";
+const linea = (o, etiqueta, notas) =>
+  `  { indicatorId: "pib-variacion", territoryId: "UY", period: ${JSON.stringify(o.periodo)}, periodLabel: ${JSON.stringify(etiqueta)}, value: ${o.valor}, status: "OFFICIAL", demo: false, sourceUrl: ${JSON.stringify(XLSX)}, retrievedAt: ${JSON.stringify(TODAY)}, notes: ${JSON.stringify(notas)} },`;
+const lines = [
+  "  // Anual (gráfico de evolución, desde 2017)",
+  ...anuales.map((o) => linea(o, o.periodo, notaAnual)),
+  "  // Trimestral (titular)",
+  ...obs.map((o) => linea(o, o.etiqueta, nota)),
+];
 
 const file = `import type { Observation } from "@/lib/types";
 
 // GENERADO por scripts/ingest/fetch-bcu-pib.mjs — no editar a mano.
 // Última ejecución: ${TODAY}. Fuente: BCU, cuentas nacionales trimestrales
 // (PIB a precios constantes de 2016). El último trimestre se verificó contra el
-// titular de la página "Último informe disponible" del BCU.
+// titular de la página "Último informe disponible" del BCU. La serie anual
+// empalma con prisma.ts, que llega hasta 2016.
 
 export const bcuPibObservations: Observation[] = [
 ${lines.join("\n")}
@@ -173,5 +196,5 @@ ${lines.join("\n")}
 
 await writeFile(OUT, file);
 console.log(
-  `PIB trimestral → pib-variacion: ${obs.length} trimestres (${obs[0].periodo}–${ultimo.periodo}), último ${ultimo.valor}%`
+  `PIB → pib-variacion: ${anuales.length} años (${anuales[0].periodo}–${anuales[anuales.length - 1].periodo}) y ${obs.length} trimestres (${obs[0].periodo}–${ultimo.periodo}), último ${ultimo.valor}%`
 );

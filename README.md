@@ -60,9 +60,10 @@ está publicado como artifact del proyecto.
   sale de la planilla del BCU; el script trae los certificados intermedios que el servidor del
   BCU no manda (`scripts/ingest/certs/`).
 - Series históricas comparables: Banco Mundial (fuente secundaria, siempre etiquetada).
-- PBI anual oficial (BCU, a precios constantes de 2016): vía [PRISMA](https://prisma.uy), el
-  portal de indicadores de la ANII. Datos públicos; se usan citando el portal. Es la serie
-  del gráfico de evolución del PIB.
+- PBI anual oficial (BCU, a precios constantes de 2016), en el gráfico de evolución del PIB:
+  hasta 2016 vía [PRISMA](https://prisma.uy), el portal de indicadores de la ANII (datos
+  públicos; se usan citando el portal), y desde 2017 la suma de los trimestres del BCU, que
+  trae sus últimas revisiones.
 - Límites departamentales: IDE / Servicio Geográfico Militar vía catalogodatos.gub.uy
   (Licencia de Datos Abiertos Uruguay).
 - Municipios de Montevideo: derivados de la cartografía censal INE 2023 (CCZ) según la
