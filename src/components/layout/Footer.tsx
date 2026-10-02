@@ -1,4 +1,5 @@
 import Link from "next/link";
+import InstagramLink from "@/components/layout/InstagramLink";
 
 export default function Footer() {
   return (
@@ -12,6 +13,7 @@ export default function Footer() {
             Plataforma ciudadana e independiente. Datos públicos con fuente, período y
             metodología a la vista. Sin afiliación partidaria.
           </p>
+          <InstagramLink className="mt-4" />
         </div>
         <nav aria-label="Secciones">
           <p className="text-sm font-bold uppercase tracking-wide text-ink-faint">Explorar</p>
