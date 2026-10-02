@@ -21,6 +21,13 @@ export const SITE_TAGLINE = "Entendé Uruguay, territorio por territorio";
 
 export const SITE_AUTHOR = "Matías Filgueiras";
 
+/**
+ * Cuenta de Instagram del proyecto. El sitio solo la enlaza: no embebe nada de
+ * Instagram, así se mantiene sin cookies ni rastreadores de terceros.
+ */
+export const SITE_INSTAGRAM_HANDLE = "@realidad.uy";
+export const SITE_INSTAGRAM_URL = "https://www.instagram.com/realidad.uy/";
+
 /** Fecha de publicación del sitio bajo su dominio propio. */
 export const SITE_PUBLISHED = "2026-08-28";
 

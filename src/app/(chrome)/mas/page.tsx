@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SITE_INSTAGRAM_HANDLE, SITE_INSTAGRAM_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Más secciones",
@@ -31,6 +32,22 @@ export default function MasPage() {
             </Link>
           </li>
         ))}
+        <li>
+          <a
+            href={SITE_INSTAGRAM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block rounded-2xl border border-line bg-surface p-4 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-celeste"
+          >
+            <p className="font-display text-lg font-bold text-ink">
+              Instagram <span aria-hidden>↗</span>
+              <span className="sr-only"> (se abre en otra pestaña)</span>
+            </p>
+            <p className="text-sm text-ink-soft">
+              {SITE_INSTAGRAM_HANDLE}: datos explicados y novedades del sitio.
+            </p>
+          </a>
+        </li>
       </ul>
     </div>
   );
