@@ -1,7 +1,7 @@
 import type { ElectionResult } from "@/lib/types";
 
 // GENERADO por scripts/ingest/fetch-elecciones.mjs — no editar a mano.
-// Última ejecución: 2026-10-02. Fuente: Corte Electoral (datos abiertos oficiales,
+// Última ejecución: 2026-10-05. Fuente: Corte Electoral (datos abiertos oficiales,
 // desglose por circuito), agregado por departamento/municipio. El script valida
 // los totales contra el escrutinio oficial antes de escribir este archivo:
 //  - 2024: totales nacionales por partido exactos (FA 1.071.826, PN 655.426, …).
