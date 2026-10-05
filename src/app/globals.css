@@ -167,6 +167,130 @@ details.fold[open] > summary::after {
   }
 }
 
+/* Comparador, vista general: una columna por territorio. La primera columna
+   queda fija al deslizar en el celular, así siempre se sabe qué fila se lee. */
+.compare-overview .sticky-col {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  min-width: 11rem;
+  max-width: 15rem;
+  background: var(--color-surface);
+  text-align: left;
+  box-shadow: 1px 0 0 var(--color-line);
+}
+.compare-overview thead th.sticky-col {
+  background: var(--color-canvas);
+}
+.compare-overview thead th.territory-col {
+  min-width: 8.5rem;
+  white-space: normal;
+  vertical-align: bottom;
+}
+.compare-overview .territory-name {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-ink);
+}
+.compare-overview .territory-level {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.compare-overview .group-row th {
+  padding: 8px 14px;
+  text-align: left;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+.compare-overview .group-label {
+  position: sticky;
+  left: 14px;
+}
+.compare-overview tbody th[scope="row"] {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--color-line);
+  vertical-align: top;
+  font-weight: 400;
+}
+.compare-overview tbody td {
+  vertical-align: top;
+}
+.compare-overview tbody tr:last-child th {
+  border-bottom: none;
+}
+.compare-overview .row-name {
+  display: block;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+.compare-overview .row-context {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--color-ink-faint);
+}
+.compare-overview .cell-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.compare-overview .cell-bar {
+  display: block;
+  height: 4px;
+  width: 100%;
+  max-width: 7rem;
+  margin: 6px 0 0 auto;
+  border-radius: 2px;
+  background: var(--color-canvas);
+  overflow: hidden;
+}
+.compare-overview .cell-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--color-celeste);
+}
+.compare-overview .cell-empty {
+  color: var(--color-ink-faint);
+}
+@media (max-width: 640px) {
+  .compare-overview .sticky-col {
+    min-width: 8.5rem;
+    max-width: 9.5rem;
+  }
+  .compare-overview thead th.territory-col {
+    min-width: 7rem;
+  }
+}
+.compare-overview .party-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .compare-overview tbody tr:not(.group-row):hover .sticky-col {
+    background: color-mix(in srgb, var(--color-primary-soft) 45%, var(--color-surface));
+  }
+  .compare-overview tbody tr.group-row:hover {
+    background: none;
+  }
+}
+
 /* Todo elemento presionable responde al tacto (feedback físico) */
 .pressable {
   transition: transform 160ms var(--ease-out-strong);

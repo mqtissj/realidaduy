@@ -5,12 +5,14 @@ import { getGovernment, getParty } from "@/data/elections";
 import { getLatest, indicatorsForLevel } from "@/lib/data";
 import { getSource } from "@/data/sources";
 import { formatNumber, formatValue } from "@/lib/format";
-import type { GeoLevel } from "@/lib/types";
+import type { Category, GeoLevel } from "@/lib/types";
 
 export interface MetricSummary {
   indicatorId: string;
   slug: string;
   name: string;
+  /** Tema del diccionario: agrupa las filas de la vista general del comparador. */
+  category: Category;
   /** Etiqueta corta para selectores ("Desempleo"). */
   mapLabel: string;
   unit: string;
@@ -50,6 +52,7 @@ function metricsFor(territoryId: string, level: GeoLevel): MetricSummary[] {
       indicatorId: i.id,
       slug: i.slug,
       name: i.name,
+      category: i.category,
       mapLabel: i.shortName ?? i.name,
       unit: i.unit,
       decimals: i.decimals,

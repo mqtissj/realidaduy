@@ -3,10 +3,17 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import ShareButton from "@/components/share/ShareButton";
+import CompareOverview from "@/components/compare/CompareOverview";
 import { formatNumber } from "@/lib/format";
 import type { MetricSummary, TerritorySummary } from "@/lib/data/summaries";
 
 const EMPTY = "";
+
+type View = "general" | "indicador";
+const VIEWS: { id: View; label: string }[] = [
+  { id: "general", label: "Vista general" },
+  { id: "indicador", label: "Un indicador" },
+];
 
 export default function CompareTool({
   territories,
@@ -40,6 +47,7 @@ export default function CompareTool({
   }, [territories]);
 
   const [indicatorId, setIndicatorId] = useState("poblacion");
+  const [view, setView] = useState<View>("general");
   const meta =
     indicatorOptions.find((m) => m.indicatorId === indicatorId) ?? indicatorOptions[0];
 
@@ -60,11 +68,20 @@ export default function CompareTool({
     setPicks((prev) => prev.map((p, i) => (i === index ? value : p)));
   };
 
+  // Pestañas accesibles: flechas izquierda/derecha cambian de vista.
+  const onTabKey = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+    e.preventDefault();
+    const next = view === "general" ? "indicador" : "general";
+    setView(next);
+    document.getElementById(`tab-${next}`)?.focus();
+  };
+
   return (
     <div>
       <fieldset className="rounded-2xl border border-line bg-surface p-4 shadow-card">
         <legend className="px-1 font-display text-sm font-bold text-ink-soft">
-          Elegí hasta 3 territorios y un indicador
+          Elegí hasta 3 territorios
         </legend>
         <div className="grid gap-3 sm:grid-cols-3">
           {[0, 1, 2].map((i) => (
@@ -97,26 +114,65 @@ export default function CompareTool({
             </label>
           ))}
         </div>
-        <label className="mt-3 block text-sm">
-          <span className="font-semibold text-ink-soft">Indicador</span>
-          <select
-            value={meta?.indicatorId ?? ""}
-            onChange={(e) => setIndicatorId(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-line bg-surface px-3 py-2.5 text-base sm:max-w-sm"
-          >
-            {indicatorOptions.map((m) => (
-              <option key={m.indicatorId} value={m.indicatorId}>
-                {m.name} · {m.periodLabel}
-              </option>
-            ))}
-          </select>
-        </label>
+        {view === "indicador" ? (
+          <label className="mt-3 block text-sm">
+            <span className="font-semibold text-ink-soft">Indicador</span>
+            <select
+              value={meta?.indicatorId ?? ""}
+              onChange={(e) => setIndicatorId(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-line bg-surface px-3 py-2.5 text-base sm:max-w-sm"
+            >
+              {indicatorOptions.map((m) => (
+                <option key={m.indicatorId} value={m.indicatorId}>
+                  {m.name} · {m.periodLabel}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
       </fieldset>
 
-      <div aria-live="polite" className="mt-6">
+      <div
+        role="tablist"
+        aria-label="Forma de comparar"
+        className="mt-6 inline-flex rounded-xl border border-line bg-surface p-1"
+      >
+        {VIEWS.map((v) => (
+          <button
+            key={v.id}
+            id={`tab-${v.id}`}
+            type="button"
+            role="tab"
+            aria-selected={view === v.id}
+            aria-controls="compare-panel"
+            tabIndex={view === v.id ? 0 : -1}
+            onClick={() => setView(v.id)}
+            onKeyDown={onTabKey}
+            className={`pressable rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors ${
+              view === v.id ? "bg-primary text-white" : "text-ink-soft hover:text-primary"
+            }`}
+          >
+            {v.label}
+          </button>
+        ))}
+      </div>
+      <p className="sr-only" aria-live="polite">
+        {chosen.length >= 2 ? `Comparando ${chosen.map((t) => t.name).join(", ")}` : ""}
+      </p>
+
+      <div id="compare-panel" role="tabpanel" aria-labelledby={`tab-${view}`} className="mt-4">
         {chosen.length < 2 || !meta ? (
           <div className="rounded-2xl border border-dashed border-line bg-surface px-4 py-8 text-center text-ink-soft">
             Elegí al menos dos territorios para comparar.
+          </div>
+        ) : view === "general" ? (
+          <div>
+            <CompareOverview territories={chosen} />
+            <p className="mt-3 text-xs text-ink-faint">
+              Cada fila muestra el último dato disponible de cada territorio, con su período y
+              su fuente. La barra indica el tamaño relativo dentro de la fila. Para el detalle de
+              un indicador, con diferencias y la imagen para compartir, usá «Un indicador».
+            </p>
           </div>
         ) : (
           <figure data-share-card className="rounded-2xl border border-line bg-surface p-4 shadow-card md:p-5">
