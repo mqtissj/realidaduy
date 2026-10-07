@@ -30,6 +30,7 @@ export async function generateMetadata({
   return {
     title: `${dept.name} — Perfil territorial`,
     description,
+    alternates: { canonical: `/departamentos/${dept.slug}` },
     openGraph: {
       title: `${dept.name} · ${SITE_NAME}`,
       description,

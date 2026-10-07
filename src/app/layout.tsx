@@ -38,7 +38,10 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
-  alternates: { canonical: "/" },
+  // "./" se resuelve contra la ruta de cada página: cada una es su propia
+  // canónica. Con "/" todas apuntaban al inicio, y Google las trataba como
+  // copias de la portada y no las indexaba.
+  alternates: { canonical: "./" },
   keywords: [
     "Uruguay",
     "datos abiertos",
@@ -60,7 +63,7 @@ export const metadata: Metadata = {
     type: "article",
     locale: "es_UY",
     siteName: SITE_NAME,
-    url: "/",
+    url: "./",
     title: `${SITE_NAME} — ${SITE_TAGLINE}`,
     description: SITE_DESCRIPTION,
     publishedTime: SITE_PUBLISHED,
