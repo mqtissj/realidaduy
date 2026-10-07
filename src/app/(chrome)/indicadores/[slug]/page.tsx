@@ -31,6 +31,9 @@ export async function generateMetadata({
   return {
     title: indicator.name,
     description: `${indicator.question} ${indicator.plainDefinition}`,
+    // getIndicator también acepta el id (/indicadores/inflacion-interanual):
+    // la canónica es siempre la del slug, para que no cuente como duplicada.
+    alternates: { canonical: `/indicadores/${indicator.slug}` },
     openGraph: {
       title: `${indicator.question} · ${SITE_NAME}`,
       description: `${indicator.question} ${indicator.plainDefinition}`,
