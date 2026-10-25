@@ -17,6 +17,7 @@ import { prismaObservations } from "@/data/observations/prisma";
 import { bcuPibObservations } from "@/data/observations/bcu-pib";
 import { bcuCotizacionesObservations } from "@/data/observations/bcu-cotizaciones";
 import { ineAnualesDesgloses, ineAnualesObservations } from "@/data/observations/ine-anuales";
+import { inePobrezaAperturas } from "@/data/observations/ine-pobreza-aperturas";
 import { departments, getTerritoryById } from "@/data/territories";
 
 export { dictionary, getIndicator };
@@ -44,7 +45,7 @@ const allObservations: Observation[] = [
 // Aperturas (por sexo, por edad), aparte de los totales: ninguna función de
 // totales las ve, así un titular, un ranking o un mapa nunca muestra el dato de
 // las mujeres como si fuera el del departamento.
-const allBreakdowns: Observation[] = [...ineAnualesDesgloses];
+const allBreakdowns: Observation[] = [...ineAnualesDesgloses, ...inePobrezaAperturas];
 
 /** Todas las observaciones de la plataforma, totales y aperturas (descargas CSV). */
 export function getAllObservations(): Observation[] {
@@ -221,6 +222,7 @@ export { getTerritoryById };
 export const DIMENSION_LABEL: Record<BreakdownDimension, string> = {
   sexo: "sexo",
   edad: "edad",
+  ascendencia: "ascendencia étnico-racial",
 };
 
 /** Dimensiones con aperturas para un indicador, en cualquier territorio. */
