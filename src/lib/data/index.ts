@@ -294,3 +294,21 @@ export function getDepartmentBreakdown(
   }
   return { groups, rows };
 }
+
+/**
+ * Aperturas de un período puntual (el del último total, para mostrarlas al
+ * lado). Vacío si algún grupo no tiene dato en ese período.
+ */
+export function getBreakdownAt(
+  indicatorId: string,
+  territoryId: string,
+  dimension: BreakdownDimension,
+  period: string
+): { group: string; label: string; obs: Observation }[] {
+  const out = getBreakdown(indicatorId, territoryId, dimension).map((g) => ({
+    group: g.group,
+    label: g.label,
+    obs: g.obs.find((o) => o.period === period),
+  }));
+  return out.every((g) => g.obs) ? (out as { group: string; label: string; obs: Observation }[]) : [];
+}

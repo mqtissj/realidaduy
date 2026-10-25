@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import ShareButton from "@/components/share/ShareButton";
 import CompareOverview from "@/components/compare/CompareOverview";
-import { formatNumber } from "@/lib/format";
+import { formatDelta, formatNumber } from "@/lib/format";
 import type { MetricSummary, TerritorySummary } from "@/lib/data/summaries";
 import TableWrap from "@/components/ui/TableWrap";
 
@@ -62,6 +62,11 @@ export default function CompareTool({
     metric: t.metrics.find((m) => m.indicatorId === meta?.indicatorId),
   }));
   const withData = rows.filter((r) => r.metric);
+  // Hombres y mujeres del mismo período, de los territorios que los tienen.
+  const bySex = withData.flatMap(({ territory, metric }) => {
+    const b = metric!.breakdowns?.find((x) => x.dimension === "sexo");
+    return b ? [{ territory, groups: b.groups }] : [];
+  });
   const max = Math.max(...withData.map((r) => r.metric!.value), 1);
   const base = withData[0];
 
@@ -250,6 +255,48 @@ export default function CompareTool({
                         </tr>
                       );
                     })}
+                  </tbody>
+                </table>
+              </TableWrap>
+            ) : null}
+            {bySex.length > 0 ? (
+              <TableWrap label={`${meta.name} por sexo`} className="mt-5">
+                <table className="tabla min-w-[420px]">
+                  <caption className="sr-only">
+                    {meta.name} por sexo en los territorios elegidos
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Por sexo</th>
+                      {bySex[0].groups.map((g) => (
+                        <th key={g.group} scope="col" className="num">
+                          {g.label}
+                        </th>
+                      ))}
+                      {bySex[0].groups.length === 2 ? (
+                        <th scope="col" className="num">
+                          Diferencia ({bySex[0].groups[1].label.toLowerCase()} −{" "}
+                          {bySex[0].groups[0].label.toLowerCase()})
+                        </th>
+                      ) : null}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {bySex.map((r) => (
+                      <tr key={r.territory.id}>
+                        <td>{r.territory.name}</td>
+                        {r.groups.map((g) => (
+                          <td key={g.group} className="num">
+                            {g.display}
+                          </td>
+                        ))}
+                        {r.groups.length === 2 ? (
+                          <td className="num">
+                            {formatDelta(r.groups[1].value - r.groups[0].value, meta.unit, meta.decimals)}
+                          </td>
+                        ) : null}
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </TableWrap>
