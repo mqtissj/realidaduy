@@ -5,7 +5,9 @@
 # Qué actualiza: los indicadores mensuales del INE (IPC, ECH e IMS, leídos de
 # sus informes técnicos), la esperanza de vida y el desempleo por departamento
 # del INE, series del Banco Mundial, el PBI anual que publica
-# PRISMA (ANII), el PIB trimestral y la cotización del dólar del BCU, tasas de
+# PRISMA (ANII), el PIB trimestral y las cotizaciones del BCU (dólar, real,
+# euro y peso argentino; además corren cada día hábil en
+# actualizar-cotizaciones.yml), tasas de
 # seguridad (M. Interior) y resultados electorales (Corte Electoral; con asserts
 # contra el escrutinio).
 # Lo que no tiene script (pobreza, salario mínimo, datos departamentales) lo
@@ -21,6 +23,11 @@ on:
 
 permissions:
   contents: write
+
+# Comparte grupo con actualizar-cotizaciones.yml: nunca corren las dos a la vez.
+concurrency:
+  group: actualizar-datos
+  cancel-in-progress: false
 
 jobs:
   actualizar:

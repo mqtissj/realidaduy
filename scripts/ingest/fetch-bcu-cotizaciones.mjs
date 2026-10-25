@@ -204,12 +204,17 @@ for (const m of MONEDAS) series.push(await serie(m));
 // aparece en el recuadro lateral, sin fecha ("Euro 44,8633"): se compara con
 // el último dato y, si no coincide, solo se avisa. Si el día que muestra la
 // tabla coincide con el último del servicio, el valor tiene que ser el mismo.
+// `verificadas` cuenta las monedas que sí se pudieron comparar: el archivo solo
+// dice que se verificó si se verificaron todas.
+let verificadas = 0;
 try {
-  const html = await (
-    await fetch(PAGINA, {
-      headers: { "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)" },
-    })
-  ).text();
+  const res = await fetch(PAGINA, {
+    headers: { "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)" },
+  });
+  // Un 503 trae una página de error que no tiene la tabla: no es que falte la
+  // moneda, es que no se pudo leer la página.
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const html = await res.text();
   const texto = html.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ");
   const num = (s) => Number(s.replace(",", "."));
   for (const { m, dias, ultimo } of series) {
@@ -218,7 +223,10 @@ try {
       if (!r) console.warn(`AVISO: no se encontró el ${m.texto} en la página de cotizaciones del BCU`);
       else if (Math.abs(num(r[1]) - ultimo.venta) > 0.0005)
         console.warn(`AVISO: la página del BCU muestra ${m.texto} ${r[1]} (sin fecha) y el último del servicio es ${ultimo.venta} (${ultimo.fecha})`);
-      else console.log(`Página del BCU verificada: ${m.texto} ${ultimo.venta}`);
+      else {
+        console.log(`Página del BCU verificada: ${m.texto} ${ultimo.venta}`);
+        verificadas++;
+      }
       continue;
     }
     const fila = m.fila.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -233,7 +241,10 @@ try {
     if (!delServicio) console.warn(`AVISO: la página del BCU muestra ${m.texto} del ${fecha}, que el servicio todavía no trae`);
     else if (Math.abs(delServicio.venta - venta) > 0.0005)
       fail(`la página del BCU dice ${venta} para ${m.texto} el ${fecha} y el servicio, ${delServicio.venta}`);
-    else console.log(`Página del BCU verificada: ${m.texto} ${fecha} ${venta}`);
+    else {
+      console.log(`Página del BCU verificada: ${m.texto} ${fecha} ${venta}`);
+      verificadas++;
+    }
   }
 } catch (e) {
   if (e.message.startsWith("El servicio de cotizaciones")) throw e;
@@ -283,7 +294,11 @@ const file = `import type { Observation } from "@/lib/types";
 // GENERADO por scripts/ingest/fetch-bcu-cotizaciones.mjs — no editar a mano.
 // Última ejecución: ${TODAY}. Fuente: BCU, servicio web de cotizaciones (valor
 // vendedor del mercado interbancario): ${MONEDAS.map((m) => `${m.texto} (${m.codigo})`).join(", ")}.
-// El último dato se verificó contra la página de cotizaciones del BCU.
+// ${
+  verificadas === series.length
+    ? "El último dato se verificó contra la página de cotizaciones del BCU."
+    : `El último dato NO se pudo verificar contra la página de cotizaciones del BCU (${verificadas} de ${series.length} monedas).`
+}
 
 export const bcuCotizacionesObservations: Observation[] = [
 ${lines.join("\n")}

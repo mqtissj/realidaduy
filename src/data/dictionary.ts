@@ -280,11 +280,11 @@ export const dictionary: Indicator[] = [
     geographicLevel: ["pais"],
     availableFrom: "2000",
     methodology:
-      "Dólar estadounidense billete del mercado interbancario (código 2225 del servicio de cotizaciones del BCU), valor vendedor. El último dato es la cotización del último día hábil disponible cuando el sitio se actualiza, una vez por mes; la variación se mide contra el cierre del mes anterior. Los promedios mensuales y anuales los calcula realidad.uy con todas las cotizaciones diarias del período.",
+      "Dólar estadounidense billete del mercado interbancario (código 2225 del servicio de cotizaciones del BCU), valor vendedor. El último dato es la cotización del último día hábil disponible cuando el sitio se actualiza, cada día hábil; la variación se mide contra el cierre del mes anterior. Los promedios mensuales y anuales los calcula realidad.uy con todas las cotizaciones diarias del período.",
     isCalculated: false,
     reading: "neutral",
     decimals: 3,
-    lastUpdated: "2026-10-12",
+    lastUpdated: "2026-10-24",
     status: "active",
   },
   {
@@ -306,7 +306,7 @@ export const dictionary: Indicator[] = [
     geographicLevel: ["pais"],
     availableFrom: "2000",
     methodology:
-      "Real brasileño billete del mercado interbancario (código 1001 del servicio de cotizaciones del BCU), valor vendedor. El último dato es la cotización del último día hábil disponible cuando el sitio se actualiza, una vez por mes; la variación se mide contra el cierre del mes anterior. Los promedios mensuales y anuales los calcula realidad.uy con todas las cotizaciones diarias del período.",
+      "Real brasileño billete del mercado interbancario (código 1001 del servicio de cotizaciones del BCU), valor vendedor. El último dato es la cotización del último día hábil disponible cuando el sitio se actualiza, cada día hábil; la variación se mide contra el cierre del mes anterior. Los promedios mensuales y anuales los calcula realidad.uy con todas las cotizaciones diarias del período.",
     isCalculated: false,
     reading: "neutral",
     decimals: 3,
@@ -331,7 +331,7 @@ export const dictionary: Indicator[] = [
     geographicLevel: ["pais"],
     availableFrom: "2000",
     methodology:
-      "Euro del mercado interbancario (código 1111 del servicio de cotizaciones del BCU), valor vendedor. El último dato es la cotización del último día hábil disponible cuando el sitio se actualiza, una vez por mes; la variación se mide contra el cierre del mes anterior. Los promedios mensuales y anuales los calcula realidad.uy con todas las cotizaciones diarias del período.",
+      "Euro del mercado interbancario (código 1111 del servicio de cotizaciones del BCU), valor vendedor. El último dato es la cotización del último día hábil disponible cuando el sitio se actualiza, cada día hábil; la variación se mide contra el cierre del mes anterior. Los promedios mensuales y anuales los calcula realidad.uy con todas las cotizaciones diarias del período.",
     isCalculated: false,
     reading: "neutral",
     decimals: 3,
@@ -347,7 +347,7 @@ export const dictionary: Indicator[] = [
     description:
       "Cotización del peso argentino billete en el mercado interbancario, según el Banco Central del Uruguay, expresada por cada 1.000 pesos argentinos.",
     plainDefinition:
-      "Cuántos pesos uruguayos valen 1.000 pesos argentinos según la cotización oficial que publica el Banco Central. Se muestra por 1.000 porque un peso argentino vale unos pocos centésimos. Es la referencia del mercado mayorista, no el precio de una casa de cambio.",
+      "Cuántos pesos uruguayos valen 1.000 pesos argentinos según la cotización oficial que publica el Banco Central. Se muestra por 1.000 porque un peso argentino vale unos pocos centésimos. Como el BCU lo publica con solo tres decimales, el dato diario se mueve a saltos y la variación mensual suele dar 0%: para ver la tendencia, mirá los promedios mensuales. Es la referencia del mercado mayorista, no el precio de una casa de cambio.",
     category: "economia",
     unit: "pesos",
     unitLabel: "pesos uruguayos por cada 1.000 pesos argentinos",
@@ -357,7 +357,7 @@ export const dictionary: Indicator[] = [
     geographicLevel: ["pais"],
     availableFrom: "2000",
     methodology:
-      "Peso argentino billete del mercado interbancario (código 501 del servicio de cotizaciones del BCU), valor vendedor, multiplicado por 1.000. El BCU lo publica con tres decimales (por ejemplo 0,027 pesos uruguayos), así que el dato diario va de a un peso por cada 1.000 pesos argentinos. El último dato es la cotización del último día hábil disponible cuando el sitio se actualiza, una vez por mes; la variación se mide contra el cierre del mes anterior. Los promedios mensuales y anuales los calcula realidad.uy con todas las cotizaciones diarias del período.",
+      "Peso argentino billete del mercado interbancario (código 501 del servicio de cotizaciones del BCU), valor vendedor, multiplicado por 1.000. El BCU lo publica con tres decimales (por ejemplo 0,027 pesos uruguayos), así que el dato diario va de a un peso por cada 1.000 pesos argentinos: con valores cerca de 27, cada salto es de casi 4%, y la variación contra el cierre del mes anterior suele dar 0% aunque el peso argentino se haya movido. Para ver la tendencia sirven más los promedios mensuales, que sí recogen esos movimientos. El último dato es la cotización del último día hábil disponible cuando el sitio se actualiza, cada día hábil; la variación se mide contra el cierre del mes anterior. Los promedios mensuales y anuales los calcula realidad.uy con todas las cotizaciones diarias del período.",
     isCalculated: false,
     reading: "neutral",
     decimals: 1,
