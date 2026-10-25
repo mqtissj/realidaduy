@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { activeIndicators, getIndicator } from "@/data/dictionary";
 import {
+  breakdownDimensions,
   getComparableSeries,
   getDepartmentRanking,
   getHistorySeries,
@@ -21,6 +22,7 @@ import ChartCard from "@/components/charts/ChartCard";
 import LineChart from "@/components/charts/LineChart";
 import RankingList from "@/components/charts/RankingList";
 import PeriodCompare from "@/components/charts/PeriodCompare";
+import BreakdownSection from "@/components/charts/BreakdownSection";
 import SourceNote from "@/components/ui/SourceNote";
 import StateView from "@/components/ui/StateView";
 
@@ -290,6 +292,11 @@ export default async function IndicadorPage({
           </div>
         </section>
       ) : null}
+
+      {/* Aperturas: por sexo, por edad */}
+      {breakdownDimensions(indicator.id).map((d) => (
+        <BreakdownSection key={d} indicator={indicator} dimension={d} />
+      ))}
 
       {/* Por departamento */}
       <section aria-labelledby="por-departamento" className="mt-8">
