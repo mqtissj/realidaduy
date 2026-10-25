@@ -1,7 +1,7 @@
 // API de acceso a datos. Toda la UI consume estas funciones; cuando la capa de
 // datos migre de archivos estáticos a una base real (V2+), solo cambia este módulo.
 
-import type { Indicator, Observation, Territory } from "@/lib/types";
+import type { BreakdownDimension, Indicator, Observation, Territory } from "@/lib/types";
 import { dictionary, getIndicator } from "@/data/dictionary";
 import { nationalObservations } from "@/data/observations/nacional";
 import { departmentObservations } from "@/data/observations/departamentos";
@@ -16,7 +16,7 @@ import { worldBankSeries } from "@/data/observations/series-banco-mundial";
 import { prismaObservations } from "@/data/observations/prisma";
 import { bcuPibObservations } from "@/data/observations/bcu-pib";
 import { bcuCotizacionesObservations } from "@/data/observations/bcu-cotizaciones";
-import { ineAnualesObservations } from "@/data/observations/ine-anuales";
+import { ineAnualesDesgloses, ineAnualesObservations } from "@/data/observations/ine-anuales";
 import { departments, getTerritoryById } from "@/data/territories";
 
 export { dictionary, getIndicator };
@@ -41,14 +41,19 @@ const allObservations: Observation[] = [
   ...ineAnualesObservations,
 ];
 
-/** Todas las observaciones de la plataforma (usado por las descargas CSV). */
+// Aperturas (por sexo, por edad), aparte de los totales: ninguna función de
+// totales las ve, así un titular, un ranking o un mapa nunca muestra el dato de
+// las mujeres como si fuera el del departamento.
+const allBreakdowns: Observation[] = [...ineAnualesDesgloses];
+
+/** Todas las observaciones de la plataforma, totales y aperturas (descargas CSV). */
 export function getAllObservations(): Observation[] {
-  return allObservations;
+  return [...allObservations, ...allBreakdowns];
 }
 
-/** Todas las observaciones de un indicador, en todos los territorios. */
+/** Todas las observaciones de un indicador, en todos los territorios, con sus aperturas. */
 export function getIndicatorObservations(indicatorId: string): Observation[] {
-  return allObservations.filter((o) => o.indicatorId === indicatorId);
+  return getAllObservations().filter((o) => o.indicatorId === indicatorId);
 }
 
 /** Observaciones de un indicador en un territorio, ordenadas por período. */
@@ -210,3 +215,82 @@ export function hasData(indicatorId: string, territoryId: string): boolean {
 }
 
 export { getTerritoryById };
+
+// ── Aperturas ───────────────────────────────────────────────────
+
+export const DIMENSION_LABEL: Record<BreakdownDimension, string> = {
+  sexo: "sexo",
+  edad: "edad",
+};
+
+/** Dimensiones con aperturas para un indicador, en cualquier territorio. */
+export function breakdownDimensions(indicatorId: string): BreakdownDimension[] {
+  const dims = new Set(
+    allBreakdowns.filter((o) => o.indicatorId === indicatorId).map((o) => o.breakdown!.dimension)
+  );
+  return (Object.keys(DIMENSION_LABEL) as BreakdownDimension[]).filter((d) => dims.has(d));
+}
+
+export interface BreakdownGroup {
+  group: string;
+  label: string;
+  /** Observaciones del grupo, ordenadas por período. */
+  obs: Observation[];
+}
+
+/**
+ * Aperturas de un indicador en un territorio, un grupo por línea (hombres,
+ * mujeres), en el orden en que las publica la fuente.
+ */
+export function getBreakdown(
+  indicatorId: string,
+  territoryId: string,
+  dimension: BreakdownDimension
+): BreakdownGroup[] {
+  const groups: BreakdownGroup[] = [];
+  for (const o of allBreakdowns) {
+    if (o.indicatorId !== indicatorId || o.territoryId !== territoryId) continue;
+    if (o.breakdown!.dimension !== dimension || o.value === null) continue;
+    let g = groups.find((x) => x.group === o.breakdown!.group);
+    if (!g) groups.push((g = { group: o.breakdown!.group, label: o.breakdown!.label, obs: [] }));
+    g.obs.push(o);
+  }
+  for (const g of groups) g.obs.sort((a, b) => a.period.localeCompare(b.period));
+  return groups;
+}
+
+export interface BreakdownRow {
+  territory: Territory;
+  period: string;
+  periodLabel: string;
+  /** Valor de cada grupo, en el orden de `groups`. */
+  values: (number | null)[];
+  obs: Observation;
+}
+
+/**
+ * Último período con aperturas de cada departamento, para la tabla "por
+ * departamento". Solo cuentan los departamentos que tienen todos los grupos en
+ * ese período: nunca se arma una fila con hombres de un año y mujeres de otro.
+ */
+export function getDepartmentBreakdown(
+  indicatorId: string,
+  dimension: BreakdownDimension
+): { groups: { group: string; label: string }[]; rows: BreakdownRow[] } {
+  const groups: { group: string; label: string }[] = [];
+  const rows: BreakdownRow[] = [];
+  const perDept = departments.map((d) => ({ d, b: getBreakdown(indicatorId, d.id, dimension) }));
+  for (const { b } of perDept)
+    for (const g of b)
+      if (!groups.some((x) => x.group === g.group)) groups.push({ group: g.group, label: g.label });
+  for (const { d, b } of perDept) {
+    if (b.length === 0) continue;
+    const periods = b.map((g) => g.obs[g.obs.length - 1].period);
+    const period = periods.reduce((a, p) => (p < a ? p : a));
+    const values = groups.map((g) => b.find((x) => x.group === g.group)?.obs.find((o) => o.period === period)?.value ?? null);
+    if (values.some((v) => v === null)) continue;
+    const obs = b[0].obs.find((o) => o.period === period)!;
+    rows.push({ territory: d, period, periodLabel: obs.periodLabel, values, obs });
+  }
+  return { groups, rows };
+}

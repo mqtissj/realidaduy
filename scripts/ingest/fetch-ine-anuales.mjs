@@ -17,6 +17,9 @@
 // Cuando salga un anuario o una revisión nueva, cambian las URL de abajo (y el
 // total país esperado del desempleo).
 //
+// Las dos fuentes traen hombres y mujeres: van como aperturas por sexo
+// (ineAnualesDesgloses), aparte de los totales.
+//
 // Genera src/data/observations/ine-anuales.ts.
 // Uso: node scripts/ingest/fetch-ine-anuales.mjs
 
@@ -96,7 +99,13 @@ const DEPTO = {
 const fmt = (n, d = 1) => n.toFixed(d).replace(".", ",");
 const round1 = (n) => Math.round(n * 10) / 10;
 const linea = (o) =>
-  `  { indicatorId: ${JSON.stringify(o.indicatorId)}, territoryId: ${JSON.stringify(o.territoryId)}, period: ${JSON.stringify(o.period)}, periodLabel: ${JSON.stringify(o.periodLabel)}, value: ${o.value}, status: "OFFICIAL", demo: false, sourceUrl: ${JSON.stringify(o.sourceUrl)}, retrievedAt: "${TODAY}", notes: ${JSON.stringify(o.notes)} },`;
+  `  { indicatorId: ${JSON.stringify(o.indicatorId)}, territoryId: ${JSON.stringify(o.territoryId)}, period: ${JSON.stringify(o.period)}, periodLabel: ${JSON.stringify(o.periodLabel)}, value: ${o.value}, status: "OFFICIAL", demo: false, sourceUrl: ${JSON.stringify(o.sourceUrl)}, retrievedAt: "${TODAY}"${o.notes ? `, notes: ${JSON.stringify(o.notes)}` : ""}${o.breakdown ? `, breakdown: { ${Object.entries(o.breakdown).map(([k, v]) => `${k}: ${JSON.stringify(v)}`).join(", ")} }` : ""} },`;
+const SEXOS = [
+  { bloque: "Hombres", breakdown: { dimension: "sexo", group: "hombres", label: "Hombres" } },
+  { bloque: "Mujeres", breakdown: { dimension: "sexo", group: "mujeres", label: "Mujeres" } },
+];
+// Una apertura por sexo: mismo dato que el total, con su propio valor y sin notas.
+const porSexo = (total, sexo, value) => ({ ...total, value, notes: undefined, breakdown: sexo.breakdown });
 
 // ── 1. Esperanza de vida ────────────────────────────────────────────────────
 const zip = new AdmZip(Buffer.from(await (await get(MORTALIDAD_XLSX)).arrayBuffer()));
@@ -156,6 +165,7 @@ const enRango = (v, donde) => {
 };
 
 const esperanza = [];
+const esperanzaSexo = [];
 const colPais = columnas[0][0];
 const aniosPais = [...bloques["Ambos sexos"].keys()].filter((a) => valor("Ambos sexos", a, colPais) !== null);
 for (let i = 1; i < aniosPais.length; i++)
@@ -167,6 +177,8 @@ for (const anio of aniosPais) {
     value: round1(t), sourceUrl: MORTALIDAD_PAGINA,
     notes: `Hombres: ${fmt(valor("Hombres", anio, colPais))} años · Mujeres: ${fmt(valor("Mujeres", anio, colPais))} años. INE, estimaciones y proyecciones de población (Revisión 2025, con base en el Censo 2023).`,
   });
+  for (const s of SEXOS)
+    esperanzaSexo.push(porSexo(esperanza.at(-1), s, round1(enRango(valor(s.bloque, anio, colPais), `Uruguay ${anio} ${s.bloque}`))));
 }
 // Departamentos: el último año que tienen los 19.
 const aniosDepto = [...bloques["Ambos sexos"].keys()].filter((a) =>
@@ -183,6 +195,8 @@ for (const [col, nombre] of columnas.slice(1)) {
     value: round1(t), sourceUrl: MORTALIDAD_PAGINA,
     notes: `Promedio de tres años centrado en ${ultimoDepto} (${desdeTri}–${hastaTri}), como publica el INE para los departamentos. Hombres: ${fmt(valor("Hombres", ultimoDepto, col))} años · Mujeres: ${fmt(valor("Mujeres", ultimoDepto, col))} años. INE, estimaciones y proyecciones de población (Revisión 2025).`,
   });
+  for (const s of SEXOS)
+    esperanzaSexo.push(porSexo(esperanza.at(-1), s, round1(enRango(valor(s.bloque, ultimoDepto, col), `${nombre} ${ultimoDepto} ${s.bloque}`))));
 }
 console.log(`esperanza de vida: país ${aniosPais[0]}–${aniosPais[aniosPais.length - 1]} (último ${fmt(valor("Ambos sexos", aniosPais[aniosPais.length - 1], colPais), 2)}), departamentos ${ultimoDepto}`);
 
@@ -204,6 +218,13 @@ if (!pais) fail("el cuadro 3.4.4 no tiene la fila Total País");
 if (Math.abs(pais.n[6] - DESEMPLEO_PAIS_ESPERADO) > 0.05)
   fail(`total país de desempleo ${ANUARIO_ANIO}: esperado ${DESEMPLEO_PAIS_ESPERADO}, el cuadro dice ${pais.n[6]}`);
 const desempleo = [];
+const desempleoSexo = [];
+const sexoDesempleo = (total, h, m, donde) => {
+  for (const [s, v] of [[SEXOS[0], h], [SEXOS[1], m]]) {
+    if (!(v > 0 && v < 40)) fail(`desempleo de ${s.breakdown.group} fuera de rango en ${donde}: ${v}`);
+    desempleoSexo.push(porSexo(total, s, v));
+  }
+};
 for (const f of filasAnuario) {
   const iso = DEPTO[norm(f.nombre)];
   if (!iso) continue; // Total País, Total Interior
@@ -214,8 +235,11 @@ for (const f of filasAnuario) {
     periodLabel: `${ANUARIO_ANIO} (promedio anual)`, value: t, sourceUrl: ANUARIO_344,
     notes: `Promedio anual ${ANUARIO_ANIO} de la ECH. INE, Anuario Estadístico Nacional 2025, cuadro 3.4.4; el total país (${fmt(pais.n[6])}%) es la tasa anual oficial. Hombres: ${fmt(h)}% · Mujeres: ${fmt(m)}%.`,
   });
+  sexoDesempleo(desempleo.at(-1), h, m, f.nombre);
 }
 if (desempleo.length !== 19) fail(`el cuadro 3.4.4 trae ${desempleo.length} departamentos, no 19`);
+// El país, solo abierto por sexo: el total anual del país ya sale de los informes mensuales.
+sexoDesempleo({ ...desempleo[0], territoryId: "UY" }, pais.n[7], pais.n[8], "Total País");
 console.log(`desempleo por departamento ${ANUARIO_ANIO}: 19 departamentos, total país ${fmt(pais.n[6])}%`);
 
 // ── Archivo ─────────────────────────────────────────────────────────────────
@@ -232,6 +256,14 @@ ${esperanza.map(linea).join("\n")}
   // Tasa de desempleo por departamento (promedio anual)
 ${desempleo.map(linea).join("\n")}
 ];
+
+// Aperturas por sexo de las mismas fuentes.
+export const ineAnualesDesgloses: Observation[] = [
+  // Esperanza de vida al nacer por sexo: país (serie anual) y departamentos (último año)
+${esperanzaSexo.map(linea).join("\n")}
+  // Tasa de desempleo por sexo: país y departamentos (promedio anual)
+${desempleoSexo.map(linea).join("\n")}
+];
 `;
 await writeFile(OUT, file);
-console.log(`→ ${path.relative(ROOT, OUT)}: ${esperanza.length + desempleo.length} observaciones`);
+console.log(`→ ${path.relative(ROOT, OUT)}: ${esperanza.length + desempleo.length} observaciones y ${esperanzaSexo.length + desempleoSexo.length} aperturas por sexo`);

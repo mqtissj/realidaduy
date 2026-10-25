@@ -48,6 +48,10 @@ export const OBSERVATION_HEAD = [
   "obtenido",
   "quiebre_metodologico",
   "notas",
+  // Al final, para no correr las columnas de quien ya usa el archivo: vacías
+  // en los totales, "sexo" y "mujeres" en una apertura.
+  "apertura",
+  "grupo",
 ];
 
 export interface CsvContext {
@@ -81,6 +85,8 @@ function observationRow(obs: Observation, ctx: CsvContext) {
     obs.retrievedAt,
     obs.breakBefore ?? false,
     obs.notes ?? "",
+    obs.breakdown?.dimension ?? "",
+    obs.breakdown?.group ?? "",
   ];
 }
 
@@ -94,7 +100,10 @@ export function sortObservations(obs: Observation[], ctx: CsvContext): Observati
     if (la !== lb) return la - lb;
     const byName = (ta?.name ?? "").localeCompare(tb?.name ?? "", "es");
     if (byName !== 0) return byName;
-    return a.period.localeCompare(b.period);
+    const byPeriod = a.period.localeCompare(b.period);
+    if (byPeriod !== 0) return byPeriod;
+    // El total antes que sus aperturas.
+    return Number(Boolean(a.breakdown)) - Number(Boolean(b.breakdown));
   });
 }
 
