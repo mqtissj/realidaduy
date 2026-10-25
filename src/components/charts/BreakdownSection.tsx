@@ -63,6 +63,16 @@ export default function BreakdownSection({
     ? country.map((g) => ({ ...g, o: g.obs.find((o) => o.period === latestPeriod) })).filter((g) => g.o)
     : [];
 
+  const maxLatest = Math.max(...latest.map((g) => g.o!.value!), 1);
+  const totalAtLatest = latestPeriod
+    ? getHistorySeries(indicator.id, "UY").find((o) => o.period === latestPeriod)?.value ?? undefined
+    : undefined;
+  // "Margen de error al 95%: ±1,8 punto." → "±1,8": la encuesta lo publica por grupo.
+  const margin = (o: Observation) => {
+    const m = o.notes?.match(/Margen de error al 95%: (±[\d,]+)/)?.[1];
+    return m && indicator.unit === "%" ? `${m} pp` : m;
+  };
+
   // Con dos grupos (hombres y mujeres), la diferencia entre los dos.
   const two = dept.groups.length === 2;
   const diffHead = two ? `Diferencia (${dept.groups[1].label.toLowerCase()} − ${dept.groups[0].label.toLowerCase()})` : "";
@@ -91,6 +101,39 @@ export default function BreakdownSection({
             }}
           >
             <MultiLineChart series={series} unit={indicator.unit} decimals={indicator.decimals} />
+          </ChartCard>
+        ) : latest.length > 2 ? (
+          <ChartCard
+            question={`${indicator.question} — por ${label}`}
+            subtitle={`Uruguay · ${latest[0].o!.periodLabel}${totalAtLatest ? ` · total ${fmt(totalAtLatest)}` : ""}`}
+            sourceLine={`Fuente: ${sourceOf(latest[0].o!)} · ${latest[0].o!.periodLabel}`}
+            note={[...new Set(latest.map((g) => g.o!.notes?.replace(/^Margen de error[^.]*\. /, "")).filter(Boolean))].join(" ")}
+            table={{
+              caption: `${indicator.name} por ${label}, Uruguay, ${latest[0].o!.periodLabel}`,
+              head: [label.charAt(0).toUpperCase() + label.slice(1), indicator.name, "Margen de error al 95%"],
+              rows: latest.map((g) => [g.label, fmt(g.o!.value!), margin(g.o!) ?? "—"]),
+            }}
+          >
+            <ul className="space-y-1.5">
+              {latest.map((g) => (
+                <li
+                  key={g.group}
+                  className="grid grid-cols-[9rem_1fr_auto] items-center gap-2 text-sm sm:grid-cols-[12rem_1fr_auto]"
+                >
+                  <span className="font-semibold">{g.label}</span>
+                  <span aria-hidden className="h-4 overflow-hidden rounded-r-sm bg-primary-soft">
+                    <span
+                      className="block h-full rounded-r-sm bg-primary"
+                      style={{ width: `${Math.max((g.o!.value! / maxLatest) * 100, 1.5)}%` }}
+                    />
+                  </span>
+                  <span className="tnum font-semibold">
+                    {fmt(g.o!.value!)}
+                    {margin(g.o!) ? <span className="font-normal text-ink-faint"> {margin(g.o!)}</span> : null}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </ChartCard>
         ) : latest.length > 0 ? (
           <div className="rounded-2xl border border-line bg-surface p-5 shadow-card">

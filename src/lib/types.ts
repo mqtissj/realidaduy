@@ -116,13 +116,13 @@ export interface Observation {
 }
 
 /** Dimensiones por las que se abre un dato. */
-export type BreakdownDimension = "sexo" | "edad";
+export type BreakdownDimension = "sexo" | "edad" | "ascendencia";
 
 export interface Breakdown {
   dimension: BreakdownDimension;
-  /** Identificador estable del grupo: "hombres", "mujeres", "14-24". */
+  /** Identificador estable del grupo: "hombres", "mujeres", "0-5", "afro". */
   group: string;
-  /** Cómo se lee en la UI: "Hombres", "14 a 24 años". */
+  /** Cómo se lee en la UI: "Hombres", "Menores de 6 años". */
   label: string;
 }
 

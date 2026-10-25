@@ -40,7 +40,8 @@ const observations = [
   ...bcuCotizacionesObservations,
   ...ineAnualesObservations,
 ];
-const breakdowns = [...ineAnualesDesgloses];
+const { inePobrezaAperturas } = await import("../src/data/observations/ine-pobreza-aperturas.ts");
+const breakdowns = [...ineAnualesDesgloses, ...inePobrezaAperturas];
 
 const errors = [];
 const warnings = [];
@@ -96,7 +97,7 @@ for (const o of [...observations, ...breakdowns]) {
 // Aperturas (sexo, edad): viven en su propia lista, cada una con su grupo, sin
 // duplicados, y el total del mismo período queda entre el grupo menor y el mayor.
 {
-  const DIMENSIONES = new Set(["sexo", "edad"]);
+  const DIMENSIONES = new Set(["sexo", "edad", "ascendencia"]);
   for (const o of observations)
     if (o.breakdown) errors.push(`Apertura mezclada con los totales: ${o.indicatorId}/${o.territoryId}/${o.period}`);
   const vistas = new Set();
