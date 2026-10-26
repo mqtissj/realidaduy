@@ -262,6 +262,58 @@ export const dictionary: Indicator[] = [
     status: "active",
   },
   {
+    id: "mipymes-activas",
+    slug: "mipymes",
+    name: "Mipymes activas",
+    shortName: "Mipymes",
+    question: "¿Cuántas pequeñas y medianas empresas hay funcionando?",
+    description:
+      "Cantidad de micro, pequeñas y medianas empresas activas, según el Monitor Mipymes de ANDE (datos de BPS).",
+    plainDefinition:
+      "Cuenta las empresas chicas y medianas que están en actividad: desde un unipersonal hasta una empresa de menos de 100 empleados. Si el número sube, abren más de las que cierran. Solo cuenta las que están registradas en BPS.",
+    category: "economia",
+    unit: "empresas",
+    unitLabel: "empresas activas",
+    sourceId: "ande",
+    sourceUrl: "https://monitor.ande.org.uy/",
+    periodicity: "mensual",
+    geographicLevel: ["pais", "departamento"],
+    availableFrom: "2022",
+    methodology:
+      "Monitor Mipymes de la Agencia Nacional de Desarrollo (ANDE), elaborado a partir de los registros de BPS. Es una serie mensual; el sitio toma el mismo mes de cada año (el último publicado) para que la variación sea interanual y no la mueva la estacionalidad. El monitor cambió de metodología en 2022 y no publica datos comparables anteriores. La suma de los departamentos es apenas menor que el total del país porque unas pocas empresas no tienen departamento asignado.",
+    isCalculated: false,
+    reading: "higherIsBetter",
+    decimals: 0,
+    lastUpdated: "2026-10-26",
+    status: "active",
+  },
+  {
+    id: "puestos-mipymes",
+    slug: "empleo-mipymes",
+    name: "Puestos de trabajo en mipymes",
+    shortName: "Empleo en mipymes",
+    question: "¿Cuánta gente trabaja en pequeñas y medianas empresas?",
+    description:
+      "Puestos de trabajo en micro, pequeñas y medianas empresas, según el Monitor Mipymes de ANDE (datos de BPS).",
+    plainDefinition:
+      "Cuenta los puestos de trabajo formales en empresas chicas y medianas, incluidos los dueños que trabajan en ellas. Es una cuenta de puestos, no de personas: alguien con dos trabajos cuenta dos veces. El trabajo informal no aparece.",
+    category: "trabajo",
+    unit: "puestos",
+    unitLabel: "puestos de trabajo",
+    sourceId: "ande",
+    sourceUrl: "https://monitor.ande.org.uy/",
+    periodicity: "mensual",
+    geographicLevel: ["pais", "departamento"],
+    availableFrom: "2022",
+    methodology:
+      "Monitor Mipymes de la Agencia Nacional de Desarrollo (ANDE), elaborado a partir de los registros de BPS. Es una serie mensual; el sitio toma el mismo mes de cada año (el último publicado) para que la variación sea interanual y no la mueva la estacionalidad. El monitor cambió de metodología en 2022 y no publica datos comparables anteriores.",
+    isCalculated: false,
+    reading: "higherIsBetter",
+    decimals: 0,
+    lastUpdated: "2026-10-26",
+    status: "active",
+  },
+  {
     id: "dolar",
     slug: "dolar",
     name: "Cotización del dólar",
@@ -280,11 +332,11 @@ export const dictionary: Indicator[] = [
     geographicLevel: ["pais"],
     availableFrom: "2000",
     methodology:
-      "Dólar estadounidense billete del mercado interbancario (código 2225 del servicio de cotizaciones del BCU), valor vendedor. El último dato es la cotización del último día hábil disponible cuando el sitio se actualiza, una vez por mes; la variación se mide contra el cierre del mes anterior. Los promedios mensuales y anuales los calcula realidad.uy con todas las cotizaciones diarias del período.",
+      "Dólar estadounidense billete del mercado interbancario (código 2225 del servicio de cotizaciones del BCU), valor vendedor. El último dato es la cotización del último día hábil disponible cuando el sitio se actualiza, cada día hábil; la variación se mide contra el cierre del mes anterior. Los promedios mensuales y anuales los calcula realidad.uy con todas las cotizaciones diarias del período.",
     isCalculated: false,
     reading: "neutral",
     decimals: 3,
-    lastUpdated: "2026-10-12",
+    lastUpdated: "2026-10-24",
     status: "active",
   },
   {
@@ -306,7 +358,7 @@ export const dictionary: Indicator[] = [
     geographicLevel: ["pais"],
     availableFrom: "2000",
     methodology:
-      "Real brasileño billete del mercado interbancario (código 1001 del servicio de cotizaciones del BCU), valor vendedor. El último dato es la cotización del último día hábil disponible cuando el sitio se actualiza, una vez por mes; la variación se mide contra el cierre del mes anterior. Los promedios mensuales y anuales los calcula realidad.uy con todas las cotizaciones diarias del período.",
+      "Real brasileño billete del mercado interbancario (código 1001 del servicio de cotizaciones del BCU), valor vendedor. El último dato es la cotización del último día hábil disponible cuando el sitio se actualiza, cada día hábil; la variación se mide contra el cierre del mes anterior. Los promedios mensuales y anuales los calcula realidad.uy con todas las cotizaciones diarias del período.",
     isCalculated: false,
     reading: "neutral",
     decimals: 3,
@@ -331,7 +383,7 @@ export const dictionary: Indicator[] = [
     geographicLevel: ["pais"],
     availableFrom: "2000",
     methodology:
-      "Euro del mercado interbancario (código 1111 del servicio de cotizaciones del BCU), valor vendedor. El último dato es la cotización del último día hábil disponible cuando el sitio se actualiza, una vez por mes; la variación se mide contra el cierre del mes anterior. Los promedios mensuales y anuales los calcula realidad.uy con todas las cotizaciones diarias del período.",
+      "Euro del mercado interbancario (código 1111 del servicio de cotizaciones del BCU), valor vendedor. El último dato es la cotización del último día hábil disponible cuando el sitio se actualiza, cada día hábil; la variación se mide contra el cierre del mes anterior. Los promedios mensuales y anuales los calcula realidad.uy con todas las cotizaciones diarias del período.",
     isCalculated: false,
     reading: "neutral",
     decimals: 3,
@@ -347,7 +399,7 @@ export const dictionary: Indicator[] = [
     description:
       "Cotización del peso argentino billete en el mercado interbancario, según el Banco Central del Uruguay, expresada por cada 1.000 pesos argentinos.",
     plainDefinition:
-      "Cuántos pesos uruguayos valen 1.000 pesos argentinos según la cotización oficial que publica el Banco Central. Se muestra por 1.000 porque un peso argentino vale unos pocos centésimos. Es la referencia del mercado mayorista, no el precio de una casa de cambio.",
+      "Cuántos pesos uruguayos valen 1.000 pesos argentinos según la cotización oficial que publica el Banco Central. Se muestra por 1.000 porque un peso argentino vale unos pocos centésimos. Como el BCU lo publica con solo tres decimales, el dato diario se mueve a saltos y la variación mensual suele dar 0%: para ver la tendencia, mirá los promedios mensuales. Es la referencia del mercado mayorista, no el precio de una casa de cambio.",
     category: "economia",
     unit: "pesos",
     unitLabel: "pesos uruguayos por cada 1.000 pesos argentinos",
@@ -357,7 +409,7 @@ export const dictionary: Indicator[] = [
     geographicLevel: ["pais"],
     availableFrom: "2000",
     methodology:
-      "Peso argentino billete del mercado interbancario (código 501 del servicio de cotizaciones del BCU), valor vendedor, multiplicado por 1.000. El BCU lo publica con tres decimales (por ejemplo 0,027 pesos uruguayos), así que el dato diario va de a un peso por cada 1.000 pesos argentinos. El último dato es la cotización del último día hábil disponible cuando el sitio se actualiza, una vez por mes; la variación se mide contra el cierre del mes anterior. Los promedios mensuales y anuales los calcula realidad.uy con todas las cotizaciones diarias del período.",
+      "Peso argentino billete del mercado interbancario (código 501 del servicio de cotizaciones del BCU), valor vendedor, multiplicado por 1.000. El BCU lo publica con tres decimales (por ejemplo 0,027 pesos uruguayos), así que el dato diario va de a un peso por cada 1.000 pesos argentinos: con valores cerca de 27, cada salto es de casi 4%, y la variación contra el cierre del mes anterior suele dar 0% aunque el peso argentino se haya movido. Para ver la tendencia sirven más los promedios mensuales, que sí recogen esos movimientos. El último dato es la cotización del último día hábil disponible cuando el sitio se actualiza, cada día hábil; la variación se mide contra el cierre del mes anterior. Los promedios mensuales y anuales los calcula realidad.uy con todas las cotizaciones diarias del período.",
     isCalculated: false,
     reading: "neutral",
     decimals: 1,

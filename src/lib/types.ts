@@ -107,6 +107,23 @@ export interface Observation {
    * calcula ni muestra variación contra el dato previo (series no comparables).
    */
   breakBefore?: boolean;
+  /**
+   * Apertura del dato (hombres, mujeres, un tramo de edad). Sin este campo, la
+   * observación es el total. Las aperturas viven en su propia lista: nunca se
+   * mezclan con los totales en titulares, rankings, mapas ni series.
+   */
+  breakdown?: Breakdown;
+}
+
+/** Dimensiones por las que se abre un dato. */
+export type BreakdownDimension = "sexo" | "edad" | "ascendencia";
+
+export interface Breakdown {
+  dimension: BreakdownDimension;
+  /** Identificador estable del grupo: "hombres", "mujeres", "0-5", "afro". */
+  group: string;
+  /** Cómo se lee en la UI: "Hombres", "Menores de 6 años". */
+  label: string;
 }
 
 // ── Elecciones ──────────────────────────────────────────────────

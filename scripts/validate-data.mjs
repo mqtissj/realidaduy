@@ -13,13 +13,14 @@ const { seguridadObservations } = await import("../src/data/observations/segurid
 const { otuObservations } = await import("../src/data/observations/otu.ts");
 const { otuMunicipioObservations } = await import("../src/data/observations/otu-municipios.ts");
 const { otuCensalObservations } = await import("../src/data/observations/otu-censal.ts");
-const { ineMensualObservations } = await import("../src/data/observations/ine-mensual.ts");
+const { ineMensualObservations, ineMensualDesgloses } = await import("../src/data/observations/ine-mensual.ts");
 const { municipioObservations } = await import("../src/data/observations/municipios.ts");
 const { worldBankSeries } = await import("../src/data/observations/series-banco-mundial.ts");
 const { prismaObservations } = await import("../src/data/observations/prisma.ts");
 const { bcuPibObservations } = await import("../src/data/observations/bcu-pib.ts");
 const { bcuCotizacionesObservations } = await import("../src/data/observations/bcu-cotizaciones.ts");
-const { ineAnualesObservations } = await import("../src/data/observations/ine-anuales.ts");
+const { ineAnualesObservations, ineAnualesDesgloses } = await import("../src/data/observations/ine-anuales.ts");
+const { andeMipymesObservations } = await import("../src/data/observations/ande-mipymes.ts");
 const { mecEducacionObservations } = await import("../src/data/observations/mec-educacion.ts");
 const { udelarFormaObservations } = await import("../src/data/observations/udelar-forma.ts");
 const { carrerasMec } = await import("../src/data/carreras-mec.ts");
@@ -46,7 +47,10 @@ const observations = [
   ...ineAnualesObservations,
   ...mecEducacionObservations,
   ...udelarFormaObservations,
+  ...andeMipymesObservations,
 ];
+const { inePobrezaAperturas } = await import("../src/data/observations/ine-pobreza-aperturas.ts");
+const breakdowns = [...ineAnualesDesgloses, ...inePobrezaAperturas, ...ineMensualDesgloses];
 
 const errors = [];
 const warnings = [];
@@ -72,7 +76,7 @@ const electionIds = new Set(elections.map((e) => e.id));
 const PERIOD_RE = /^\d{4}(-((0[1-9]|1[0-2])(-([0-2]\d|3[01]))?|Q[1-4]|S[12]))?$/;
 
 // 1-4: fuente, período, territorio, integridad referencial de cada observación.
-for (const o of observations) {
+for (const o of [...observations, ...breakdowns]) {
   const ref = `${o.indicatorId}/${o.territoryId}/${o.period}`;
   if (!indicatorIds.has(o.indicatorId)) errors.push(`Indicador inexistente: ${ref}`);
   if (!territoryIds.has(o.territoryId)) errors.push(`Territorio inexistente: ${ref}`);
@@ -96,6 +100,40 @@ for (const o of observations) {
     const k = `${o.indicatorId}|${o.territoryId}|${o.period}`;
     if (vistas.has(`${k}|${tier}`)) errors.push(`Observación duplicada (${tier}): ${k}`);
     else vistas.set(`${k}|${tier}`, o);
+  }
+}
+
+// Aperturas (sexo, edad): viven en su propia lista, cada una con su grupo, sin
+// duplicados, y el total del mismo período queda entre el grupo menor y el mayor.
+{
+  const DIMENSIONES = new Set(["sexo", "edad", "ascendencia"]);
+  for (const o of observations)
+    if (o.breakdown) errors.push(`Apertura mezclada con los totales: ${o.indicatorId}/${o.territoryId}/${o.period}`);
+  const vistas = new Set();
+  const porTotal = new Map();
+  for (const o of breakdowns) {
+    const ref = `${o.indicatorId}/${o.territoryId}/${o.period}`;
+    const b = o.breakdown;
+    if (!b || !DIMENSIONES.has(b.dimension) || !b.group || !b.label) {
+      errors.push(`Apertura sin dimensión, grupo o etiqueta: ${ref}`);
+      continue;
+    }
+    const k = `${ref}|${b.dimension}|${b.group}`;
+    if (vistas.has(k)) errors.push(`Apertura duplicada: ${k}`);
+    vistas.add(k);
+    const kt = `${o.indicatorId}|${o.territoryId}|${o.period}|${b.dimension}`;
+    if (!porTotal.has(kt)) porTotal.set(kt, []);
+    porTotal.get(kt).push(o.value);
+  }
+  const totales = new Map(
+    observations.filter((o) => o.status !== "SECONDARY").map((o) => [`${o.indicatorId}|${o.territoryId}|${o.period}`, o.value])
+  );
+  for (const [kt, valores] of porTotal) {
+    const total = totales.get(kt.split("|").slice(0, 3).join("|"));
+    if (total === undefined || total === null || valores.includes(null)) continue;
+    // Margen de redondeo: la fuente publica los grupos y el total con un decimal.
+    if (total < Math.min(...valores) - 0.1 || total > Math.max(...valores) + 0.1)
+      errors.push(`El total ${total} no queda entre sus aperturas (${valores.join(", ")}): ${kt}`);
   }
 }
 

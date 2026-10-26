@@ -88,6 +88,15 @@ export const sources: Source[] = [
       "PBI anual 2006–2016 a precios constantes de 2016 (dato del BCU). Datos públicos: se usan citando el portal.",
   },
   {
+    id: "ande",
+    name: "Agencia Nacional de Desarrollo — Monitor Mipymes",
+    shortName: "ANDE",
+    url: "https://monitor.ande.org.uy/",
+    type: "official",
+    provides:
+      "Mipymes activas y puestos de trabajo en mipymes por departamento (elaboración de ANDE con datos de BPS).",
+  },
+  {
     id: "banco-mundial",
     name: "Banco Mundial — Indicadores de Desarrollo Mundial",
     shortName: "Banco Mundial",
