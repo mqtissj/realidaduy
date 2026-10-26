@@ -13,6 +13,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", ".
 const OUT = path.join(ROOT, "src", "data", "observations", "series-banco-mundial.ts");
 const RANGE = "2000:2025";
 const TODAY = new Date().toISOString().slice(0, 10);
+// Una serie 2000-2025 con menos puntos que esto es una respuesta rota, no un dato.
+const MIN_POINTS = 15;
 
 // indicador WB → indicador nuestro + nota metodológica obligatoria.
 const SERIES = [
@@ -52,8 +54,17 @@ async function fetchSeries({ wb }) {
   const url = `https://api.worldbank.org/v2/country/URY/indicator/${wb}?format=json&date=${RANGE}&per_page=100`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status} en ${url}`);
-  const [, data] = await res.json();
-  return { url, data: (data ?? []).filter((d) => d.value !== null) };
+  // La API responde HTTP 200 también cuando falla: [{ message: [...] }] en vez
+  // de [paginación, datos]. Sin este chequeo se escribía una serie vacía.
+  const body = await res.json();
+  if (!Array.isArray(body) || body[0]?.message) {
+    throw new Error(`Respuesta de error del Banco Mundial en ${url}: ${JSON.stringify(body).slice(0, 300)}`);
+  }
+  const data = (body[1] ?? []).filter((d) => d.value !== null);
+  if (data.length < MIN_POINTS) {
+    throw new Error(`${wb}: solo ${data.length} puntos (mínimo ${MIN_POINTS}); no se sobrescribe el archivo`);
+  }
+  return { url, data };
 }
 
 const blocks = [];

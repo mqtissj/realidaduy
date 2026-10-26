@@ -58,6 +58,9 @@ está publicado como artifact del proyecto.
 
 ## Datos y licencias
 
+El código es MIT (`LICENSE`). Los datos siguen bajo la licencia de cada fuente y lo que
+agrega el proyecto es CC BY 4.0: el detalle está en `LICENSE-DATOS.md`.
+
 - Indicadores: INE, BCU, MTSS, Corte Electoral (ver `/fuentes` en la app). El PIB trimestral
   sale de la planilla del BCU; el script trae los certificados intermedios que el servidor del
   BCU no manda (`scripts/ingest/certs/`). Las cotizaciones salen del servicio web público

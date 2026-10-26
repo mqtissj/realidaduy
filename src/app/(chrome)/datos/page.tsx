@@ -141,10 +141,33 @@ export default function DatosPage() {
             Excel, en Google Sheets y en pandas o R sin conversiones.
           </p>
           <p>
-            Podés usarlos y republicarlos libremente, incluso con fines comerciales.
-            Corresponde citar al organismo que produjo el dato (la columna{" "}
+            Cada dato sigue bajo la licencia del organismo que lo produjo (la columna{" "}
             <code className="rounded bg-canvas px-1.5 py-0.5 text-sm">fuente</code> de cada
-            fila) y, si querés, a {SITE_HOST} como recopilación.
+            fila): {SITE_HOST} no puede cambiarla. La mayoría viene del Catálogo Nacional de
+            Datos Abiertos, cuya licencia permite reusar y republicar, incluso con fines
+            comerciales, citando la fuente; las series del Banco Mundial son CC BY 4.0. Para
+            otras fuentes, revisá los términos del organismo antes de un uso comercial.
+          </p>
+          <p>
+            Lo que agrega {SITE_HOST} (tasas, agregaciones y estos CSV) está bajo{" "}
+            <a
+              className="underline hover:text-primary"
+              href="https://creativecommons.org/licenses/by/4.0/deed.es"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              CC BY 4.0
+            </a>
+            : podés reusarlo citando a {SITE_HOST} y a la fuente original. El detalle está en{" "}
+            <a
+              className="underline hover:text-primary"
+              href="https://github.com/mqtissj/realidaduy/blob/main/LICENSE-DATOS.md"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              LICENSE-DATOS.md
+            </a>
+            .
           </p>
           <p>
             Las URLs son permanentes: <code className="rounded bg-canvas px-1.5 py-0.5 text-sm">/datos/&lt;archivo&gt;.csv</code>{" "}

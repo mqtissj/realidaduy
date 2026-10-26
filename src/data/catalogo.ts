@@ -33,14 +33,21 @@ export const catalogDatasets: CatalogDataset[] = [
     name: "corte-electoral-elecciones-nacionales-2024",
     title: "Elecciones Nacionales 2024",
     organization: "Corte Electoral",
-    usedFor: "Resultados de la primera vuelta 2024 por departamento.",
+    usedFor: "Resultados de la primera vuelta 2024 por departamento y participación.",
+  },
+  {
+    id: "2dc312e4-f3f7-41aa-b56d-74389083e7e1",
+    name: "corte-electoral-balotaje_2024",
+    title: "Balotaje 2024",
+    organization: "Corte Electoral",
+    usedFor: "Resultado y participación del balotaje 2024.",
   },
   {
     id: "2d5eb299-0d95-478b-9271-c62f601e7bc1",
     name: "corte-electoral-elecciones_departamentales_y_municipales_2025",
     title: "Elecciones Departamentales y Municipales 2025",
     organization: "Corte Electoral",
-    usedFor: "Resultados 2025 por departamento y por municipio.",
+    usedFor: "Resultados 2025 por departamento y por municipio, y participación.",
   },
   {
     id: "999f2edc-5ef5-4d41-bed7-824a5635ea8d",
@@ -54,6 +61,8 @@ export const catalogDatasets: CatalogDataset[] = [
 // Páginas de los conjuntos que se citan a mano en textos de fuente.
 export const CONJUNTO_ELECCIONES_2024 =
   "https://catalogodatos.gub.uy/dataset/corte-electoral-elecciones-nacionales-2024";
+export const CONJUNTO_BALOTAJE_2024 =
+  "https://catalogodatos.gub.uy/dataset/corte-electoral-balotaje_2024";
 export const CONJUNTO_ELECCIONES_2025 =
   "https://catalogodatos.gub.uy/dataset/corte-electoral-elecciones_departamentales_y_municipales_2025";
 

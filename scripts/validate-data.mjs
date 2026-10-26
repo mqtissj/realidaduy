@@ -326,6 +326,31 @@ for (const m of montevideoMunicipalities) {
     errors.push(`Falta ganador municipal 2025 en ${m.name}`);
 }
 
+// 6b: ningún archivo generado por ingesta puede quedar vacío (una API que
+// responde un error con HTTP 200 dejaba series vacías y la corrida en verde).
+{
+  const generados = {
+    ineMensualObservations,
+    ineAnualesObservations,
+    worldBankSeries,
+    prismaObservations,
+    bcuPibObservations,
+    bcuCotizacionesObservations,
+    andeMipymesObservations,
+    seguridadObservations,
+    mecEducacionObservations,
+    udelarFormaObservations,
+  };
+  for (const [nombre, filas] of Object.entries(generados)) {
+    if (!Array.isArray(filas) || filas.length === 0) errors.push(`Archivo generado vacío: ${nombre}`);
+  }
+  // Banco Mundial: las cinco series, cada una con al menos 15 años (2000-2025).
+  for (const id of ["pib-per-capita", "pib-variacion", "inflacion-interanual", "tasa-desempleo", "poblacion"]) {
+    const n = worldBankSeries.filter((o) => o.indicatorId === id).length;
+    if (n < 15) errors.push(`Serie del Banco Mundial ${id} con solo ${n} puntos`);
+  }
+}
+
 // 7: outliers en series (aviso, no error): |z| > 3 dentro de cada serie anual.
 const seriesByIndicator = new Map();
 for (const o of worldBankSeries) {
