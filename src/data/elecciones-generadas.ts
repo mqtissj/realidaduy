@@ -1,14 +1,31 @@
 import type { ElectionResult } from "@/lib/types";
 
 // GENERADO por scripts/ingest/fetch-elecciones.mjs — no editar a mano.
-// Última ejecución: 2026-10-05. Fuente: Corte Electoral (datos abiertos oficiales,
+// Última ejecución: 2026-10-26. Fuente: Corte Electoral (datos abiertos oficiales,
 // desglose por circuito), agregado por departamento/municipio. El script valida
 // los totales contra el escrutinio oficial antes de escribir este archivo:
 //  - 2024: totales nacionales por partido exactos (FA 1.071.826, PN 655.426, …).
 //  - 2025: lema ganador verificado en los 19 departamentos y 8 municipios de
 //    Montevideo (incl. FA 19.590 votos en el Municipio F).
+//  - Balotaje 2024: votos por fórmula exactos (Orsi 1.212.833, Delgado 1.119.537).
 // "otros" agrupa los lemas menores. Bases de %: 2024 sobre votos emitidos;
 // 2025 sobre votos válidos al lema (declarado en pctBase de cada fila).
+
+/** Balotaje 2024 a nivel país (% sobre votos válidos a las dos fórmulas). */
+export const balotaje2024Pais: ElectionResult[] = [
+  { electionId: "balotaje-2024", territoryId: "UY", partyId: "fa", votes: 1212833, pct: 52, pctBase: "validos", winner: true, electedName: "Yamandú Orsi", demo: false, sourceUrl: "https://catalogodatos.gub.uy/dataset/2dc312e4-f3f7-41aa-b56d-74389083e7e1/resource/ac4cbd7c-dc15-4d3f-87ba-c00fb47604b7/download/balotaje-2024.csv" },
+  { electionId: "balotaje-2024", territoryId: "UY", partyId: "pn", votes: 1119537, pct: 48, pctBase: "validos", winner: false, electedName: "Álvaro Delgado", demo: false, sourceUrl: "https://catalogodatos.gub.uy/dataset/2dc312e4-f3f7-41aa-b56d-74389083e7e1/resource/ac4cbd7c-dc15-4d3f-87ba-c00fb47604b7/download/balotaje-2024.csv" },
+];
+
+/** Totales del balotaje 2024 (para expresar % sobre emitidos sin mezclar bases). */
+export const balotaje2024Totales = { habilitados: 2727120, emitidos: 2436780, validos: 2332370, enBlanco: 39542, anulados: 64654 };
+
+/** Participación: votos emitidos / habilitados × 100 (totales por circuito). */
+export const participacion: { electionId: string; pct: number; demo: boolean; sourceUrl: string }[] = [
+  { electionId: "nacional-2024", pct: 89.61, demo: false, sourceUrl: "https://catalogodatos.gub.uy/dataset/7aaa1ff0-8ea5-4302-a3e6-c2d589b484a3/resource/0f149bb6-4fff-463b-bc3a-8ab671bcdf34/download/totales-generales-por-comision-receptora-de-votos-y-plebiscitos-constitucionales.csv" }, // 2443801 / 2727120
+  { electionId: "balotaje-2024", pct: 89.35, demo: false, sourceUrl: "https://catalogodatos.gub.uy/dataset/2dc312e4-f3f7-41aa-b56d-74389083e7e1/resource/ac4cbd7c-dc15-4d3f-87ba-c00fb47604b7/download/balotaje-2024.csv" }, // 2436780 / 2727120
+  { electionId: "departamental-2025", pct: 86.88, demo: false, sourceUrl: "https://catalogodatos.gub.uy/dataset/2d5eb299-0d95-478b-9271-c62f601e7bc1/resource/a27ceda4-4486-4329-9e67-b7c36e9dfa59/download/totales-generales-por-comision-receptora-de-votos.csv" }, // 2366874 / 2724184
+];
 
 export const nacional2024PorDepartamento: ElectionResult[] = [
   { electionId: "nacional-2024", territoryId: "UY-AR", partyId: "pn", votes: 21615, pct: 38.52, pctBase: "emitidos", winner: true, demo: false, sourceUrl: "https://catalogodatos.gub.uy/dataset/7aaa1ff0-8ea5-4302-a3e6-c2d589b484a3/resource/f74aa981-47d3-4165-81be-5d2abcc5f6d5/download/desglose-de-votos.csv" },

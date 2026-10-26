@@ -29,12 +29,39 @@ const UA = {
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
 };
 
-const SRC = {
-  homicidios:
-    "https://catalogodatos.gub.uy/dataset/999f2edc-5ef5-4d41-bed7-824a5635ea8d/resource/5ed98add-f127-4377-b529-aa8ad35b77e3/download/homicidios_dolosos_consumados.csv",
-  otros:
-    "https://catalogodatos.gub.uy/dataset/999f2edc-5ef5-4d41-bed7-824a5635ea8d/resource/c8c4cc18-57cf-448b-9c68-901b3752fc11/download/otros-delitos.csv",
+// El Ministerio del Interior reemplaza recursos del dataset sin aviso (el
+// 20/10/2026 "otros-delitos.csv" pasó a ser otro recurso, con otra URL, y el
+// enlace anterior quedó en 404). Por eso las URLs de descarga no se fijan a
+// mano: se resuelven en cada corrida desde la API del catálogo, por el nombre
+// del recurso y el formato CSV.
+const DATASET_ID = "999f2edc-5ef5-4d41-bed7-824a5635ea8d";
+const RESOURCE_NAMES = {
+  homicidios: "Homicidios dolosos consumados",
+  otros: "Denuncias de otros delitos",
 };
+
+async function resolveResources() {
+  const api = `https://catalogodatos.gub.uy/api/3/action/package_show?id=${DATASET_ID}`;
+  const res = await fetch(api, { headers: UA });
+  if (!res.ok) throw new Error(`HTTP ${res.status} en ${api}`);
+  const { success, result } = await res.json();
+  if (!success) throw new Error(`El catálogo no devolvió el dataset ${DATASET_ID}`);
+  const out = {};
+  for (const [key, name] of Object.entries(RESOURCE_NAMES)) {
+    const matches = result.resources.filter(
+      (r) => r.name.trim() === name && (r.format ?? "").toUpperCase() === "CSV"
+    );
+    if (matches.length !== 1) {
+      throw new Error(
+        `Se esperaba 1 recurso CSV «${name}» en el dataset, hay ${matches.length}: ` +
+          result.resources.map((r) => `${r.name} (${r.format})`).join(", ")
+      );
+    }
+    out[key] = matches[0].url;
+    console.log(`  recurso «${name}»: ${out[key]}`);
+  }
+  return out;
+}
 
 // Nombres de departamento tal como aparecen en los CSV del MI → ISO 3166-2:UY.
 const DEPT_NAME_TO_ISO = {
@@ -114,6 +141,9 @@ function parseLine(line, sep) {
 }
 
 const round1 = (n) => Math.round(n * 10) / 10;
+
+console.log("Recursos del dataset de delitos denunciados…");
+const SRC = await resolveResources();
 
 // ── Homicidios dolosos consumados (una fila por víctima) ─────────────────────
 console.log("Homicidios dolosos consumados…");

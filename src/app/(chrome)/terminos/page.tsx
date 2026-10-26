@@ -74,8 +74,9 @@ export default function TerminosPage() {
             </li>
             <li>
               Podés citar y reutilizar las visualizaciones de realidad.uy mencionando la
-              plataforma y la fuente original del dato. El código del proyecto está
-              disponible en{" "}
+              plataforma y la fuente original del dato. Lo que agrega la plataforma (tasas,
+              agregaciones, CSV) está bajo CC BY 4.0 y el código del proyecto, bajo licencia
+              MIT, está disponible en{" "}
               <a
                 className="font-semibold text-primary underline decoration-line underline-offset-2 hover:decoration-primary"
                 href="https://github.com/mqtissj/realidaduy"
