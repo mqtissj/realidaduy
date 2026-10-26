@@ -1,6 +1,7 @@
 # Actualización automática mensual de datos (realidad.uy).
-# Corre los scripts de ingesta reproducibles, valida, compila y commitea los
-# archivos generados. Si Vercel está conectado al repo, el push redeploya solo.
+# Corre los scripts de ingesta reproducibles, valida, compila y abre un pull
+# request contra main con los archivos generados: nada llega a producción sin
+# que una persona lo revise y lo mergee.
 #
 # Qué actualiza: los indicadores mensuales del INE (IPC, ECH e IMS, leídos de
 # sus informes técnicos), la esperanza de vida y el desempleo por departamento
@@ -23,8 +24,12 @@ on:
     - cron: "0 13 5 * *"
   workflow_dispatch:
 
+# contents: write para pushear la rama del bot; pull-requests: write para abrir
+# el PR. Requiere "Allow GitHub Actions to create and approve pull requests" en
+# Settings → Actions → General del repo.
 permissions:
   contents: write
+  pull-requests: write
 
 # Comparte grupo con actualizar-cotizaciones.yml: nunca corren las dos a la vez.
 concurrency:
@@ -35,9 +40,9 @@ jobs:
   actualizar:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           # Los scripts importan módulos .ts (type-stripping nativo de Node ≥23.6).
           node-version: 24
@@ -55,6 +60,7 @@ jobs:
       # Si falla (por ejemplo, porque el INE cambió de certificado o de URL), la
       # corrida sigue con el archivo anterior.
       - name: Ingesta INE anual (esperanza de vida y desempleo por departamento)
+        id: ine_anual
         continue-on-error: true
         run: node scripts/ingest/fetch-ine-anuales.mjs
 
@@ -65,6 +71,7 @@ jobs:
       # o cambió el formato, el paso queda en rojo pero la corrida sigue con el
       # archivo anterior: no frena la actualización del INE.
       - name: Ingesta PRISMA (PBI anual del BCU)
+        id: prisma
         continue-on-error: true
         run: node scripts/ingest/fetch-prisma.mjs
 
@@ -73,17 +80,20 @@ jobs:
       # certificado), el paso queda en rojo y la corrida sigue con el archivo
       # anterior.
       - name: Ingesta BCU (PIB trimestral)
+        id: bcu_pib
         continue-on-error: true
         run: node scripts/ingest/fetch-bcu-pib.mjs
 
       # Cotizaciones (dólar, real, euro y peso argentino): servicio web del BCU.
       # Mismo criterio: si falla, queda el archivo anterior y la corrida sigue.
       - name: Ingesta BCU (cotizaciones)
+        id: bcu_cotizaciones
         continue-on-error: true
         run: node scripts/ingest/fetch-bcu-cotizaciones.mjs
 
       # Monitor Mipymes de ANDE: mismo criterio, si falla queda el archivo anterior.
       - name: Ingesta ANDE (mipymes por departamento)
+        id: ande
         continue-on-error: true
         run: node scripts/ingest/fetch-ande-mipymes.mjs
 
@@ -91,6 +101,7 @@ jobs:
       # descarga (pasó el 05/10/2026). Mismo criterio que PRISMA y el BCU: si
       # falla, la corrida sigue con el archivo anterior y no frena el IPC.
       - name: Ingesta seguridad (Ministerio del Interior)
+        id: seguridad
         continue-on-error: true
         run: node scripts/ingest/fetch-seguridad.mjs
 
@@ -101,10 +112,12 @@ jobs:
       # vez por año. Si alguno cambió de URL o de formato, el paso queda en rojo y
       # la corrida sigue con el archivo anterior.
       - name: Ingesta MEC (matrícula por carrera y departamento)
+        id: mec
         continue-on-error: true
         run: node scripts/ingest/fetch-mec-educacion.mjs
 
       - name: Ingesta UdelaR (FormA, origen y destino de los estudiantes)
+        id: udelar
         continue-on-error: true
         run: node scripts/ingest/fetch-udelar-forma.mjs
 
@@ -114,19 +127,67 @@ jobs:
       - name: Compilar
         run: npm run build
 
-      - name: Commitear datos actualizados
+      # Los pasos opcionales que fallaron quedan con el archivo anterior. Se
+      # listan en el PR y, al final, la corrida termina en rojo: un error ya no
+      # puede pasar desapercibido como "verde".
+      - name: Listar pasos fallidos
+        id: fallidos
+        env:
+          RESULTADOS: >-
+            INE anual=${{ steps.ine_anual.outcome }}
+            PRISMA=${{ steps.prisma.outcome }}
+            BCU-PIB=${{ steps.bcu_pib.outcome }}
+            BCU-cotizaciones=${{ steps.bcu_cotizaciones.outcome }}
+            ANDE=${{ steps.ande.outcome }}
+            Seguridad=${{ steps.seguridad.outcome }}
+            MEC=${{ steps.mec.outcome }}
+            UdelaR=${{ steps.udelar.outcome }}
+        run: |
+          fallidos=""
+          for r in $RESULTADOS; do
+            [ "${r#*=}" = "failure" ] && fallidos="$fallidos ${r%%=*}"
+          done
+          echo "lista=${fallidos# }" >> "$GITHUB_OUTPUT"
+          echo "Pasos fallidos: ${fallidos:-ninguno}"
+
+      - name: Abrir pull request con los datos actualizados
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FALLIDOS: ${{ steps.fallidos.outputs.lista }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add src/data/observations/ine-mensual.ts src/data/observations/ine-anuales.ts src/data/observations/series-banco-mundial.ts src/data/observations/prisma.ts src/data/observations/bcu-pib.ts src/data/observations/bcu-cotizaciones.ts src/data/observations/ande-mipymes.ts src/data/observations/seguridad.ts src/data/elecciones-generadas.ts src/data/carreras-mec.ts src/data/media-mec.ts src/data/observations/mec-educacion.ts src/data/udelar-forma.ts src/data/observations/udelar-forma.ts
           if git diff --cached --quiet; then
             echo "Sin cambios de datos este mes."
-          else
-            git commit -m "data: actualización automática mensual (INE, Banco Mundial, PRISMA, BCU, ANDE, seguridad, elecciones, educación)"
-            # La tarea local de Claude también puede pushear el día 5. En el runner
-            # quedan archivos versionados modificados que no se commitean (los
-            # lista git status); --autostash los aparta para que git acepte rebasar.
-            git status --short
-            git pull --rebase --autostash origin main
-            git push
+            exit 0
           fi
+          rama="bot/datos-$(date -u +%Y-%m-%d)-${{ github.run_id }}"
+          git switch -c "$rama"
+          git commit -m "data: actualización automática mensual (INE, Banco Mundial, PRISMA, BCU, ANDE, seguridad, elecciones, educación)"
+          git push -u origin "$rama"
+          {
+            echo "Actualización automática mensual de datos ([corrida](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}))."
+            echo
+            echo "La corrida ya validó los datos (\`npm run validate:data\`) y compiló el sitio. Antes de mergear, revisá en el diff que los cambios tengan sentido: períodos nuevos, valores plausibles, ninguna serie que desaparezca."
+            echo
+            if [ -n "$FALLIDOS" ]; then
+              echo "**Pasos que fallaron (quedó el archivo anterior):** $FALLIDOS"
+            else
+              echo "Todos los pasos de ingesta terminaron bien."
+            fi
+            echo
+            echo "\`git diff --stat\`:"
+            echo '```'
+            git diff --stat HEAD~1
+            echo '```'
+          } > pr-body.md
+          gh pr create --base main --head "$rama" \
+            --title "data: actualización mensual $(date -u +%Y-%m)" \
+            --body-file pr-body.md
+
+      - name: Fallar si algún paso de ingesta falló
+        if: steps.fallidos.outputs.lista != ''
+        run: |
+          echo "::error::Fallaron estos pasos de ingesta: ${{ steps.fallidos.outputs.lista }}. Sus archivos quedaron como estaban."
+          exit 1
