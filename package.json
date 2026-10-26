@@ -11,6 +11,8 @@
     "start": "next start",
     "fetch:geo": "node scripts/ingest/fetch-geo.mjs",
     "validate:data": "node scripts/validate-data.mjs",
+    "lint": "eslint . --max-warnings=0",
+    "test": "node --test \"tests/*.test.ts\"",
     "fetch:ine": "node scripts/ingest/fetch-ine.mjs",
     "fetch:worldbank": "node scripts/ingest/fetch-worldbank.mjs",
     "fetch:prisma": "node scripts/ingest/fetch-prisma.mjs",
@@ -39,6 +41,7 @@
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.7",
     "@tailwindcss/postcss": "^4.1.7",
     "@types/d3-geo": "^3.1.0",
     "@types/geojson": "^7946.0.16",
@@ -46,6 +49,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "adm-zip": "^0.6.0",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^15.5.28",
     "tailwindcss": "^4.1.7",
     "topojson-client": "^3.1.0",
     "topojson-server": "^3.0.1",
