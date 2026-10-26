@@ -4,6 +4,8 @@ import {
   getBreakdown,
   getDepartmentBreakdown,
   getHistorySeries,
+  getObservations,
+  getSeries,
 } from "@/lib/data";
 import { getObservationSource } from "@/data/sources";
 import { formatDelta, formatValue } from "@/lib/format";
@@ -35,43 +37,60 @@ export default function BreakdownSection({
   const label = DIMENSION_LABEL[dimension];
   const id = `por-${dimension}`;
 
-  // Serie anual del país: años que tienen todos los grupos.
-  const annual = country.map((g) => ({ ...g, obs: g.obs.filter((o) => o.period.length === 4) }));
-  const years = annual.length
-    ? annual[0].obs.map((o) => o.period).filter((p) => annual.every((g) => g.obs.some((o) => o.period === p)))
-    : [];
-  const total = getHistorySeries(indicator.id, "UY").filter((o) => years.includes(o.period));
+  // Períodos que tienen todos los grupos, de una granularidad ("2024" o "2026-08").
+  const shared = (len: number) =>
+    country.length
+      ? country[0].obs
+          .map((o) => o.period)
+          .filter((p) => p.length === len && country.every((g) => g.obs.some((o) => o.period === p)))
+      : [];
   const valueAt = (obs: Observation[], period: string) => obs.find((o) => o.period === period)?.value ?? null;
+  // Serie del país: la anual si tiene 4 años o más; si no, la mensual, siempre
+  // que sean pocos grupos (con siete tramos de edad, las líneas no se leen).
+  const annualYears = shared(4);
+  const monthlyPeriods = country.length <= 3 ? shared(7) : [];
+  const monthly = annualYears.length < 4 && monthlyPeriods.length >= 4;
+  const years = monthly ? monthlyPeriods : annualYears;
+  const periodLabelOf = (p: string) => country[0].obs.find((o) => o.period === p)!.periodLabel;
+  // "Agosto 2026" → "ago 2026", como el gráfico mensual del indicador.
+  const xLabel = (p: string) => (monthly ? `${periodLabelOf(p).slice(0, 3).toLowerCase()} ${p.slice(0, 4)}` : p);
+  const total = getHistorySeries(indicator.id, "UY").filter((o) => years.includes(o.period));
+  const totalMonthly = monthly
+    ? getSeries(indicator.id, "UY", { periodLength: 7 }).filter((o) => years.includes(o.period))
+    : [];
+  const totalObs = monthly ? totalMonthly : total;
   const series: LineSeries[] = [
-    ...(total.length === years.length
-      ? [{ key: "total", label: "Total", color: "var(--chart-1)", dashed: true, points: total.map((o) => ({ x: o.period, y: o.value! })) }]
+    ...(totalObs.length === years.length
+      ? [{ key: "total", label: "Total", color: "var(--chart-1)", dashed: true, points: totalObs.map((o) => ({ x: xLabel(o.period), y: o.value! })) }]
       : []),
-    ...annual.map((g, i) => ({
+    ...country.map((g, i) => ({
       key: g.group,
       label: g.label,
       color: GROUP_COLORS[i % GROUP_COLORS.length],
-      points: years.map((p) => ({ x: p, y: valueAt(g.obs, p)! })),
+      points: years.map((p) => ({ x: xLabel(p), y: valueAt(g.obs, p)! })),
     })),
   ];
   const hasTotal = series[0]?.key === "total";
+  const firstObs = (p: string) => country[0].obs.find((o) => o.period === p)!;
 
-  // Último dato del país por grupo, cuando no alcanza para una serie.
-  const latestPeriod = country.length
-    ? country.map((g) => g.obs[g.obs.length - 1].period).reduce((a, p) => (p < a ? p : a))
-    : undefined;
+  // Último dato del país por grupo, cuando no alcanza para una serie: el período
+  // más reciente que tienen todos los grupos.
+  const latestPeriod = [...shared(4), ...shared(7)].sort((a, b) => a.localeCompare(b)).pop();
   const latest = latestPeriod
     ? country.map((g) => ({ ...g, o: g.obs.find((o) => o.period === latestPeriod) })).filter((g) => g.o)
     : [];
 
   const maxLatest = Math.max(...latest.map((g) => g.o!.value!), 1);
   const totalAtLatest = latestPeriod
-    ? getHistorySeries(indicator.id, "UY").find((o) => o.period === latestPeriod)?.value ?? undefined
+    ? getObservations(indicator.id, "UY").find((o) => o.period === latestPeriod)?.value ?? undefined
     : undefined;
   // "Margen de error al 95%: ±1,8 punto." → "±1,8": la encuesta lo publica por grupo.
   const margin = (o: Observation) => {
     const m = o.notes?.match(/Margen de error al 95%: (±[\d,]+)/)?.[1];
     return m && indicator.unit === "%" ? `${m} pp` : m;
   };
+
+  const hasMargins = latest.some((g) => margin(g.o!));
 
   // Con dos grupos (hombres y mujeres), la diferencia entre los dos.
   const two = dept.groups.length === 2;
@@ -88,15 +107,19 @@ export default function BreakdownSection({
         {years.length >= 4 ? (
           <ChartCard
             question={`${indicator.question} — por ${label}`}
-            subtitle={`Serie anual oficial · ${years[0]}–${years[years.length - 1]}`}
-            sourceLine={`Fuente: ${sourceOf(annual[0].obs[0])} · Serie anual por ${label}`}
+            subtitle={
+              monthly
+                ? `Serie mensual oficial · ${periodLabelOf(years[0])}–${periodLabelOf(years[years.length - 1])}`
+                : `Serie anual oficial · ${years[0]}–${years[years.length - 1]}`
+            }
+            sourceLine={`Fuente: ${sourceOf(firstObs(years[years.length - 1]))} · Serie ${monthly ? "mensual" : "anual"} por ${label}`}
             table={{
               caption: `${indicator.name} por ${label}, Uruguay`,
-              head: ["Año", ...series.map((s) => s.label)],
+              head: [monthly ? "Mes" : "Año", ...series.map((s) => s.label)],
               rows: years.map((p, j) => [
-                p,
+                monthly ? periodLabelOf(p) : p,
                 ...(hasTotal ? [fmt(series[0].points[j].y)] : []),
-                ...annual.map((g) => fmt(valueAt(g.obs, p)!)),
+                ...country.map((g) => fmt(valueAt(g.obs, p)!)),
               ]),
             }}
           >
@@ -110,8 +133,12 @@ export default function BreakdownSection({
             note={[...new Set(latest.map((g) => g.o!.notes?.replace(/^Margen de error[^.]*\. /, "")).filter(Boolean))].join(" ")}
             table={{
               caption: `${indicator.name} por ${label}, Uruguay, ${latest[0].o!.periodLabel}`,
-              head: [label.charAt(0).toUpperCase() + label.slice(1), indicator.name, "Margen de error al 95%"],
-              rows: latest.map((g) => [g.label, fmt(g.o!.value!), margin(g.o!) ?? "—"]),
+              head: [
+                label.charAt(0).toUpperCase() + label.slice(1),
+                indicator.name,
+                ...(hasMargins ? ["Margen de error al 95%"] : []),
+              ],
+              rows: latest.map((g) => [g.label, fmt(g.o!.value!), ...(hasMargins ? [margin(g.o!) ?? "—"] : [])]),
             }}
           >
             <ul className="space-y-1.5">
