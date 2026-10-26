@@ -13,6 +13,9 @@ import {
 } from "recharts";
 import { formatNumber, formatValue } from "@/lib/format";
 
+/** Hasta cuántos puntos se marca cada dato (más, en una serie diaria, es ruido). */
+export const MAX_DOTS = 40;
+
 export interface LinePoint {
   x: string;
   y: number;
@@ -85,13 +88,16 @@ export default function LineChart({
               fontFamily: "var(--font-body)",
             }}
           />
+          {/* Tramos rectos entre datos reales: una curva suavizada dibuja
+              valores intermedios que nadie midió. Con pocos puntos, cada dato
+              lleva su marca; con series largas (diarias) serían ruido. */}
           <Area
-            type="monotone"
+            type="linear"
             dataKey="y"
             stroke="var(--chart-1)"
             strokeWidth={2}
             fill={`url(#${gradientId})`}
-            dot={false}
+            dot={data.length <= MAX_DOTS ? { r: 2.5, strokeWidth: 0, fill: "var(--chart-1)" } : false}
             activeDot={{ r: 4, strokeWidth: 2, stroke: "var(--color-surface)" }}
           />
           {last ? (

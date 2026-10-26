@@ -11,6 +11,7 @@ import {
   YAxis,
 } from "recharts";
 import { formatNumber, formatValue } from "@/lib/format";
+import { MAX_DOTS } from "./LineChart";
 
 export interface LineSeries {
   key: string;
@@ -124,12 +125,12 @@ export default function MultiLineChart({
             {series.map((s) => (
               <Line
                 key={s.key}
-                type="monotone"
+                type="linear"
                 dataKey={s.key}
                 stroke={s.color}
                 strokeWidth={2}
                 strokeDasharray={s.dashed ? "5 4" : undefined}
-                dot={false}
+                dot={data.length <= MAX_DOTS ? { r: 2.5, strokeWidth: 0, fill: s.color } : false}
                 activeDot={{ r: 4, strokeWidth: 2, stroke: "var(--color-surface)" }}
                 connectNulls
               />

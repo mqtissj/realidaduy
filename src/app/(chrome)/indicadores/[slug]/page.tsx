@@ -87,12 +87,16 @@ export default async function IndicadorPage({
     historySegments.length === 1
       ? `${historySegments[0].name} · ${historySegments[0].from}–${historySegments[0].to}`
       : historySegments.map((s) => `${s.name} ${s.from}–${s.to}`).join(" y ");
-  // Sin serie anual (salarios, salario real, empleo, actividad), la evolución
-  // se muestra con la serie mensual oficial: nunca se mezclan granularidades.
+  // Serie mensual oficial: va cuando no hay serie anual (salarios, empleo,
+  // actividad) y también ANTES de una serie anual secundaria (Banco Mundial),
+  // que no coincide con la cifra oficial del INE. Cada granularidad en su
+  // propio gráfico: nunca se mezclan.
   const monthly =
-    history.length >= 4
+    history.length >= 4 && historyOfficial
       ? []
       : getSeries(indicator.id, "UY", { periodLength: 7 }).filter((o) => o.status !== "SECONDARY");
+  const showMonthly = monthly.length >= 4;
+  const showHistory = history.length >= 4;
   const monthlyFirst = monthly[0];
   const monthlyLast = monthly[monthly.length - 1];
   // "Agosto 2026" → "ago 2026": el eje tiene lugar para pocas letras.
@@ -218,32 +222,7 @@ export default async function IndicadorPage({
         <h2 id="evolucion" className="sr-only">
           Evolución histórica
         </h2>
-        {history.length >= 4 ? (
-          <ChartCard
-            question={`${indicator.question} — evolución`}
-            subtitle={
-              historyOfficial
-                ? "Serie anual oficial"
-                : "Serie anual comparable (fuente secundaria internacional)"
-            }
-            sourceLine={`Fuente: ${historySourceLine} · Serie anual`}
-            note={[...new Set(history.map((o) => o.notes).filter(Boolean))].join(" ")}
-            table={{
-              caption: `Evolución anual de ${indicator.name}`,
-              head: ["Año", indicator.name],
-              rows: history.map((o) => [
-                o.period,
-                formatValue(o.value!, indicator.unit, indicator.decimals),
-              ]),
-            }}
-          >
-            <LineChart
-              data={history.map((o) => ({ x: o.period, y: o.value! }))}
-              unit={indicator.unit}
-              decimals={indicator.decimals}
-            />
-          </ChartCard>
-        ) : monthly.length >= 4 ? (
+        {showMonthly ? (
           <ChartCard
             question={`${indicator.question} — evolución`}
             subtitle={sameMonth ? `Dato de ${monthName} de cada año` : "Serie mensual oficial"}
@@ -263,18 +242,49 @@ export default async function IndicadorPage({
               decimals={indicator.decimals}
             />
           </ChartCard>
-        ) : indicator.geographicLevel.includes("pais") ? (
-          <StateView
-            kind="pending"
-            detail={`La serie histórica oficial (${source?.shortName}) se ingerirá y validará antes de publicarse.`}
-          />
-        ) : (
-          <p className="text-sm text-ink-faint">
-            La serie histórica {indicator.availableFrom ? `(${indicator.availableFrom}–hoy) ` : ""}
-            está disponible en la fuente; el gráfico de evolución se sumará en una próxima
-            versión.
-          </p>
-        )}
+        ) : null}
+        {showHistory ? (
+          <div className={showMonthly ? "mt-6" : undefined}>
+            <ChartCard
+              question={`${indicator.question} — evolución`}
+              subtitle={
+                historyOfficial
+                  ? "Serie anual oficial"
+                  : "Serie anual comparable (fuente secundaria internacional)"
+              }
+              sourceLine={`Fuente: ${historySourceLine} · Serie anual`}
+              note={[...new Set(history.map((o) => o.notes).filter(Boolean))].join(" ")}
+              table={{
+                caption: `Evolución anual de ${indicator.name}`,
+                head: ["Año", indicator.name],
+                rows: history.map((o) => [
+                  o.period,
+                  formatValue(o.value!, indicator.unit, indicator.decimals),
+                ]),
+              }}
+            >
+              <LineChart
+                data={history.map((o) => ({ x: o.period, y: o.value! }))}
+                unit={indicator.unit}
+                decimals={indicator.decimals}
+              />
+            </ChartCard>
+          </div>
+        ) : null}
+        {!showMonthly && !showHistory ? (
+          indicator.geographicLevel.includes("pais") ? (
+            <StateView
+              kind="pending"
+              detail={`La serie histórica oficial (${source?.shortName}) se ingerirá y validará antes de publicarse.`}
+            />
+          ) : (
+            <p className="text-sm text-ink-faint">
+              La serie histórica {indicator.availableFrom ? `(${indicator.availableFrom}–hoy) ` : ""}
+              está disponible en la fuente; el gráfico de evolución se sumará en una próxima
+              versión.
+            </p>
+          )
+        ) : null}
       </section>
 
       {/* Comparar dos períodos */}
