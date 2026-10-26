@@ -36,7 +36,8 @@ export default function MultiLineChart({
   unit: string;
   decimals: number;
 }) {
-  const xs = [...new Set(series.flatMap((s) => s.points.map((p) => p.x)))].sort();
+  // En el orden de los puntos: las etiquetas ("ago 2026") no se ordenan como texto.
+  const xs = [...new Set(series.flatMap((s) => s.points.map((p) => p.x)))];
   const data = xs.map((x) => {
     const row: Record<string, string | number> = { x };
     for (const s of series) {

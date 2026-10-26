@@ -10,7 +10,7 @@ import { departmentEchObservations } from "@/data/observations/departamentos-ech
 import { otuObservations } from "@/data/observations/otu";
 import { otuMunicipioObservations } from "@/data/observations/otu-municipios";
 import { otuCensalObservations } from "@/data/observations/otu-censal";
-import { ineMensualObservations } from "@/data/observations/ine-mensual";
+import { ineMensualDesgloses, ineMensualObservations } from "@/data/observations/ine-mensual";
 import { seguridadObservations } from "@/data/observations/seguridad";
 import { worldBankSeries } from "@/data/observations/series-banco-mundial";
 import { prismaObservations } from "@/data/observations/prisma";
@@ -47,7 +47,7 @@ const allObservations: Observation[] = [
 // Aperturas (por sexo, por edad), aparte de los totales: ninguna función de
 // totales las ve, así un titular, un ranking o un mapa nunca muestra el dato de
 // las mujeres como si fuera el del departamento.
-const allBreakdowns: Observation[] = [...ineAnualesDesgloses, ...inePobrezaAperturas];
+const allBreakdowns: Observation[] = [...ineAnualesDesgloses, ...inePobrezaAperturas, ...ineMensualDesgloses];
 
 /** Todas las observaciones de la plataforma, totales y aperturas (descargas CSV). */
 export function getAllObservations(): Observation[] {

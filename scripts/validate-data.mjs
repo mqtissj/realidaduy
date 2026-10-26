@@ -13,7 +13,7 @@ const { seguridadObservations } = await import("../src/data/observations/segurid
 const { otuObservations } = await import("../src/data/observations/otu.ts");
 const { otuMunicipioObservations } = await import("../src/data/observations/otu-municipios.ts");
 const { otuCensalObservations } = await import("../src/data/observations/otu-censal.ts");
-const { ineMensualObservations } = await import("../src/data/observations/ine-mensual.ts");
+const { ineMensualObservations, ineMensualDesgloses } = await import("../src/data/observations/ine-mensual.ts");
 const { municipioObservations } = await import("../src/data/observations/municipios.ts");
 const { worldBankSeries } = await import("../src/data/observations/series-banco-mundial.ts");
 const { prismaObservations } = await import("../src/data/observations/prisma.ts");
@@ -43,7 +43,7 @@ const observations = [
   ...andeMipymesObservations,
 ];
 const { inePobrezaAperturas } = await import("../src/data/observations/ine-pobreza-aperturas.ts");
-const breakdowns = [...ineAnualesDesgloses, ...inePobrezaAperturas];
+const breakdowns = [...ineAnualesDesgloses, ...inePobrezaAperturas, ...ineMensualDesgloses];
 
 const errors = [];
 const warnings = [];
