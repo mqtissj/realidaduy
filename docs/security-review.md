@@ -7,6 +7,21 @@
 
 ---
 
+## Estado al 26/10/2026
+
+Lo que sigue es la revisión original del 25/08/2026, sin cambios. Esta tabla dice qué pasó después con cada hallazgo.
+
+| Hallazgo | Estado | Dónde |
+| --- | --- | --- |
+| M1 — `osmtogeojson` / `@xmldom/xmldom` | Resuelto: `osmtogeojson`, `shapefile` y `proj4` ya no están en `package.json` | — |
+| M2 — `postcss` vendorizado por Next | Resuelto: Next 15.5.28; `npm audit` da 0 vulnerabilidades | PR #24 |
+| L1 — la ingesta confía en el contenido remoto | Mitigado: el bot mensual abre un PR para revisión humana en vez de publicar; las pruebas y `validate:data` frenan series vacías y totales que no coinciden. Sigue sin haber hashes fijados por descarga | PR #24 y siguientes |
+| L2 — búsquedas en objetos planos con claves remotas | Sin cambios | — |
+| L3 — sin cabeceras de seguridad | Resuelto: `next.config.ts` define cabeceras (incluidas las de `/embed`) | — |
+| Nuevo — acciones de GitHub sin fijar y con `contents: write` | Resuelto: acciones fijadas por hash; `ci.yml` con `contents: read` | PR #24 |
+
+---
+
 ## 1. Executive summary
 
 **Overall risk posture: LOW.** For a public-facing, nationally used data portal, this codebase has an unusually small attack surface, and no exploitable vulnerability was found in first-party code.

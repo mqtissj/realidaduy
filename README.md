@@ -5,8 +5,8 @@ convierte datos públicos de Uruguay en mapas, indicadores y comparaciones — s
 fuente, período y metodología a la vista.
 
 > Estado: **MVP en desarrollo**. Cada observación registra internamente (campo `demo`)
-> si ya fue cotejada a mano contra el boletín oficial. Una tarea programada revisa cada
-> mes (día 5) si hay datos nuevos del INE/BCU y actualiza el repo. **Nunca se inventan datos.**
+> si quedó pendiente de cotejo contra el boletín oficial. Un bot revisa cada mes (día 5)
+> si hay datos nuevos y abre un pull request para revisar. **Nunca se inventan datos.**
 
 ## Deploy y actualización automática
 
@@ -16,23 +16,38 @@ fuente, período y metodología a la vista.
   corre el día 5 de cada mes: ingesta INE (IPC, ECH e IMS, desde los informes
   técnicos; esperanza de vida y desempleo por departamento) + Banco Mundial + PBI anual de PRISMA (ANII) + PIB trimestral y cotizaciones
   (dólar, real, euro y peso argentino) del BCU + seguridad (M. Interior) + elecciones (Corte Electoral, con verificación automática contra
-  el escrutinio), valida, compila y commitea — lo que dispara el redeploy. También se puede
-  lanzar a mano desde la pestaña Actions ("Run workflow").
+  el escrutinio) + ANDE + educación (MEC y UdelaR). Corre las pruebas, valida, compila y
+  **abre un pull request contra `main`** (rama `bot/datos-…`) con la lista de pasos que
+  fallaron: nada llega a producción hasta que una persona lo mergea. Si falló algún paso,
+  la corrida termina en rojo. Necesita "Allow GitHub Actions to create and approve pull
+  requests" activado en Settings → Actions → General. También se puede lanzar a mano desde
+  la pestaña Actions ("Run workflow").
+- **Cotizaciones:** [`actualizar-cotizaciones.yml`](.github/workflows/actualizar-cotizaciones.yml)
+  corre de lunes a viernes a las 19:00 (Uruguay) y commitea directo solo las cotizaciones
+  del BCU.
 - **Lo que no tiene script** (pobreza, salario mínimo, datos departamentales): lo revisa la
   tarea programada local de Claude (día 5, 10:00).
 
 ## Comandos
 
+Requiere Node 22.18 o superior (los scripts importan módulos `.ts` con el type-stripping
+nativo de Node); CI y los bots usan Node 24.
+
 ```bash
 npm run dev            # servidor de desarrollo
-npm run build          # build de producción (41 páginas estáticas)
+npm run build          # build de producción (218 páginas)
 npm run start          # servir el build
 npm run fetch:geo      # ingesta de geometrías (IDE + cartografía censal INE)
 npm run fetch:mensual  # ingesta mensual: INE, Banco Mundial, PRISMA, BCU (PIB y cotizaciones), seguridad, elecciones y educación
 npm run fetch:mec      # matrícula por carrera, 6º de liceo y UTU por departamento (Anuario Estadístico de Educación del MEC)
 npm run fetch:udelar   # de dónde vienen y dónde cursan los estudiantes de la UdelaR (microdatos FormA)
-npm run validate:data  # validación de datos (integridad, sumas, outliers)
+npm run validate:data  # validación de datos (integridad, sumas, outliers, archivos vacíos)
+npm run lint           # ESLint (next/core-web-vitals + TypeScript), sin avisos permitidos
+npm test               # pruebas (node:test): formato, CSV, escala del mapa, invariantes de datos
 ```
+
+Un archivo nuevo de observaciones se registra en un solo lugar:
+`src/data/observations/index.ts` (lo usan la app y el validador).
 
 ## Stack
 
@@ -42,7 +57,9 @@ completo por observación (fuente, período, estado, URL, notas metodológicas).
 
 ## Documentación
 
-La revisión de seguridad está en [`docs/security-review.md`](docs/security-review.md).
+La revisión de seguridad está en [`docs/security-review.md`](docs/security-review.md)
+(con el estado actualizado de cada hallazgo). Las licencias, en [`LICENSE`](LICENSE) (código)
+y [`LICENSE-DATOS.md`](LICENSE-DATOS.md) (datos).
 El paquete de planificación completo (arquitectura, data dictionary, fuentes, roadmap)
 está publicado como artifact del proyecto.
 

@@ -1,4 +1,5 @@
-# Verificación en cada push y pull request: los datos validan y el sitio compila.
+# Verificación en cada push y pull request: linter, pruebas, los datos validan
+# y el sitio compila.
 name: CI
 
 on:
@@ -20,5 +21,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - run: npm run lint
+      - run: npm test
       - run: npm run validate:data
       - run: npm run build

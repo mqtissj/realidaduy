@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 // Generador de las imágenes de vista previa (Open Graph / Twitter Card).
 //
 // Es lo que se ve cuando alguien pega un link de realidad.uy en WhatsApp, X,

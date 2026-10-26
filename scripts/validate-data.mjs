@@ -13,13 +13,13 @@ const { seguridadObservations } = await import("../src/data/observations/segurid
 const { otuObservations } = await import("../src/data/observations/otu.ts");
 const { otuMunicipioObservations } = await import("../src/data/observations/otu-municipios.ts");
 const { otuCensalObservations } = await import("../src/data/observations/otu-censal.ts");
-const { ineMensualObservations, ineMensualDesgloses } = await import("../src/data/observations/ine-mensual.ts");
+const { ineMensualObservations } = await import("../src/data/observations/ine-mensual.ts");
 const { municipioObservations } = await import("../src/data/observations/municipios.ts");
 const { worldBankSeries } = await import("../src/data/observations/series-banco-mundial.ts");
 const { prismaObservations } = await import("../src/data/observations/prisma.ts");
 const { bcuPibObservations } = await import("../src/data/observations/bcu-pib.ts");
 const { bcuCotizacionesObservations } = await import("../src/data/observations/bcu-cotizaciones.ts");
-const { ineAnualesObservations, ineAnualesDesgloses } = await import("../src/data/observations/ine-anuales.ts");
+const { ineAnualesObservations } = await import("../src/data/observations/ine-anuales.ts");
 const { andeMipymesObservations } = await import("../src/data/observations/ande-mipymes.ts");
 const { mecEducacionObservations } = await import("../src/data/observations/mec-educacion.ts");
 const { udelarFormaObservations } = await import("../src/data/observations/udelar-forma.ts");
@@ -30,27 +30,10 @@ const { sources } = await import("../src/data/sources.ts");
 const { parties, elections, electionResults, turnout } = await import("../src/data/elections.ts");
 const { catalogDatasets } = await import("../src/data/catalogo.ts");
 
-const observations = [
-  ...nationalObservations,
-  ...departmentObservations,
-  ...departmentEchObservations,
-  ...otuObservations,
-  ...otuMunicipioObservations,
-  ...otuCensalObservations,
-  ...ineMensualObservations,
-  ...seguridadObservations,
-  ...municipioObservations,
-  ...worldBankSeries,
-  ...prismaObservations,
-  ...bcuPibObservations,
-  ...bcuCotizacionesObservations,
-  ...ineAnualesObservations,
-  ...mecEducacionObservations,
-  ...udelarFormaObservations,
-  ...andeMipymesObservations,
-];
-const { inePobrezaAperturas } = await import("../src/data/observations/ine-pobreza-aperturas.ts");
-const breakdowns = [...ineAnualesDesgloses, ...inePobrezaAperturas, ...ineMensualDesgloses];
+// La misma lista que usa la app (src/data/observations/index.ts).
+const { allObservations: observations, allBreakdowns: breakdowns } = await import(
+  "../src/data/observations/index.ts"
+);
 
 const errors = [];
 const warnings = [];

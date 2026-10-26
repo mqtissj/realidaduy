@@ -39,6 +39,9 @@ jobs:
       - name: Ingesta BCU (cotizaciones)
         run: node scripts/ingest/fetch-bcu-cotizaciones.mjs
 
+      - name: Pruebas
+        run: npm test
+
       - name: Validar datos
         run: npm run validate:data
 
