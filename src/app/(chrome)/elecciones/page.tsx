@@ -6,6 +6,7 @@ import {
   getParty,
   turnout,
 } from "@/data/elections";
+import { balotaje2024Totales } from "@/data/elecciones-generadas";
 import { historicElections } from "@/data/elecciones-historicas";
 import { departments, montevideoMunicipalities } from "@/data/territories";
 import { formatNumber } from "@/lib/format";
@@ -16,7 +17,11 @@ import PartyBars from "@/components/charts/PartyBars";
 import ShareButton from "@/components/share/ShareButton";
 import EmbedButton from "@/components/embed/EmbedButton";
 import CatalogCredit from "@/components/ui/CatalogCredit";
-import { CONJUNTO_ELECCIONES_2024, CONJUNTO_ELECCIONES_2025 } from "@/data/catalogo";
+import {
+  CONJUNTO_BALOTAJE_2024,
+  CONJUNTO_ELECCIONES_2024,
+  CONJUNTO_ELECCIONES_2025,
+} from "@/data/catalogo";
 import TableWrap from "@/components/ui/TableWrap";
 
 export const metadata: Metadata = {
@@ -290,8 +295,12 @@ export default function EleccionesPage() {
           ) : null}
           <p className="mt-3 text-xs text-ink-faint">
             Los porcentajes sobre el total de votos emitidos (incluye en blanco y anulados)
-            son distintos: 49,84% y 45,87%. Esta plataforma nunca mezcla las dos bases en un
-            mismo gráfico.
+            son distintos:{" "}
+            {balotaje
+              .map((r) => `${formatNumber(((r.votes ?? 0) / balotaje2024Totales.emitidos) * 100, 2)}%`)
+              .join(" y ")}
+            . Esta plataforma nunca mezcla las dos bases en un mismo gráfico. Fuente: Corte
+            Electoral, <CatalogCredit sourceUrl={CONJUNTO_BALOTAJE_2024} />.
           </p>
         </figure>
       </section>

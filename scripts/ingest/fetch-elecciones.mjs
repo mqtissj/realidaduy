@@ -7,6 +7,10 @@
 //     TODO el país (los ~125 municipios) — dataset CKAN "Elecciones
 //     Departamentales y Municipales 2025", recurso "Desglose de votos"
 //     (tipos HOJA_ED/VOTO_LEMA_ED y HOJA_EM/VOTO_LEMA_EM; DESCRIPCION_2 = municipio).
+//  3. Balotaje 2024 a nivel país — dataset CKAN "Balotaje 2024" (totales por
+//     circuito: habilitados, emitidos, en blanco, anulados y votos a cada fórmula).
+//  4. Participación (emitidos / habilitados) de las tres elecciones, desde los
+//     totales por circuito de cada dataset.
 //
 // Salida: src/data/elecciones-generadas.ts (resultados) y
 //         src/data/territorios-municipios.ts (territorios municipales)
@@ -16,6 +20,7 @@
 //  - Lema ganador 2025 en cada departamento == ganadores verificados (19/19).
 //  - Lema ganador municipal en los 8 municipios de Montevideo == verificados,
 //    incluido FA = 19.590 votos en el Municipio F.
+//  - Balotaje 2024: votos a cada fórmula == escrutinio definitivo.
 //
 // Uso: node scripts/ingest/fetch-elecciones.mjs
 
@@ -67,6 +72,10 @@ const SRC = {
     "https://catalogodatos.gub.uy/dataset/7aaa1ff0-8ea5-4302-a3e6-c2d589b484a3/resource/0f149bb6-4fff-463b-bc3a-8ab671bcdf34/download/totales-generales-por-comision-receptora-de-votos-y-plebiscitos-constitucionales.csv",
   desglose2025:
     "https://catalogodatos.gub.uy/dataset/2d5eb299-0d95-478b-9271-c62f601e7bc1/resource/92d7ca7b-32f1-4cde-b607-d94aef825c4d/download/desglose-de-votos.csv",
+  totales2025:
+    "https://catalogodatos.gub.uy/dataset/2d5eb299-0d95-478b-9271-c62f601e7bc1/resource/a27ceda4-4486-4329-9e67-b7c36e9dfa59/download/totales-generales-por-comision-receptora-de-votos.csv",
+  balotaje2024:
+    "https://catalogodatos.gub.uy/dataset/2dc312e4-f3f7-41aa-b56d-74389083e7e1/resource/ac4cbd7c-dc15-4d3f-87ba-c00fb47604b7/download/balotaje-2024.csv",
 };
 
 // Los códigos de departamento de la Corte Electoral coinciden con los sufijos
@@ -105,6 +114,9 @@ const EXPECTED_WINNERS_2025 = {
 };
 const EXPECTED_WINNERS_MUNI = { A: "fa", B: "fa", C: "fa", CH: "cr", D: "fa", E: "cr", F: "fa", G: "fa" };
 const EXPECTED_MUNI_F_FA_VOTES = 19590;
+
+// Balotaje 2024, escrutinio definitivo (Corte Electoral).
+const EXPECTED_BALOTAJE_2024 = { fa: 1212833, pn: 1119537 };
 
 async function cachedDownload(name, url) {
   await mkdir(CACHE, { recursive: true });
@@ -150,6 +162,30 @@ function assertEqual(actual, expected, label) {
     throw new Error(`CHEQUEO FALLIDO — ${label}: esperado ${expected}, obtenido ${actual}`);
   }
   console.log(`  ✓ ${label}: ${actual}`);
+}
+
+/** Índice de una columna del encabezado; falla si el recurso cambió de forma. */
+function column(header, name) {
+  const idx = header.indexOf(name);
+  if (idx < 0) throw new Error(`No se encontró la columna ${name}`);
+  return idx;
+}
+
+/** Suma columnas de un CSV de totales por circuito (a nivel país). */
+function sumColumns(text, names) {
+  const lines = text.trim().split(/\r?\n/);
+  const header = parseLine(lines[0].replace(/^\uFEFF/, ""));
+  const idx = names.map((n) => column(header, n));
+  const sums = Object.fromEntries(names.map((n) => [n, 0]));
+  for (let i = 1; i < lines.length; i++) {
+    const p = parseLine(lines[i]);
+    idx.forEach((j, k) => {
+      const v = Number(p[j]);
+      if (!Number.isFinite(v)) throw new Error(`Valor no numérico en ${names[k]}, fila ${i}`);
+      sums[names[k]] += v;
+    });
+  }
+  return sums;
 }
 
 function round2(n) {
@@ -211,12 +247,14 @@ console.log("Totales de votos emitidos 2024 por circuito…");
 const t24 = await cachedDownload("elecciones-totales-2024.csv", SRC.totales2024);
 const linesT24 = t24.trim().split(/\r?\n/);
 const headerT24 = parseLine(linesT24[0]);
-const emittedIdx = headerT24.indexOf("TotalVotosEmitidos");
-if (emittedIdx < 0) throw new Error("No se encontró la columna TotalVotosEmitidos");
+const emittedIdx = column(headerT24, "TotalVotosEmitidos");
+const enabledIdx24 = column(headerT24, "TotalHabilitados");
 const emitted2024 = {};
+let enabled2024 = 0;
 for (let i = 1; i < linesT24.length; i++) {
   const p = parseLine(linesT24[i]);
   emitted2024[p[0]] = (emitted2024[p[0]] ?? 0) + Number(p[emittedIdx]);
+  enabled2024 += Number(p[enabledIdx24]);
 }
 const emittedTotal = Object.values(emitted2024).reduce((a, b) => a + b, 0);
 if (emittedTotal !== EXPECTED_EMITTED_2024) {
@@ -330,6 +368,50 @@ if (muniTerritories.length < 100 || muniTerritories.length > 150) {
 }
 console.log(`  ✓ municipios en todo el país: ${muniTerritories.length}`);
 
+// ── 3. Balotaje 2024 (nivel país) ────────────────────────────────────────────
+console.log("Balotaje 2024 (totales por circuito)…");
+const b24 = sumColumns(await cachedDownload("elecciones-balotaje-2024.csv", SRC.balotaje2024), [
+  "TotalHabilitados",
+  "TotalVotosEmitidos",
+  "TotalAnulados",
+  "TotalEnBlanco",
+  "TotalOrsiCosse",
+  "TotalDelgadoRipoll",
+]);
+assertEqual(b24.TotalOrsiCosse, EXPECTED_BALOTAJE_2024.fa, "balotaje 2024 Orsi-Cosse");
+assertEqual(b24.TotalDelgadoRipoll, EXPECTED_BALOTAJE_2024.pn, "balotaje 2024 Delgado-Ripoll");
+const valid2024Runoff = b24.TotalOrsiCosse + b24.TotalDelgadoRipoll;
+const rowsBalotaje = [
+  ["fa", b24.TotalOrsiCosse, "Yamandú Orsi"],
+  ["pn", b24.TotalDelgadoRipoll, "Álvaro Delgado"],
+].map(([partyId, votes, electedName]) => ({
+  electionId: "balotaje-2024",
+  territoryId: "UY",
+  partyId,
+  votes,
+  pct: round2((votes / valid2024Runoff) * 100),
+  pctBase: "validos",
+  winner: votes === Math.max(b24.TotalOrsiCosse, b24.TotalDelgadoRipoll),
+  electedName,
+  sourceUrl: SRC.balotaje2024,
+}));
+
+// ── 4. Participación (emitidos / habilitados) ────────────────────────────────
+console.log("Participación electoral…");
+const t25 = sumColumns(await cachedDownload("elecciones-totales-2025.csv", SRC.totales2025), [
+  "TotalHabilitados",
+  "TotalVotosEmitidos",
+]);
+const turnoutRows = [
+  { electionId: "nacional-2024", enabled: enabled2024, emitted: emittedTotal, sourceUrl: SRC.totales2024 },
+  { electionId: "balotaje-2024", enabled: b24.TotalHabilitados, emitted: b24.TotalVotosEmitidos, sourceUrl: SRC.balotaje2024 },
+  { electionId: "departamental-2025", enabled: t25.TotalHabilitados, emitted: t25.TotalVotosEmitidos, sourceUrl: SRC.totales2025 },
+].map((t) => ({ ...t, pct: round2((t.emitted / t.enabled) * 100) }));
+for (const t of turnoutRows) {
+  if (t.pct < 50 || t.pct > 100) throw new Error(`Participación fuera de rango en ${t.electionId}: ${t.pct}`);
+  console.log(`  ✓ ${t.electionId}: ${t.emitted} de ${t.enabled} habilitados (${t.pct}%)`);
+}
+
 // ── Salida ───────────────────────────────────────────────────────────────────
 const serialize = (rows) =>
   rows
@@ -348,8 +430,32 @@ const file = `import type { ElectionResult } from "@/lib/types";
 //  - 2024: totales nacionales por partido exactos (FA 1.071.826, PN 655.426, …).
 //  - 2025: lema ganador verificado en los 19 departamentos y 8 municipios de
 //    Montevideo (incl. FA 19.590 votos en el Municipio F).
+//  - Balotaje 2024: votos por fórmula exactos (Orsi 1.212.833, Delgado 1.119.537).
 // "otros" agrupa los lemas menores. Bases de %: 2024 sobre votos emitidos;
 // 2025 sobre votos válidos al lema (declarado en pctBase de cada fila).
+
+/** Balotaje 2024 a nivel país (% sobre votos válidos a las dos fórmulas). */
+export const balotaje2024Pais: ElectionResult[] = [
+${rowsBalotaje
+  .map(
+    (r) =>
+      `  { electionId: ${JSON.stringify(r.electionId)}, territoryId: "UY", partyId: ${JSON.stringify(r.partyId)}, votes: ${r.votes}, pct: ${r.pct}, pctBase: "validos", winner: ${r.winner}, electedName: ${JSON.stringify(r.electedName)}, demo: false, sourceUrl: ${JSON.stringify(r.sourceUrl)} },`
+  )
+  .join("\n")}
+];
+
+/** Totales del balotaje 2024 (para expresar % sobre emitidos sin mezclar bases). */
+export const balotaje2024Totales = { habilitados: ${b24.TotalHabilitados}, emitidos: ${b24.TotalVotosEmitidos}, validos: ${valid2024Runoff}, enBlanco: ${b24.TotalEnBlanco}, anulados: ${b24.TotalAnulados} };
+
+/** Participación: votos emitidos / habilitados × 100 (totales por circuito). */
+export const participacion: { electionId: string; pct: number; demo: boolean; sourceUrl: string }[] = [
+${turnoutRows
+  .map(
+    (t) =>
+      `  { electionId: ${JSON.stringify(t.electionId)}, pct: ${t.pct}, demo: false, sourceUrl: ${JSON.stringify(t.sourceUrl)} }, // ${t.emitted} / ${t.enabled}`
+  )
+  .join("\n")}
+];
 
 export const nacional2024PorDepartamento: ElectionResult[] = [
 ${serialize(rows2024)}

@@ -1,13 +1,17 @@
 import type { Election, ElectionResult, Party } from "@/lib/types";
 // Import relativo (no alias) para que scripts/validate-data.mjs pueda ejecutarlo con Node.
 import {
+  balotaje2024Pais,
   departamental2025PorDepartamento,
   municipal2025PorMunicipio,
   nacional2024PorDepartamento,
+  participacion,
 } from "./elecciones-generadas.ts";
 
 // Resultados electorales. Verificación 2026-08-25 y auditoría adversarial
 // 2026-08-26 (41 valores cotejados contra Corte Electoral/Wikipedia/prensa).
+// 2026-10-26: balotaje 2024 y participación pasan a generarse desde los datos
+// abiertos de la Corte Electoral (antes citaban Wikipedia).
 // 2026-08-27: los 136 alcaldes/as 2025-2030 verificados uno a uno contra las
 // actas de proclamación de las Juntas Electorales Departamentales (fuente
 // primaria; Wikipedia y OPP quedaron descartadas como fuente por errores
@@ -31,7 +35,7 @@ export function getParty(id: string): Party | undefined {
   return parties.find((p) => p.id === id);
 }
 
-const WIKI_2024 = "https://es.wikipedia.org/wiki/Elecciones_generales_de_Uruguay_de_2024";
+const CKAN_2024 = "https://catalogodatos.gub.uy/dataset/corte-electoral-elecciones-nacionales-2024";
 const CKAN_2025 =
   "https://catalogodatos.gub.uy/dataset/corte-electoral-elecciones_departamentales_y_municipales_2025";
 
@@ -49,7 +53,7 @@ export const elections: Election[] = [
     date: "2024-11-24",
     name: "Balotaje 2024",
     type: "balotaje",
-    sourceUrl: WIKI_2024,
+    sourceUrl: "https://catalogodatos.gub.uy/dataset/corte-electoral-balotaje_2024",
   },
   {
     id: "departamental-2025",
@@ -68,17 +72,9 @@ export const elections: Election[] = [
   },
 ];
 
-/** Participación electoral por elección (% de habilitados que votaron). */
-export const turnout: { electionId: string; pct: number; demo: boolean; sourceUrl: string }[] = [
-  { electionId: "nacional-2024", pct: 89.6, demo: true, sourceUrl: WIKI_2024 },
-  { electionId: "balotaje-2024", pct: 89.35, demo: true, sourceUrl: WIKI_2024 },
-  {
-    electionId: "departamental-2025",
-    pct: 86.88,
-    demo: true,
-    sourceUrl: "https://es.wikipedia.org/wiki/Elecciones_departamentales_y_municipales_de_Uruguay_de_2025",
-  },
-];
+/** Participación electoral por elección (% de habilitados que votaron), calculada
+ * desde los totales por circuito de la Corte Electoral (generado). */
+export const turnout = participacion;
 
 // Nombres de las personas electas en 2025 (verificados; se adjuntan a las filas
 // ganadoras generadas desde los datos oficiales de la Corte Electoral).
@@ -273,19 +269,18 @@ export const electionResults: ElectionResult[] = [
   // Porcentajes sobre el TOTAL DE VOTOS EMITIDOS (2.443.801), la forma en que se
   // difundieron públicamente. Verificado por máquina contra los datos abiertos de
   // la Corte Electoral (scripts/ingest/fetch-elecciones.mjs): demo false.
-  { electionId: "nacional-2024", territoryId: "UY", partyId: "fa", votes: 1071826, pct: 43.86, pctBase: "emitidos", winner: true, demo: false, sourceUrl: WIKI_2024 },
-  { electionId: "nacional-2024", territoryId: "UY", partyId: "pn", votes: 655426, pct: 26.82, pctBase: "emitidos", winner: false, demo: false, sourceUrl: WIKI_2024 },
-  { electionId: "nacional-2024", territoryId: "UY", partyId: "pc", votes: 392592, pct: 16.06, pctBase: "emitidos", winner: false, demo: false, sourceUrl: WIKI_2024 },
-  { electionId: "nacional-2024", territoryId: "UY", partyId: "is", votes: 65796, pct: 2.69, pctBase: "emitidos", winner: false, demo: false, sourceUrl: WIKI_2024 },
-  { electionId: "nacional-2024", territoryId: "UY", partyId: "ca", votes: 60549, pct: 2.47, pctBase: "emitidos", winner: false, demo: false, sourceUrl: WIKI_2024 },
-  { electionId: "nacional-2024", territoryId: "UY", partyId: "pi", votes: 41618, pct: 1.7, pctBase: "emitidos", winner: false, demo: false, sourceUrl: WIKI_2024 },
+  { electionId: "nacional-2024", territoryId: "UY", partyId: "fa", votes: 1071826, pct: 43.86, pctBase: "emitidos", winner: true, demo: false, sourceUrl: CKAN_2024 },
+  { electionId: "nacional-2024", territoryId: "UY", partyId: "pn", votes: 655426, pct: 26.82, pctBase: "emitidos", winner: false, demo: false, sourceUrl: CKAN_2024 },
+  { electionId: "nacional-2024", territoryId: "UY", partyId: "pc", votes: 392592, pct: 16.06, pctBase: "emitidos", winner: false, demo: false, sourceUrl: CKAN_2024 },
+  { electionId: "nacional-2024", territoryId: "UY", partyId: "is", votes: 65796, pct: 2.69, pctBase: "emitidos", winner: false, demo: false, sourceUrl: CKAN_2024 },
+  { electionId: "nacional-2024", territoryId: "UY", partyId: "ca", votes: 60549, pct: 2.47, pctBase: "emitidos", winner: false, demo: false, sourceUrl: CKAN_2024 },
+  { electionId: "nacional-2024", territoryId: "UY", partyId: "pi", votes: 41618, pct: 1.7, pctBase: "emitidos", winner: false, demo: false, sourceUrl: CKAN_2024 },
 
   // ── Nacional 2024 por departamento (generado desde datos oficiales) ──
   ...nacional2024PorDepartamento,
 
-  // ── Balotaje 2024 (% sobre votos válidos, escrutinio definitivo) ──
-  { electionId: "balotaje-2024", territoryId: "UY", partyId: "fa", votes: 1212833, pct: 52.0, pctBase: "validos", winner: true, electedName: "Yamandú Orsi", demo: true, sourceUrl: WIKI_2024 },
-  { electionId: "balotaje-2024", territoryId: "UY", partyId: "pn", votes: 1119537, pct: 48.0, pctBase: "validos", winner: false, electedName: "Álvaro Delgado", demo: true, sourceUrl: WIKI_2024 },
+  // ── Balotaje 2024 (generado desde datos oficiales; % sobre votos válidos) ──
+  ...balotaje2024Pais,
 
   // ── Departamentales 2025 (generado desde datos oficiales; todos los lemas) ──
   // Balance: PN 13 · FA 4 · PC 1 · CR 1. Nombres de intendentes adjuntados.

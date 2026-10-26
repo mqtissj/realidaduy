@@ -1,7 +1,7 @@
 import type { Territory } from "@/lib/types";
 
 // GENERADO por scripts/ingest/fetch-elecciones.mjs — no editar a mano.
-// Última ejecución: 2026-08-26. Los 136 municipios de Uruguay según el
+// Última ejecución: 2026-10-26. Los 136 municipios de Uruguay según el
 // desglose oficial de las elecciones municipales 2025 (Corte Electoral).
 // Ids: UY-<depto>-<slug>. No todo el territorio nacional está municipalizado.
 
