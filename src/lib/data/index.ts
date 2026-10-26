@@ -18,6 +18,7 @@ import { bcuPibObservations } from "@/data/observations/bcu-pib";
 import { bcuCotizacionesObservations } from "@/data/observations/bcu-cotizaciones";
 import { ineAnualesDesgloses, ineAnualesObservations } from "@/data/observations/ine-anuales";
 import { inePobrezaAperturas } from "@/data/observations/ine-pobreza-aperturas";
+import { andeMipymesObservations } from "@/data/observations/ande-mipymes";
 import { departments, getTerritoryById } from "@/data/territories";
 
 export { dictionary, getIndicator };
@@ -40,6 +41,7 @@ const allObservations: Observation[] = [
   ...bcuPibObservations,
   ...bcuCotizacionesObservations,
   ...ineAnualesObservations,
+  ...andeMipymesObservations,
 ];
 
 // Aperturas (por sexo, por edad), aparte de los totales: ninguna función de

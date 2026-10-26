@@ -20,6 +20,7 @@ const { prismaObservations } = await import("../src/data/observations/prisma.ts"
 const { bcuPibObservations } = await import("../src/data/observations/bcu-pib.ts");
 const { bcuCotizacionesObservations } = await import("../src/data/observations/bcu-cotizaciones.ts");
 const { ineAnualesObservations, ineAnualesDesgloses } = await import("../src/data/observations/ine-anuales.ts");
+const { andeMipymesObservations } = await import("../src/data/observations/ande-mipymes.ts");
 const { sources } = await import("../src/data/sources.ts");
 const { parties, elections, electionResults, turnout } = await import("../src/data/elections.ts");
 const { catalogDatasets } = await import("../src/data/catalogo.ts");
@@ -39,6 +40,7 @@ const observations = [
   ...bcuPibObservations,
   ...bcuCotizacionesObservations,
   ...ineAnualesObservations,
+  ...andeMipymesObservations,
 ];
 const { inePobrezaAperturas } = await import("../src/data/observations/ine-pobreza-aperturas.ts");
 const breakdowns = [...ineAnualesDesgloses, ...inePobrezaAperturas];
