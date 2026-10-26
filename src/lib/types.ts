@@ -159,3 +159,127 @@ export interface ElectionResult {
   demo: boolean;
   sourceUrl: string;
 }
+
+// ── Educación terciaria ─────────────────────────────────────────
+
+/**
+ * Matrícula de una carrera en un departamento, tal como la publica el Anuario
+ * Estadístico de Educación del MEC. "Matrícula" cuenta inscripciones activas a
+ * carreras: una persona en dos carreras aparece dos veces. Una carrera que se
+ * dicta entre dos departamentos ("Paysandú - Rivera") lleva los dos y no entra
+ * en el ranking de ninguno.
+ */
+export interface CareerEnrollment {
+  /** "UdelaR", "UTEC", "Formación en Educación (ANEP)". */
+  institution: string;
+  /** Servicio, instituto tecnológico regional o centro; null si el cuadro no lo dice. */
+  unit: string | null;
+  career: string;
+  territoryIds: string[];
+  /** Año lectivo ("2024"). */
+  period: string;
+  /** null si la fuente no lo informa para esta fila. */
+  ingresos: number | null;
+  matricula: number;
+  egresos: number | null;
+  sourceUrl: string;
+  retrievedAt: string;
+  notes?: string;
+}
+
+/** Carrera de la UdelaR que cursan fuera de su departamento quienes vivían en él (FormA). */
+export interface CareerAbroad {
+  originId: string;
+  careerCode: string;
+  career: string;
+  period: string;
+  /** Personas distintas. */
+  personas: number;
+  /** Inscripciones según dónde cursan (quien cursa en dos departamentos cuenta en los dos). */
+  montevideo: number;
+  salto: number;
+  otros: number;
+  /** Inscripciones de esa carrera en el departamento de origen, de cualquier procedencia; 0 = no se dicta ahí. */
+  enOrigen: number;
+}
+
+export interface CareerAbroadSummary {
+  originId: string;
+  period: string;
+  personas: number;
+  carreras: number;
+  /** Carreras con menos de 10 personas, que no se listan una por una. */
+  otrasCarreras: number;
+  otrasPersonas: number;
+}
+
+/** Estudiantes de 6º de liceo de un departamento en una opción (anuario del MEC). */
+export interface SixthGradeChoice {
+  territoryId: string;
+  period: string;
+  /** "Reformulación 2006" o "Plan 94" (los dos planes de 6º en la educación pública). */
+  plan: string;
+  option: string;
+  /** Cómo la escribe el anuario, cuando es una abreviatura ("3º DER"). */
+  abbreviation?: string;
+  publica: number;
+  /** Privados: el anuario da las opciones de la Reformulación 2006 para todos los planes; null en Plan 94. */
+  privada: number | null;
+}
+
+/** Estudiantes de UTU (DGETP) en media superior de un departamento, por tipo de curso. */
+export interface TechnicalCourse {
+  territoryId: string;
+  period: string;
+  course: string;
+  publica: number;
+  privada: number;
+}
+
+/**
+ * Personas que estudian en la UdelaR según dónde vivían el año antes de
+ * ingresar (origen) y en qué departamento cursan (destino). Quien cursa en dos
+ * departamentos cuenta en los dos destinos.
+ */
+export interface StudentFlow {
+  /** Departamento de residencia el año antes de ingresar; "EXT" si era otro país. */
+  originId: string;
+  destinationId: string;
+  period: string;
+  personas: number;
+}
+
+/**
+ * Dónde cursan las personas que vivían en un departamento el año antes de
+ * ingresar a la UdelaR. Las cuatro categorías son excluyentes y suman personas.
+ */
+export interface StudentOrigin {
+  territoryId: string;
+  period: string;
+  personas: number;
+  /** Cursan solo en su departamento. */
+  soloEnDepartamento: number;
+  /** Cursan en su departamento y además en otro. */
+  enDepartamentoYOtro: number;
+  /** Cursan solo en Montevideo (0 para Montevideo, que ya cuenta en soloEnDepartamento). */
+  soloMontevideo: number;
+  /** Cursan en otros departamentos, sin el propio y no solo en Montevideo. */
+  otros: number;
+}
+
+/**
+ * Vínculo con el trabajo de los estudiantes de una carrera de la UdelaR en un
+ * departamento, según lo que declaran en el FormA. Son estudiantes, no
+ * egresados: muestra el vínculo temprano con el trabajo, no si "hay trabajo".
+ */
+export interface CareerWork {
+  careerCode: string;
+  career: string;
+  territoryId: string;
+  period: string;
+  inscripciones: number;
+  /** % con trabajo remunerado, sobre quienes respondieron la pregunta. */
+  trabajan: number;
+  /** % con trabajo muy o bastante relacionado con la carrera, sobre quienes trabajan y respondieron. */
+  relacionada: number | null;
+}

@@ -21,6 +21,11 @@ const { bcuPibObservations } = await import("../src/data/observations/bcu-pib.ts
 const { bcuCotizacionesObservations } = await import("../src/data/observations/bcu-cotizaciones.ts");
 const { ineAnualesObservations, ineAnualesDesgloses } = await import("../src/data/observations/ine-anuales.ts");
 const { andeMipymesObservations } = await import("../src/data/observations/ande-mipymes.ts");
+const { mecEducacionObservations } = await import("../src/data/observations/mec-educacion.ts");
+const { udelarFormaObservations } = await import("../src/data/observations/udelar-forma.ts");
+const { carrerasMec } = await import("../src/data/carreras-mec.ts");
+const { flujosUdelar, origenesUdelar, trabajoCarrerasUdelar, carrerasAfueraUdelar, resumenAfueraUdelar } = await import("../src/data/udelar-forma.ts");
+const { sextoMec, utuMediaMec, utuTerciariaMec } = await import("../src/data/media-mec.ts");
 const { sources } = await import("../src/data/sources.ts");
 const { parties, elections, electionResults, turnout } = await import("../src/data/elections.ts");
 const { catalogDatasets } = await import("../src/data/catalogo.ts");
@@ -40,6 +45,8 @@ const observations = [
   ...bcuPibObservations,
   ...bcuCotizacionesObservations,
   ...ineAnualesObservations,
+  ...mecEducacionObservations,
+  ...udelarFormaObservations,
   ...andeMipymesObservations,
 ];
 const { inePobrezaAperturas } = await import("../src/data/observations/ine-pobreza-aperturas.ts");
@@ -212,6 +219,8 @@ const deptWide = [
   ...otuCensalObservations,
   ...ineMensualObservations,
   ...seguridadObservations,
+  ...mecEducacionObservations,
+  ...udelarFormaObservations,
 ];
 for (const [indicatorId, period] of [
   ["nbi-vivienda", "2011"],
@@ -228,6 +237,10 @@ for (const [indicatorId, period] of [
   ["homicidios-100k", "2025"],
   ["rapinas-100k", "2025"],
   ["hurtos-100k", "2025"],
+  ["matricula-universidad-publica", "2024"],
+  ["udelar-retencion", "2025"],
+  ["udelar-captacion", "2025"],
+  ["udelar-solo-montevideo", "2025"],
 ]) {
   const n = deptWide.filter(
     (o) =>
@@ -236,6 +249,57 @@ for (const [indicatorId, period] of [
       o.territoryId.split("-").length === 2
   ).length;
   if (n !== 19) errors.push(`${indicatorId} ${period}: ${n}/19 departamentos`);
+}
+
+// Educación terciaria: carreras del MEC y flujos del FormA.
+{
+  const deptIds = new Set(departments.map((d) => d.id));
+  for (const c of carrerasMec) {
+    const ref = `carrera ${c.institution} / ${c.career} / ${c.territoryIds.join("+")}`;
+    if (c.territoryIds.length === 0 || c.territoryIds.some((t) => !deptIds.has(t)))
+      errors.push(`Departamento inexistente en ${ref}`);
+    if (!Number.isInteger(c.matricula) || c.matricula < 0) errors.push(`Matrícula inválida en ${ref}`);
+    if (!/^https?:\/\//.test(c.sourceUrl)) errors.push(`sourceUrl inválida en ${ref}`);
+  }
+  // La matrícula por departamento es la suma de sus carreras públicas.
+  for (const o of mecEducacionObservations) {
+    if (o.territoryId === "UY") continue;
+    const suma = carrerasMec
+      .filter((c) => (c.institution === "UdelaR" || c.institution === "UTEC") && c.territoryIds.join() === o.territoryId)
+      .reduce((s, c) => s + c.matricula, 0);
+    if (suma !== o.value) errors.push(`Matrícula pública de ${o.territoryId}: indicador ${o.value} ≠ carreras ${suma}`);
+  }
+  for (const f of flujosUdelar) {
+    if (f.originId !== "EXT" && !deptIds.has(f.originId)) errors.push(`Flujo con origen inexistente: ${f.originId}`);
+    if (!deptIds.has(f.destinationId)) errors.push(`Flujo con destino inexistente: ${f.destinationId}`);
+  }
+  if (origenesUdelar.length !== 19) errors.push(`Orígenes FormA: ${origenesUdelar.length}/19 departamentos`);
+  for (const o of origenesUdelar) {
+    if (o.soloEnDepartamento + o.enDepartamentoYOtro + o.soloMontevideo + o.otros !== o.personas)
+      errors.push(`Orígenes FormA de ${o.territoryId}: las categorías no suman`);
+  }
+  for (const t of trabajoCarrerasUdelar) {
+    if (!deptIds.has(t.territoryId)) errors.push(`Trabajo por carrera con departamento inexistente: ${t.territoryId}`);
+    if (!(t.trabajan >= 0 && t.trabajan <= 100)) errors.push(`Porcentaje inválido en ${t.career} / ${t.territoryId}`);
+  }
+  // Carreras cursadas afuera: 19 resúmenes y filas coherentes.
+  if (resumenAfueraUdelar.length !== 19) errors.push(`Resumen de carreras afuera: ${resumenAfueraUdelar.length}/19`);
+  for (const c of carrerasAfueraUdelar) {
+    if (!deptIds.has(c.originId)) errors.push(`Carrera afuera con origen inexistente: ${c.originId}`);
+    if (c.personas < 10 || c.montevideo + c.salto + c.otros < c.personas)
+      errors.push(`Carrera afuera incoherente: ${c.career} / ${c.originId}`);
+  }
+  // Media superior: 13 opciones de 6º por departamento, UTU media y terciaria en los 19.
+  for (const id of deptIds) {
+    const sexto = sextoMec.filter((s) => s.territoryId === id);
+    if (sexto.length !== 13) errors.push(`6º de ${id}: ${sexto.length}/13 opciones`);
+    if (utuTerciariaMec[id] === undefined) errors.push(`UTU terciaria sin dato para ${id}`);
+  }
+  for (const s of sextoMec)
+    if (!Number.isInteger(s.publica) || s.publica < 0 || (s.privada !== null && (!Number.isInteger(s.privada) || s.privada < 0)))
+      errors.push(`6º con valor inválido: ${s.territoryId} / ${s.option}`);
+  for (const u of utuMediaMec)
+    if (!deptIds.has(u.territoryId) || u.publica + u.privada <= 0) errors.push(`UTU media inválida: ${u.territoryId} / ${u.course}`);
 }
 
 // Elecciones: referencias válidas y exactamente un ganador por territorio/elección.

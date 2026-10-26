@@ -1,7 +1,16 @@
 // API de acceso a datos. Toda la UI consume estas funciones; cuando la capa de
 // datos migre de archivos estáticos a una base real (V2+), solo cambia este módulo.
 
-import type { BreakdownDimension, Indicator, Observation, Territory } from "@/lib/types";
+import type {
+  BreakdownDimension,
+  CareerEnrollment,
+  CareerWork,
+  Indicator,
+  Observation,
+  StudentFlow,
+  StudentOrigin,
+  Territory,
+} from "@/lib/types";
 import { dictionary, getIndicator } from "@/data/dictionary";
 import { nationalObservations } from "@/data/observations/nacional";
 import { departmentObservations } from "@/data/observations/departamentos";
@@ -19,6 +28,18 @@ import { bcuCotizacionesObservations } from "@/data/observations/bcu-cotizacione
 import { ineAnualesDesgloses, ineAnualesObservations } from "@/data/observations/ine-anuales";
 import { inePobrezaAperturas } from "@/data/observations/ine-pobreza-aperturas";
 import { andeMipymesObservations } from "@/data/observations/ande-mipymes";
+import { mecEducacionObservations } from "@/data/observations/mec-educacion";
+import { udelarFormaObservations } from "@/data/observations/udelar-forma";
+import { carrerasMec } from "@/data/carreras-mec";
+import {
+  flujosUdelar,
+  carrerasAfueraUdelar,
+  formaUdelarFuente,
+  origenesUdelar,
+  resumenAfueraUdelar,
+  trabajoCarrerasUdelar,
+} from "@/data/udelar-forma";
+import { mediaMecFuente, sextoMec, utuMediaMec, utuTerciariaMec } from "@/data/media-mec";
 import { departments, getTerritoryById } from "@/data/territories";
 
 export { dictionary, getIndicator };
@@ -41,6 +62,8 @@ const allObservations: Observation[] = [
   ...bcuPibObservations,
   ...bcuCotizacionesObservations,
   ...ineAnualesObservations,
+  ...mecEducacionObservations,
+  ...udelarFormaObservations,
   ...andeMipymesObservations,
 ];
 
@@ -218,6 +241,67 @@ export function hasData(indicatorId: string, territoryId: string): boolean {
 }
 
 export { getTerritoryById };
+
+// ── Educación terciaria ─────────────────────────────────────────
+
+export { formaUdelarFuente, mediaMecFuente };
+
+/** Estudiantes de 6º de liceo por opción en el departamento (anuario del MEC). */
+export function getSixthGrade(territoryId: string) {
+  return sextoMec.filter((s) => s.territoryId === territoryId);
+}
+
+/** Estudiantes de UTU en media superior por tipo de curso, de mayor a menor. */
+export function getTechnicalCourses(territoryId: string) {
+  return utuMediaMec
+    .filter((u) => u.territoryId === territoryId)
+    .sort((a, b) => b.publica + b.privada - (a.publica + a.privada));
+}
+
+/** Matrícula de UTU en cursos terciarios no universitarios en el departamento. */
+export function getTechnicalTertiary(territoryId: string): number | undefined {
+  return utuTerciariaMec[territoryId];
+}
+
+/**
+ * Carreras con matrícula en un departamento, de mayor a menor (anuario del MEC).
+ * No incluye las dictadas entre dos departamentos.
+ */
+export function getCareers(territoryId: string): CareerEnrollment[] {
+  return carrerasMec
+    .filter((c) => c.territoryIds.length === 1 && c.territoryIds[0] === territoryId)
+    .sort((a, b) => b.matricula - a.matricula);
+}
+
+/** Dónde cursan los estudiantes de la UdelaR que vivían en el departamento (FormA). */
+export function getStudentOrigin(territoryId: string): StudentOrigin | undefined {
+  return origenesUdelar.find((o) => o.territoryId === territoryId);
+}
+
+/** Flujos de estudiantes de la UdelaR que llegan a un departamento o salen de él. */
+export function getStudentFlows(
+  territoryId: string,
+  direction: "llegan" | "salen"
+): StudentFlow[] {
+  return flujosUdelar
+    .filter((f) => (direction === "llegan" ? f.destinationId : f.originId) === territoryId)
+    .sort((a, b) => b.personas - a.personas);
+}
+
+/** Vínculo con el trabajo de los estudiantes de cada carrera de la UdelaR en el departamento. */
+export function getCareerWork(territoryId: string): CareerWork[] {
+  return trabajoCarrerasUdelar
+    .filter((c) => c.territoryId === territoryId)
+    .sort((a, b) => b.inscripciones - a.inscripciones);
+}
+
+/** Carreras que cursan fuera del departamento quienes vivían en él, de más a menos personas. */
+export function getCareersAbroad(territoryId: string) {
+  return {
+    carreras: carrerasAfueraUdelar.filter((c) => c.originId === territoryId),
+    resumen: resumenAfueraUdelar.find((r) => r.originId === territoryId),
+  };
+}
 
 // ── Aperturas ───────────────────────────────────────────────────
 
