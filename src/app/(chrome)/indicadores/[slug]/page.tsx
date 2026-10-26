@@ -98,6 +98,9 @@ export default async function IndicadorPage({
   // "Agosto 2026" → "ago 2026": el eje tiene lugar para pocas letras.
   const monthShort = (o: (typeof monthly)[number]) =>
     `${o.periodLabel.slice(0, 3).toLowerCase()} ${o.period.slice(0, 4)}`;
+  // Mismo mes de cada año (las mipymes de ANDE): se lee como serie anual.
+  const sameMonth = monthly.length > 0 && monthly.every((o) => o.period.slice(5) === monthlyLast.period.slice(5));
+  const monthName = monthlyLast?.periodLabel.split(" ")[0].toLowerCase();
   const ranking = indicator.geographicLevel.includes("departamento")
     ? getDepartmentRanking(indicator.id)
     : [];
@@ -243,8 +246,8 @@ export default async function IndicadorPage({
         ) : monthly.length >= 4 ? (
           <ChartCard
             question={`${indicator.question} — evolución`}
-            subtitle="Serie mensual oficial"
-            sourceLine={`Fuente: ${source?.shortName} · ${monthlyFirst.periodLabel}–${monthlyLast.periodLabel} · Serie mensual`}
+            subtitle={sameMonth ? `Dato de ${monthName} de cada año` : "Serie mensual oficial"}
+            sourceLine={`Fuente: ${source?.shortName} · ${monthlyFirst.periodLabel}–${monthlyLast.periodLabel} · ${sameMonth ? `${monthName.charAt(0).toUpperCase()}${monthName.slice(1)} de cada año` : "Serie mensual"}`}
             table={{
               caption: `Evolución mensual de ${indicator.name}`,
               head: ["Mes", indicator.name],
@@ -255,7 +258,7 @@ export default async function IndicadorPage({
             }}
           >
             <LineChart
-              data={monthly.map((o) => ({ x: monthShort(o), y: o.value! }))}
+              data={monthly.map((o) => ({ x: sameMonth ? o.period.slice(0, 4) : monthShort(o), y: o.value! }))}
               unit={indicator.unit}
               decimals={indicator.decimals}
             />
