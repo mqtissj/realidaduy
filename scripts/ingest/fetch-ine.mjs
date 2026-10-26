@@ -142,6 +142,36 @@ const SERIES = [
         { indicatorId: "tasa-desempleo", value: desempleo, notes: nota },
       ];
     },
+    // El boletín técnico que enlaza la página abre las tres tasas por sexo
+    // (cuadro 2) y por grupos de edad (cuadro 3). Los publica desde mayo de
+    // 2025: de ahí en adelante, si un boletín no los trae, el script falla.
+    desglose: {
+      desde: "2025-05",
+      link: /href="(https:\/\/www5\.ine\.gub\.uy\/[^"]+\.html)"/i,
+      cuadros: [
+        {
+          dimension: "sexo",
+          cabecera: "Sexo Actividad (%) Empleo (%) Desempleo (%)",
+          grupos: [
+            { fila: "Hombres", group: "hombres", label: "Hombres" },
+            { fila: "Mujeres", group: "mujeres", label: "Mujeres" },
+          ],
+        },
+        {
+          dimension: "edad",
+          cabecera: "Edad Actividad (%) Empleo (%) Desempleo (%)",
+          grupos: [
+            { fila: "14 a 24", group: "14-24", label: "14 a 24 años" },
+            { fila: "25 a 29", group: "25-29", label: "25 a 29 años" },
+            { fila: "30 a 34", group: "30-34", label: "30 a 34 años" },
+            { fila: "35 a 44", group: "35-44", label: "35 a 44 años" },
+            { fila: "45 a 54", group: "45-54", label: "45 a 54 años" },
+            { fila: "55 a 64", group: "55-64", label: "55 a 64 años" },
+            { fila: "65 y mas", group: "65+", label: "65 años o más" },
+          ],
+        },
+      ],
+    },
   },
   {
     key: "ims",
@@ -291,6 +321,8 @@ const revalidarDesde = meses.length - REVALIDAR_MESES;
 // Clave `${indicatorId}|${period}` → observación. Dos URLs pueden resolver al
 // mismo informe (ver periodoDelTitulo), así que se deduplica por período real.
 const porClave = new Map();
+// Aperturas por sexo y edad, aparte: nunca se mezclan con los totales.
+const desgloses = new Map();
 const fmt = (n) => String(n).replace(".", ",");
 
 for (const serie of SERIES) {
@@ -350,6 +382,41 @@ for (const serie of SERIES) {
       }
     }
 
+    if (serie.desglose && period >= serie.desglose.desde) {
+      const link = serie.desglose.link.exec(html);
+      if (!link) throw new Error(`${serie.key} ${period}: la página no enlaza el boletín técnico. Revisar ${url}`);
+      const urlBoletin = new URL(link[1]).href;
+      const boletin = await getTextoCompleto(urlBoletin, idx >= revalidarDesde);
+      const N = "([\\d.,]+)";
+      for (const cuadro of serie.desglose.cuadros) {
+        const i = boletin.indexOf(cuadro.cabecera);
+        if (i < 0) throw new Error(`${serie.key} ${period}: el boletín no tiene el cuadro por ${cuadro.dimension}. Revisar ${urlBoletin}`);
+        const bloque = boletin.slice(i, boletin.indexOf("Fuente:", i));
+        const fila = (nombre) => {
+          const m = new RegExp(`${nombre} ${N} ${N} ${N}`).exec(bloque);
+          if (!m) throw new Error(`${serie.key} ${period}: falta la fila «${nombre}» del cuadro por ${cuadro.dimension}. Revisar ${urlBoletin}`);
+          return m.slice(1).map((raw) => num(raw, nombre, urlBoletin));
+        };
+        // La fila del total tiene que ser la de la página: mismo informe.
+        if (fila("Total pais").some((v, j) => v !== valores[j]))
+          throw new Error(`${serie.key} ${period}: el total del cuadro por ${cuadro.dimension} no coincide con la página. Revisar ${urlBoletin}`);
+        for (const g of cuadro.grupos) {
+          const [actividad, empleo, desempleo] = fila(g.fila);
+          const esperado = ((actividad - empleo) / actividad) * 100;
+          if (Math.abs(esperado - desempleo) > 0.6)
+            throw new Error(`${serie.key} ${period}, ${g.label}: desempleo ${desempleo}% no cierra con actividad ${actividad}% y empleo ${empleo}%. Revisar ${urlBoletin}`);
+          const nota = `Boletín técnico del INE, cuadro por ${cuadro.dimension}.`;
+          for (const [indicatorId, value] of [["tasa-actividad", actividad], ["tasa-empleo", empleo], ["tasa-desempleo", desempleo]]) {
+            if (value < 0 || value > 100) throw new Error(`${indicatorId} ${g.label} = ${value} fuera de rango en ${urlBoletin}`);
+            desgloses.set(`${indicatorId}|${period}|${cuadro.dimension}|${g.group}`, {
+              indicatorId, period, periodLabel, value, sourceUrl: urlBoletin, retrievedAt: TODAY, notes: nota,
+              breakdown: { dimension: cuadro.dimension, group: g.group, label: g.label },
+            });
+          }
+        }
+      }
+    }
+
     for (const o of nuevas) {
       checkRango(o.indicatorId, o.value, url);
       const clave = `${o.indicatorId}|${period}`;
@@ -387,9 +454,9 @@ const observaciones = [...porClave.values()];
 // Nunca achicar el archivo sin querer: si hay menos datos que antes, algo falló.
 if (existsSync(OUT) && !flag("--force")) {
   const previo = (await readFile(OUT, "utf8")).match(/indicatorId:/g)?.length ?? 0;
-  if (observaciones.length < previo) {
+  if (observaciones.length + desgloses.size < previo) {
     throw new Error(
-      `Se generaron ${observaciones.length} observaciones y antes había ${previo}. Abortado; usar --force si el recorte es intencional.`
+      `Se generaron ${observaciones.length + desgloses.size} observaciones y antes había ${previo}. Abortado; usar --force si el recorte es intencional.`
     );
   }
 }
@@ -402,6 +469,18 @@ const lineas = observaciones.map(
   (o) =>
     `  { indicatorId: ${JSON.stringify(o.indicatorId)}, territoryId: "UY", period: ${JSON.stringify(o.period)}, periodLabel: ${JSON.stringify(o.periodLabel)}, value: ${o.value}, status: "OFFICIAL", demo: false, sourceUrl: ${JSON.stringify(o.sourceUrl)}, retrievedAt: ${JSON.stringify(o.retrievedAt)}, notes: ${JSON.stringify(o.notes)} },`
 );
+
+const lineasDesglose = [...desgloses.values()]
+  .sort(
+    (a, b) =>
+      a.indicatorId.localeCompare(b.indicatorId) ||
+      a.breakdown.dimension.localeCompare(b.breakdown.dimension) ||
+      a.period.localeCompare(b.period)
+  )
+  .map(
+    (o) =>
+      `  { indicatorId: ${JSON.stringify(o.indicatorId)}, territoryId: "UY", period: ${JSON.stringify(o.period)}, periodLabel: ${JSON.stringify(o.periodLabel)}, value: ${o.value}, status: "OFFICIAL", demo: false, sourceUrl: ${JSON.stringify(o.sourceUrl)}, retrievedAt: ${JSON.stringify(o.retrievedAt)}, notes: ${JSON.stringify(o.notes)}, breakdown: { dimension: ${JSON.stringify(o.breakdown.dimension)}, group: ${JSON.stringify(o.breakdown.group)}, label: ${JSON.stringify(o.breakdown.label)} } },`
+  );
 
 const porIndicador = [...new Set(observaciones.map((o) => o.indicatorId))]
   .map((id) => {
@@ -423,7 +502,12 @@ ${porIndicador}
 export const ineMensualObservations: Observation[] = [
 ${lineas.join("\n")}
 ];
+
+// Aperturas por sexo y por edad del boletín técnico de la ECH (desde ${[...desgloses.values()].map((o) => o.period).sort()[0] ?? "—"}).
+export const ineMensualDesgloses: Observation[] = [
+${lineasDesglose.join("\n")}
+];
 `;
 
 await writeFile(OUT, file);
-console.log(`\n${observaciones.length} observaciones → ${OUT}`);
+console.log(`\n${observaciones.length} observaciones y ${desgloses.size} aperturas → ${OUT}`);

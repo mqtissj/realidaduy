@@ -262,6 +262,58 @@ export const dictionary: Indicator[] = [
     status: "active",
   },
   {
+    id: "mipymes-activas",
+    slug: "mipymes",
+    name: "Mipymes activas",
+    shortName: "Mipymes",
+    question: "¿Cuántas pequeñas y medianas empresas hay funcionando?",
+    description:
+      "Cantidad de micro, pequeñas y medianas empresas activas, según el Monitor Mipymes de ANDE (datos de BPS).",
+    plainDefinition:
+      "Cuenta las empresas chicas y medianas que están en actividad: desde un unipersonal hasta una empresa de menos de 100 empleados. Si el número sube, abren más de las que cierran. Solo cuenta las que están registradas en BPS.",
+    category: "economia",
+    unit: "empresas",
+    unitLabel: "empresas activas",
+    sourceId: "ande",
+    sourceUrl: "https://monitor.ande.org.uy/",
+    periodicity: "mensual",
+    geographicLevel: ["pais", "departamento"],
+    availableFrom: "2022",
+    methodology:
+      "Monitor Mipymes de la Agencia Nacional de Desarrollo (ANDE), elaborado a partir de los registros de BPS. Es una serie mensual; el sitio toma el mismo mes de cada año (el último publicado) para que la variación sea interanual y no la mueva la estacionalidad. El monitor cambió de metodología en 2022 y no publica datos comparables anteriores. La suma de los departamentos es apenas menor que el total del país porque unas pocas empresas no tienen departamento asignado.",
+    isCalculated: false,
+    reading: "higherIsBetter",
+    decimals: 0,
+    lastUpdated: "2026-10-26",
+    status: "active",
+  },
+  {
+    id: "puestos-mipymes",
+    slug: "empleo-mipymes",
+    name: "Puestos de trabajo en mipymes",
+    shortName: "Empleo en mipymes",
+    question: "¿Cuánta gente trabaja en pequeñas y medianas empresas?",
+    description:
+      "Puestos de trabajo en micro, pequeñas y medianas empresas, según el Monitor Mipymes de ANDE (datos de BPS).",
+    plainDefinition:
+      "Cuenta los puestos de trabajo formales en empresas chicas y medianas, incluidos los dueños que trabajan en ellas. Es una cuenta de puestos, no de personas: alguien con dos trabajos cuenta dos veces. El trabajo informal no aparece.",
+    category: "trabajo",
+    unit: "puestos",
+    unitLabel: "puestos de trabajo",
+    sourceId: "ande",
+    sourceUrl: "https://monitor.ande.org.uy/",
+    periodicity: "mensual",
+    geographicLevel: ["pais", "departamento"],
+    availableFrom: "2022",
+    methodology:
+      "Monitor Mipymes de la Agencia Nacional de Desarrollo (ANDE), elaborado a partir de los registros de BPS. Es una serie mensual; el sitio toma el mismo mes de cada año (el último publicado) para que la variación sea interanual y no la mueva la estacionalidad. El monitor cambió de metodología en 2022 y no publica datos comparables anteriores.",
+    isCalculated: false,
+    reading: "higherIsBetter",
+    decimals: 0,
+    lastUpdated: "2026-10-26",
+    status: "active",
+  },
+  {
     id: "dolar",
     slug: "dolar",
     name: "Cotización del dólar",
@@ -280,11 +332,11 @@ export const dictionary: Indicator[] = [
     geographicLevel: ["pais"],
     availableFrom: "2000",
     methodology:
-      "Dólar estadounidense billete del mercado interbancario (código 2225 del servicio de cotizaciones del BCU), valor vendedor. El último dato es la cotización del último día hábil disponible cuando el sitio se actualiza, una vez por mes; la variación se mide contra el cierre del mes anterior. Los promedios mensuales y anuales los calcula realidad.uy con todas las cotizaciones diarias del período.",
+      "Dólar estadounidense billete del mercado interbancario (código 2225 del servicio de cotizaciones del BCU), valor vendedor. El último dato es la cotización del último día hábil disponible cuando el sitio se actualiza, cada día hábil; la variación se mide contra el cierre del mes anterior. Los promedios mensuales y anuales los calcula realidad.uy con todas las cotizaciones diarias del período.",
     isCalculated: false,
     reading: "neutral",
     decimals: 3,
-    lastUpdated: "2026-10-12",
+    lastUpdated: "2026-10-24",
     status: "active",
   },
   {
@@ -306,7 +358,7 @@ export const dictionary: Indicator[] = [
     geographicLevel: ["pais"],
     availableFrom: "2000",
     methodology:
-      "Real brasileño billete del mercado interbancario (código 1001 del servicio de cotizaciones del BCU), valor vendedor. El último dato es la cotización del último día hábil disponible cuando el sitio se actualiza, una vez por mes; la variación se mide contra el cierre del mes anterior. Los promedios mensuales y anuales los calcula realidad.uy con todas las cotizaciones diarias del período.",
+      "Real brasileño billete del mercado interbancario (código 1001 del servicio de cotizaciones del BCU), valor vendedor. El último dato es la cotización del último día hábil disponible cuando el sitio se actualiza, cada día hábil; la variación se mide contra el cierre del mes anterior. Los promedios mensuales y anuales los calcula realidad.uy con todas las cotizaciones diarias del período.",
     isCalculated: false,
     reading: "neutral",
     decimals: 3,
@@ -331,7 +383,7 @@ export const dictionary: Indicator[] = [
     geographicLevel: ["pais"],
     availableFrom: "2000",
     methodology:
-      "Euro del mercado interbancario (código 1111 del servicio de cotizaciones del BCU), valor vendedor. El último dato es la cotización del último día hábil disponible cuando el sitio se actualiza, una vez por mes; la variación se mide contra el cierre del mes anterior. Los promedios mensuales y anuales los calcula realidad.uy con todas las cotizaciones diarias del período.",
+      "Euro del mercado interbancario (código 1111 del servicio de cotizaciones del BCU), valor vendedor. El último dato es la cotización del último día hábil disponible cuando el sitio se actualiza, cada día hábil; la variación se mide contra el cierre del mes anterior. Los promedios mensuales y anuales los calcula realidad.uy con todas las cotizaciones diarias del período.",
     isCalculated: false,
     reading: "neutral",
     decimals: 3,
@@ -347,7 +399,7 @@ export const dictionary: Indicator[] = [
     description:
       "Cotización del peso argentino billete en el mercado interbancario, según el Banco Central del Uruguay, expresada por cada 1.000 pesos argentinos.",
     plainDefinition:
-      "Cuántos pesos uruguayos valen 1.000 pesos argentinos según la cotización oficial que publica el Banco Central. Se muestra por 1.000 porque un peso argentino vale unos pocos centésimos. Es la referencia del mercado mayorista, no el precio de una casa de cambio.",
+      "Cuántos pesos uruguayos valen 1.000 pesos argentinos según la cotización oficial que publica el Banco Central. Se muestra por 1.000 porque un peso argentino vale unos pocos centésimos. Como el BCU lo publica con solo tres decimales, el dato diario se mueve a saltos y la variación mensual suele dar 0%: para ver la tendencia, mirá los promedios mensuales. Es la referencia del mercado mayorista, no el precio de una casa de cambio.",
     category: "economia",
     unit: "pesos",
     unitLabel: "pesos uruguayos por cada 1.000 pesos argentinos",
@@ -357,7 +409,7 @@ export const dictionary: Indicator[] = [
     geographicLevel: ["pais"],
     availableFrom: "2000",
     methodology:
-      "Peso argentino billete del mercado interbancario (código 501 del servicio de cotizaciones del BCU), valor vendedor, multiplicado por 1.000. El BCU lo publica con tres decimales (por ejemplo 0,027 pesos uruguayos), así que el dato diario va de a un peso por cada 1.000 pesos argentinos. El último dato es la cotización del último día hábil disponible cuando el sitio se actualiza, una vez por mes; la variación se mide contra el cierre del mes anterior. Los promedios mensuales y anuales los calcula realidad.uy con todas las cotizaciones diarias del período.",
+      "Peso argentino billete del mercado interbancario (código 501 del servicio de cotizaciones del BCU), valor vendedor, multiplicado por 1.000. El BCU lo publica con tres decimales (por ejemplo 0,027 pesos uruguayos), así que el dato diario va de a un peso por cada 1.000 pesos argentinos: con valores cerca de 27, cada salto es de casi 4%, y la variación contra el cierre del mes anterior suele dar 0% aunque el peso argentino se haya movido. Para ver la tendencia sirven más los promedios mensuales, que sí recogen esos movimientos. El último dato es la cotización del último día hábil disponible cuando el sitio se actualiza, cada día hábil; la variación se mide contra el cierre del mes anterior. Los promedios mensuales y anuales los calcula realidad.uy con todas las cotizaciones diarias del período.",
     isCalculated: false,
     reading: "neutral",
     decimals: 1,
@@ -549,6 +601,124 @@ export const dictionary: Indicator[] = [
     reading: "higherIsBetter",
     decimals: 1,
     lastUpdated: "2026-08-27",
+    status: "active",
+  },
+  // ── Educación terciaria ────────────────────────────────────
+  {
+    id: "matricula-universidad-publica",
+    slug: "matricula-universidad-publica",
+    name: "Matrícula en universidades públicas",
+    shortName: "Matrícula universitaria",
+    question: "¿Cuánta matrícula tienen la UdelaR y la UTEC en cada departamento?",
+    description:
+      "Matrícula de las carreras de grado de la UdelaR y la UTEC, según el departamento donde se dicta la carrera.",
+    plainDefinition:
+      "Suma la matrícula de cada carrera de grado de la UdelaR y la UTEC en el departamento donde se dicta. Se cuenta por carrera: una persona inscripta en dos carreras cuenta dos veces.",
+    category: "sociedad",
+    subCategory: "educacion",
+    unit: "inscripciones",
+    unitLabel: "inscripciones a carreras de grado",
+    sourceId: "mec",
+    sourceUrl:
+      "https://www.gub.uy/ministerio-educacion-cultura/datos-y-estadisticas/datos/anuario-estadistico-educacion-2024",
+    periodicity: "anual",
+    geographicLevel: ["pais", "departamento"],
+    availableFrom: "2024",
+    methodology:
+      "Suma de la matrícula por carrera del cuadro II-7.2.1 del Anuario Estadístico de Educación del MEC. En la UdelaR la matrícula es el estudiante activo por carrera (resolución N.° 15 del CDC del 23/10/2012): quien rindió algún curso o examen en los dos años anteriores, más la generación de ingreso. El dato de UTEC es de su Programa de Evaluación y Estadística. La suma de cada departamento se controla contra el cuadro II-7.1.1. Se agregan los casos que el anuario informa solo en la nota de los cuadros: en 2024, 142 de Licenciatura en Obstetricia en Paysandú y 77 de Tecnólogo Cárnico en Tacuarembó. Las carreras dictadas entre dos departamentos cuentan en el total país y en ningún departamento. No incluye universidades privadas, institutos universitarios ni formación en educación.",
+    formula: "Σ matrícula de las carreras de UdelaR y UTEC dictadas en el departamento",
+    isCalculated: true,
+    reading: "neutral",
+    decimals: 0,
+    lastUpdated: "2026-10-18",
+    status: "active",
+  },
+  {
+    id: "udelar-retencion",
+    slug: "udelar-retencion",
+    name: "Estudiantes de la UdelaR que cursan en su departamento",
+    shortName: "Retención UdelaR",
+    question: "¿Cuántos estudiantes de la UdelaR estudian en su propio departamento?",
+    description:
+      "Porcentaje de las personas que vivían en el departamento el año antes de ingresar a la UdelaR que cursan al menos una carrera en ese departamento.",
+    plainDefinition:
+      "De cada 100 estudiantes de la UdelaR que vivían en el departamento el año antes de entrar a la universidad, cuántos cursan ahí mismo, aunque además cursen en otro lado.",
+    category: "sociedad",
+    subCategory: "educacion",
+    unit: "%",
+    unitLabel: "por ciento de los estudiantes de la UdelaR que vivían en el departamento",
+    sourceId: "udelar",
+    sourceUrl:
+      "https://planeamiento.udelar.edu.uy/portal/acceso-a-microdatos/microdatos-forma-estudiantes-de-grado/",
+    periodicity: "anual",
+    geographicLevel: ["departamento"],
+    availableFrom: "2025",
+    methodology:
+      "Microdatos del FormA-Estudiantes 2025 de la Dirección General de Planeamiento de la UdelaR, el formulario que completan cada año los estudiantes de grado. Origen: departamento donde la persona vivía en marzo del año anterior a ingresar a la UdelaR (pregunta SD.3.1). Destino: departamento donde se dicta cada carrera, ciclo inicial o CIO en el que está inscripta. Se cuentan personas, no inscripciones. Cubre a quienes completaron el FormA 2025 (135.416 personas), no al total de estudiantes activos. Cita: FormA-Estudiantes 2025, Dirección General de Planeamiento - Udelar.",
+    formula: "personas del departamento que cursan en él ÷ personas del departamento × 100",
+    isCalculated: true,
+    reading: "neutral",
+    decimals: 1,
+    lastUpdated: "2026-10-18",
+    status: "active",
+  },
+  {
+    id: "udelar-captacion",
+    slug: "udelar-captacion",
+    name: "Estudiantes de la UdelaR que llegan de afuera del departamento",
+    shortName: "Captación UdelaR",
+    question: "¿Cuántos de los que estudian en la UdelaR en el departamento vienen de afuera?",
+    description:
+      "Porcentaje de las personas que cursan en la UdelaR en el departamento que vivían en otro departamento o en otro país el año antes de ingresar.",
+    plainDefinition:
+      "De cada 100 estudiantes de la UdelaR que cursan en el departamento, cuántos vivían en otro departamento o en el exterior el año antes de entrar. Mide cuánto atrae el departamento como polo universitario.",
+    category: "sociedad",
+    subCategory: "educacion",
+    unit: "%",
+    unitLabel: "por ciento de los estudiantes de la UdelaR que cursan en el departamento",
+    sourceId: "udelar",
+    sourceUrl:
+      "https://planeamiento.udelar.edu.uy/portal/acceso-a-microdatos/microdatos-forma-estudiantes-de-grado/",
+    periodicity: "anual",
+    geographicLevel: ["departamento"],
+    availableFrom: "2025",
+    methodology:
+      "Microdatos del FormA-Estudiantes 2025 de la Dirección General de Planeamiento de la UdelaR. Se cuentan las personas que cursan al menos una carrera, ciclo inicial o CIO en el departamento y, de ellas, las que vivían en otro departamento o en otro país en marzo del año anterior a ingresar (pregunta SD.3.1). Solo se calcula donde cursan al menos 100 personas. Cita: FormA-Estudiantes 2025, Dirección General de Planeamiento - Udelar.",
+    formula:
+      "personas que cursan en el departamento y vivían en otro lugar ÷ personas que cursan en el departamento × 100",
+    isCalculated: true,
+    reading: "neutral",
+    decimals: 1,
+    lastUpdated: "2026-10-18",
+    status: "active",
+  },
+  {
+    id: "udelar-solo-montevideo",
+    slug: "udelar-solo-montevideo",
+    name: "Estudiantes de la UdelaR que cursan solo en Montevideo",
+    shortName: "Solo en Montevideo",
+    question: "¿Cuántos estudiantes de la UdelaR del departamento estudian solo en Montevideo?",
+    description:
+      "Porcentaje de las personas que vivían en el departamento el año antes de ingresar a la UdelaR que cursan todas sus carreras en Montevideo.",
+    plainDefinition:
+      "De cada 100 estudiantes de la UdelaR que vivían en el departamento el año antes de entrar a la universidad, cuántos cursan únicamente en Montevideo.",
+    category: "sociedad",
+    subCategory: "educacion",
+    unit: "%",
+    unitLabel: "por ciento de los estudiantes de la UdelaR que vivían en el departamento",
+    sourceId: "udelar",
+    sourceUrl:
+      "https://planeamiento.udelar.edu.uy/portal/acceso-a-microdatos/microdatos-forma-estudiantes-de-grado/",
+    periodicity: "anual",
+    geographicLevel: ["departamento"],
+    availableFrom: "2025",
+    methodology:
+      "Microdatos del FormA-Estudiantes 2025 de la Dirección General de Planeamiento de la UdelaR. Origen: departamento donde la persona vivía en marzo del año anterior a ingresar a la UdelaR (pregunta SD.3.1). Se cuentan las personas cuyas carreras, ciclos iniciales y CIO se dictan todos en Montevideo. No aplica a Montevideo. Cita: FormA-Estudiantes 2025, Dirección General de Planeamiento - Udelar.",
+    formula: "personas del departamento que cursan solo en Montevideo ÷ personas del departamento × 100",
+    isCalculated: true,
+    reading: "neutral",
+    decimals: 1,
+    lastUpdated: "2026-10-18",
     status: "active",
   },
   // ── Seguridad ──────────────────────────────────────────────

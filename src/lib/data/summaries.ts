@@ -2,11 +2,11 @@
 
 import { departments, montevideoMunicipalities, municipalTerritories } from "@/data/territories";
 import { getGovernment, getParty } from "@/data/elections";
-import { getLatest, indicatorsForLevel } from "@/lib/data";
+import { breakdownDimensions, getBreakdownAt, getLatest, indicatorsForLevel } from "@/lib/data";
 import { getObservationSource } from "@/data/sources";
 import { dataHref, getCatalogDataset } from "@/data/catalogo";
 import { formatNumber, formatValue } from "@/lib/format";
-import type { Category, GeoLevel } from "@/lib/types";
+import type { BreakdownDimension, Category, GeoLevel } from "@/lib/types";
 
 export interface MetricSummary {
   indicatorId: string;
@@ -27,6 +27,13 @@ export interface MetricSummary {
   sourceHref: string;
   /** Nombre del conjunto del Catálogo Nacional, si el dato sale de ahí. */
   datasetTitle?: string;
+  /** Aperturas del mismo período que el valor (hombres y mujeres), si las hay. */
+  breakdowns?: MetricBreakdown[];
+}
+
+export interface MetricBreakdown {
+  dimension: BreakdownDimension;
+  groups: { group: string; label: string; value: number; display: string }[];
 }
 
 export interface TerritorySummary {
@@ -48,6 +55,30 @@ export interface TerritorySummary {
   metrics: MetricSummary[];
 }
 
+function breakdownsFor(
+  indicatorId: string,
+  territoryId: string,
+  period: string,
+  unit: string,
+  decimals: number
+): MetricBreakdown[] | undefined {
+  const out: MetricBreakdown[] = [];
+  for (const dimension of breakdownDimensions(indicatorId)) {
+    const groups = getBreakdownAt(indicatorId, territoryId, dimension, period);
+    if (groups.length === 0) continue;
+    out.push({
+      dimension,
+      groups: groups.map((g) => ({
+        group: g.group,
+        label: g.label,
+        value: g.obs.value!,
+        display: formatValue(g.obs.value!, unit, decimals),
+      })),
+    });
+  }
+  return out.length ? out : undefined;
+}
+
 function metricsFor(territoryId: string, level: GeoLevel): MetricSummary[] {
   const out: MetricSummary[] = [];
   for (const i of indicatorsForLevel(level)) {
@@ -67,6 +98,7 @@ function metricsFor(territoryId: string, level: GeoLevel): MetricSummary[] {
       sourceShort: getObservationSource(i.sourceId, latest.obs)?.shortName ?? i.sourceId,
       sourceHref: dataHref(latest.obs.sourceUrl),
       datasetTitle: getCatalogDataset(latest.obs.sourceUrl)?.title,
+      breakdowns: breakdownsFor(i.id, territoryId, latest.obs.period, i.unit, i.decimals),
     });
   }
   return out;

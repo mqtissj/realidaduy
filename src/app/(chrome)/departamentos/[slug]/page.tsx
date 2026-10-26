@@ -5,8 +5,9 @@ import { departments, getDepartmentBySlug, municipalitiesOf } from "@/data/terri
 import { getElectionResults, getGovernment, getParty, turnout } from "@/data/elections";
 import PartyBars from "@/components/charts/PartyBars";
 import { getIndicator } from "@/data/dictionary";
-import { getLatest, hasData, indicatorsForLevel } from "@/lib/data";
-import { formatNumber } from "@/lib/format";
+import { getObservationSource } from "@/data/sources";
+import { getBreakdownAt, getLatest, hasData, indicatorsForLevel } from "@/lib/data";
+import { formatDelta, formatNumber, formatValue } from "@/lib/format";
 import { PartyBadge } from "@/components/ui/Badge";
 import MetricCard from "@/components/charts/MetricCard";
 import ShareButton from "@/components/share/ShareButton";
@@ -70,9 +71,18 @@ export default async function DepartmentProfile({
     poblacion?.obs.value && poblacionUY?.obs.value
       ? (poblacion.obs.value / poblacionUY.obs.value) * 100
       : null;
+  // Los indicadores de educación van en su propio panel (/departamentos/[slug]/educacion).
   const deptMetricIds = indicatorsForLevel("departamento")
+    .filter((i) => i.subCategory !== "educacion")
     .map((i) => i.id)
     .filter((id) => id !== "poblacion" && hasData(id, dept.id));
+  // Hombres y mujeres del mismo período que el dato de la tarjeta.
+  const bySex = deptMetricIds.flatMap((id) => {
+    const indicator = getIndicator(id)!;
+    const latest = getLatest(id, dept.id)!;
+    const groups = getBreakdownAt(id, dept.id, "sexo", latest.obs.period);
+    return groups.length === 2 ? [{ indicator, period: latest.obs.periodLabel, groups }] : [];
+  });
   const toBars = (electionId: string) =>
     getElectionResults(electionId, dept.id)
       .filter((r) => r.pct !== null)
@@ -312,12 +322,83 @@ export default async function DepartmentProfile({
               Tocá una tarjeta para ver qué significa el indicador, su evolución y el ranking
               de los 19 departamentos.
             </p>
+            {bySex.length > 0 ? (
+              <div className="mt-6 rounded-2xl border border-line bg-surface p-4 shadow-card md:p-5">
+                <h3 className="font-display text-lg font-bold md:text-xl">Por sexo</h3>
+                <p className="mt-0.5 text-sm text-ink-soft">
+                  Hombres y mujeres en {dept.name}, del mismo período que cada tarjeta. Fuente:{" "}
+                  {[...new Set(bySex.map((r) => getObservationSource(r.indicator.sourceId, r.groups[0].obs)?.shortName))].join(", ")}.
+                </p>
+                <TableWrap label={`Indicadores por sexo en ${dept.name}`} className="mt-3">
+                  <table className="tabla min-w-[480px]">
+                    <caption className="sr-only">Indicadores por sexo en {dept.name}</caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">Indicador</th>
+                        <th scope="col">Período</th>
+                        <th scope="col" className="num">
+                          {bySex[0].groups[0].label}
+                        </th>
+                        <th scope="col" className="num">
+                          {bySex[0].groups[1].label}
+                        </th>
+                        <th scope="col" className="num">
+                          Diferencia ({bySex[0].groups[1].label.toLowerCase()} −{" "}
+                          {bySex[0].groups[0].label.toLowerCase()})
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {bySex.map(({ indicator, period, groups }) => (
+                        <tr key={indicator.id}>
+                          <th scope="row">
+                            <Link className="hover:text-primary hover:underline" href={`/indicadores/${indicator.slug}`}>
+                              {indicator.name}
+                            </Link>
+                          </th>
+                          <td>{period}</td>
+                          {groups.map((g) => (
+                            <td key={g.group} className="num">
+                              {formatValue(g.obs.value!, indicator.unit, indicator.decimals)}
+                            </td>
+                          ))}
+                          <td className="num">
+                            {formatDelta(
+                              groups[1].obs.value! - groups[0].obs.value!,
+                              indicator.unit,
+                              indicator.decimals
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </TableWrap>
+              </div>
+            ) : null}
           </>
         ) : (
           <div className="mt-4">
             <StateView kind="nodata-departamental" />
           </div>
         )}
+      </section>
+
+      {/* Educación: panel aparte */}
+      <section aria-labelledby="educacion" className="mt-10">
+        <h2 id="educacion" className="sr-only">
+          Educación
+        </h2>
+        <Link
+          href={`/departamentos/${dept.slug}/educacion`}
+          className="pressable block rounded-2xl border border-line bg-surface p-4 shadow-card transition-colors hover:border-celeste"
+        >
+          <p className="font-display text-lg font-bold text-primary">Educación en {dept.name} →</p>
+          <p className="mt-1 text-sm text-ink-soft">
+            Carreras, de dónde vienen los estudiantes, qué estudian afuera los de {dept.name}, 6º de
+            liceo y UTU.
+          </p>
+        </Link>
       </section>
 
       {/* Fuente */}

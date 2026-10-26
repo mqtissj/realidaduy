@@ -1,0 +1,59 @@
+# Actualización diaria de las cotizaciones del BCU (dólar, real, euro y peso
+# argentino). La corrida mensual de actualizar-datos.yml también las trae, pero
+# una vez por mes deja el "último dato" del sitio hasta 30 días viejo: esta
+# corre de lunes a viernes, solo con el script de cotizaciones, y commitea
+# únicamente src/data/observations/bcu-cotizaciones.ts.
+
+name: Actualizar cotizaciones
+
+on:
+  schedule:
+    # Lunes a viernes, 22:00 UTC (19:00 en Uruguay): el BCU ya publicó el
+    # cierre interbancario del día.
+    - cron: "0 22 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Si coincide con la corrida mensual, que no pisen el mismo archivo a la vez.
+concurrency:
+  group: actualizar-datos
+  cancel-in-progress: false
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # Si el BCU no responde o cambió algo, el script se frena y la corrida
+      # termina en rojo sin commitear: queda el archivo del día anterior.
+      - name: Ingesta BCU (cotizaciones)
+        run: node scripts/ingest/fetch-bcu-cotizaciones.mjs
+
+      - name: Validar datos
+        run: npm run validate:data
+
+      - name: Compilar
+        run: npm run build
+
+      - name: Commitear cotizaciones
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/data/observations/bcu-cotizaciones.ts
+          if git diff --cached --quiet; then
+            echo "Sin cotizaciones nuevas."
+          else
+            git commit -m "data: cotizaciones del BCU (actualización diaria)"
+            git pull --rebase --autostash origin main
+            git push
+          fi

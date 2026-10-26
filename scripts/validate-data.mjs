@@ -13,13 +13,19 @@ const { seguridadObservations } = await import("../src/data/observations/segurid
 const { otuObservations } = await import("../src/data/observations/otu.ts");
 const { otuMunicipioObservations } = await import("../src/data/observations/otu-municipios.ts");
 const { otuCensalObservations } = await import("../src/data/observations/otu-censal.ts");
-const { ineMensualObservations } = await import("../src/data/observations/ine-mensual.ts");
+const { ineMensualObservations, ineMensualDesgloses } = await import("../src/data/observations/ine-mensual.ts");
 const { municipioObservations } = await import("../src/data/observations/municipios.ts");
 const { worldBankSeries } = await import("../src/data/observations/series-banco-mundial.ts");
 const { prismaObservations } = await import("../src/data/observations/prisma.ts");
 const { bcuPibObservations } = await import("../src/data/observations/bcu-pib.ts");
 const { bcuCotizacionesObservations } = await import("../src/data/observations/bcu-cotizaciones.ts");
-const { ineAnualesObservations } = await import("../src/data/observations/ine-anuales.ts");
+const { ineAnualesObservations, ineAnualesDesgloses } = await import("../src/data/observations/ine-anuales.ts");
+const { andeMipymesObservations } = await import("../src/data/observations/ande-mipymes.ts");
+const { mecEducacionObservations } = await import("../src/data/observations/mec-educacion.ts");
+const { udelarFormaObservations } = await import("../src/data/observations/udelar-forma.ts");
+const { carrerasMec } = await import("../src/data/carreras-mec.ts");
+const { flujosUdelar, origenesUdelar, trabajoCarrerasUdelar, carrerasAfueraUdelar, resumenAfueraUdelar } = await import("../src/data/udelar-forma.ts");
+const { sextoMec, utuMediaMec, utuTerciariaMec } = await import("../src/data/media-mec.ts");
 const { sources } = await import("../src/data/sources.ts");
 const { parties, elections, electionResults, turnout } = await import("../src/data/elections.ts");
 const { catalogDatasets } = await import("../src/data/catalogo.ts");
@@ -39,7 +45,12 @@ const observations = [
   ...bcuPibObservations,
   ...bcuCotizacionesObservations,
   ...ineAnualesObservations,
+  ...mecEducacionObservations,
+  ...udelarFormaObservations,
+  ...andeMipymesObservations,
 ];
+const { inePobrezaAperturas } = await import("../src/data/observations/ine-pobreza-aperturas.ts");
+const breakdowns = [...ineAnualesDesgloses, ...inePobrezaAperturas, ...ineMensualDesgloses];
 
 const errors = [];
 const warnings = [];
@@ -65,7 +76,7 @@ const electionIds = new Set(elections.map((e) => e.id));
 const PERIOD_RE = /^\d{4}(-((0[1-9]|1[0-2])(-([0-2]\d|3[01]))?|Q[1-4]|S[12]))?$/;
 
 // 1-4: fuente, período, territorio, integridad referencial de cada observación.
-for (const o of observations) {
+for (const o of [...observations, ...breakdowns]) {
   const ref = `${o.indicatorId}/${o.territoryId}/${o.period}`;
   if (!indicatorIds.has(o.indicatorId)) errors.push(`Indicador inexistente: ${ref}`);
   if (!territoryIds.has(o.territoryId)) errors.push(`Territorio inexistente: ${ref}`);
@@ -89,6 +100,40 @@ for (const o of observations) {
     const k = `${o.indicatorId}|${o.territoryId}|${o.period}`;
     if (vistas.has(`${k}|${tier}`)) errors.push(`Observación duplicada (${tier}): ${k}`);
     else vistas.set(`${k}|${tier}`, o);
+  }
+}
+
+// Aperturas (sexo, edad): viven en su propia lista, cada una con su grupo, sin
+// duplicados, y el total del mismo período queda entre el grupo menor y el mayor.
+{
+  const DIMENSIONES = new Set(["sexo", "edad", "ascendencia"]);
+  for (const o of observations)
+    if (o.breakdown) errors.push(`Apertura mezclada con los totales: ${o.indicatorId}/${o.territoryId}/${o.period}`);
+  const vistas = new Set();
+  const porTotal = new Map();
+  for (const o of breakdowns) {
+    const ref = `${o.indicatorId}/${o.territoryId}/${o.period}`;
+    const b = o.breakdown;
+    if (!b || !DIMENSIONES.has(b.dimension) || !b.group || !b.label) {
+      errors.push(`Apertura sin dimensión, grupo o etiqueta: ${ref}`);
+      continue;
+    }
+    const k = `${ref}|${b.dimension}|${b.group}`;
+    if (vistas.has(k)) errors.push(`Apertura duplicada: ${k}`);
+    vistas.add(k);
+    const kt = `${o.indicatorId}|${o.territoryId}|${o.period}|${b.dimension}`;
+    if (!porTotal.has(kt)) porTotal.set(kt, []);
+    porTotal.get(kt).push(o.value);
+  }
+  const totales = new Map(
+    observations.filter((o) => o.status !== "SECONDARY").map((o) => [`${o.indicatorId}|${o.territoryId}|${o.period}`, o.value])
+  );
+  for (const [kt, valores] of porTotal) {
+    const total = totales.get(kt.split("|").slice(0, 3).join("|"));
+    if (total === undefined || total === null || valores.includes(null)) continue;
+    // Margen de redondeo: la fuente publica los grupos y el total con un decimal.
+    if (total < Math.min(...valores) - 0.1 || total > Math.max(...valores) + 0.1)
+      errors.push(`El total ${total} no queda entre sus aperturas (${valores.join(", ")}): ${kt}`);
   }
 }
 
@@ -174,6 +219,8 @@ const deptWide = [
   ...otuCensalObservations,
   ...ineMensualObservations,
   ...seguridadObservations,
+  ...mecEducacionObservations,
+  ...udelarFormaObservations,
 ];
 for (const [indicatorId, period] of [
   ["nbi-vivienda", "2011"],
@@ -190,6 +237,10 @@ for (const [indicatorId, period] of [
   ["homicidios-100k", "2025"],
   ["rapinas-100k", "2025"],
   ["hurtos-100k", "2025"],
+  ["matricula-universidad-publica", "2024"],
+  ["udelar-retencion", "2025"],
+  ["udelar-captacion", "2025"],
+  ["udelar-solo-montevideo", "2025"],
 ]) {
   const n = deptWide.filter(
     (o) =>
@@ -198,6 +249,57 @@ for (const [indicatorId, period] of [
       o.territoryId.split("-").length === 2
   ).length;
   if (n !== 19) errors.push(`${indicatorId} ${period}: ${n}/19 departamentos`);
+}
+
+// Educación terciaria: carreras del MEC y flujos del FormA.
+{
+  const deptIds = new Set(departments.map((d) => d.id));
+  for (const c of carrerasMec) {
+    const ref = `carrera ${c.institution} / ${c.career} / ${c.territoryIds.join("+")}`;
+    if (c.territoryIds.length === 0 || c.territoryIds.some((t) => !deptIds.has(t)))
+      errors.push(`Departamento inexistente en ${ref}`);
+    if (!Number.isInteger(c.matricula) || c.matricula < 0) errors.push(`Matrícula inválida en ${ref}`);
+    if (!/^https?:\/\//.test(c.sourceUrl)) errors.push(`sourceUrl inválida en ${ref}`);
+  }
+  // La matrícula por departamento es la suma de sus carreras públicas.
+  for (const o of mecEducacionObservations) {
+    if (o.territoryId === "UY") continue;
+    const suma = carrerasMec
+      .filter((c) => (c.institution === "UdelaR" || c.institution === "UTEC") && c.territoryIds.join() === o.territoryId)
+      .reduce((s, c) => s + c.matricula, 0);
+    if (suma !== o.value) errors.push(`Matrícula pública de ${o.territoryId}: indicador ${o.value} ≠ carreras ${suma}`);
+  }
+  for (const f of flujosUdelar) {
+    if (f.originId !== "EXT" && !deptIds.has(f.originId)) errors.push(`Flujo con origen inexistente: ${f.originId}`);
+    if (!deptIds.has(f.destinationId)) errors.push(`Flujo con destino inexistente: ${f.destinationId}`);
+  }
+  if (origenesUdelar.length !== 19) errors.push(`Orígenes FormA: ${origenesUdelar.length}/19 departamentos`);
+  for (const o of origenesUdelar) {
+    if (o.soloEnDepartamento + o.enDepartamentoYOtro + o.soloMontevideo + o.otros !== o.personas)
+      errors.push(`Orígenes FormA de ${o.territoryId}: las categorías no suman`);
+  }
+  for (const t of trabajoCarrerasUdelar) {
+    if (!deptIds.has(t.territoryId)) errors.push(`Trabajo por carrera con departamento inexistente: ${t.territoryId}`);
+    if (!(t.trabajan >= 0 && t.trabajan <= 100)) errors.push(`Porcentaje inválido en ${t.career} / ${t.territoryId}`);
+  }
+  // Carreras cursadas afuera: 19 resúmenes y filas coherentes.
+  if (resumenAfueraUdelar.length !== 19) errors.push(`Resumen de carreras afuera: ${resumenAfueraUdelar.length}/19`);
+  for (const c of carrerasAfueraUdelar) {
+    if (!deptIds.has(c.originId)) errors.push(`Carrera afuera con origen inexistente: ${c.originId}`);
+    if (c.personas < 10 || c.montevideo + c.salto + c.otros < c.personas)
+      errors.push(`Carrera afuera incoherente: ${c.career} / ${c.originId}`);
+  }
+  // Media superior: 13 opciones de 6º por departamento, UTU media y terciaria en los 19.
+  for (const id of deptIds) {
+    const sexto = sextoMec.filter((s) => s.territoryId === id);
+    if (sexto.length !== 13) errors.push(`6º de ${id}: ${sexto.length}/13 opciones`);
+    if (utuTerciariaMec[id] === undefined) errors.push(`UTU terciaria sin dato para ${id}`);
+  }
+  for (const s of sextoMec)
+    if (!Number.isInteger(s.publica) || s.publica < 0 || (s.privada !== null && (!Number.isInteger(s.privada) || s.privada < 0)))
+      errors.push(`6º con valor inválido: ${s.territoryId} / ${s.option}`);
+  for (const u of utuMediaMec)
+    if (!deptIds.has(u.territoryId) || u.publica + u.privada <= 0) errors.push(`UTU media inválida: ${u.territoryId} / ${u.course}`);
 }
 
 // Elecciones: referencias válidas y exactamente un ganador por territorio/elección.

@@ -108,6 +108,11 @@ export default function CompareOverview({ territories }: { territories: Territor
                               {c.periodLabel} · {c.sourceShort}
                             </span>
                           ) : null}
+                          {c.breakdowns?.map((b) => (
+                            <span key={b.dimension} className="row-context">
+                              {b.groups.map((g) => `${g.label} ${g.display}`).join(" · ")}
+                            </span>
+                          ))}
                         </td>
                       ) : (
                         <td key={territories[i].id} className="num cell-empty">
