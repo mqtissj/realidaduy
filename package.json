@@ -21,6 +21,7 @@
     "fetch:ine-anuales": "node scripts/ingest/fetch-ine-anuales.mjs",
     "fetch:pobreza-aperturas": "node scripts/ingest/fetch-ine-pobreza-aperturas.mjs",
     "fetch:pobreza": "node scripts/ingest/fetch-ine-pobreza.mjs",
+    "fetch:mortalidad-infantil": "node scripts/ingest/fetch-mortalidad-infantil.mjs",
     "fetch:ande": "node scripts/ingest/fetch-ande-mipymes.mjs",
     "fetch:seguridad": "node scripts/ingest/fetch-seguridad.mjs",
     "fetch:elecciones": "node scripts/ingest/fetch-elecciones.mjs",

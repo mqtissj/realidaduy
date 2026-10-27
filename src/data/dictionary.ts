@@ -513,6 +513,36 @@ export const dictionary: Indicator[] = [
     status: "active",
   },
   {
+    id: "mortalidad-infantil",
+    slug: "mortalidad-infantil",
+    name: "Mortalidad infantil",
+    shortName: "Mortalidad infantil",
+    question: "¿Cuántos bebés mueren antes de cumplir un año?",
+    description:
+      "Muertes de menores de un año cada 1.000 nacidos vivos, para el país y por departamento.",
+    plainDefinition:
+      "De cada 1.000 bebés que nacen vivos en el año, cuántos mueren antes de cumplir un año. Es uno de los indicadores más usados para medir las condiciones de vida y el acceso a la salud.",
+    category: "sociedad",
+    unit: "cada mil",
+    unitLabel: "muertes cada 1.000 nacidos vivos",
+    sourceId: "ine",
+    sourceUrl:
+      "https://www.gub.uy/instituto-nacional-estadistica/comunicacion/publicaciones/anuario-estadistico-nacional-2025-vol-102/capitulo-2-poblacion/23",
+    periodicity: "anual",
+    geographicLevel: ["pais", "departamento"],
+    availableFrom: "1970",
+    methodology:
+      "Estadísticas vitales del Ministerio de Salud Pública, publicadas en el Anuario Estadístico Nacional del INE (cuadros 2.3.1, nacimientos, y 2.3.6, defunciones de menores de un año, por departamento de residencia de la madre). realidad.uy divide las muertes por los nacimientos; el resultado coincide con la tasa que publica el MSP. Por departamento se suman los tres últimos años del cuadro (2022–2024), porque en los departamentos chicos mueren entre 0 y 10 bebés por año y la tasa de un solo año salta mucho por azar.",
+    formula: "defunciones de menores de un año / nacidos vivos × 1.000",
+    comparability:
+      "El dato por departamento junta 2022, 2023 y 2024 y se muestra como 2023. Aun sumando tres años, en los departamentos chicos una o dos muertes de más o de menos mueven bastante la tasa: las diferencias de uno o dos puntos entre departamentos no son concluyentes.",
+    isCalculated: true,
+    reading: "lowerIsBetter",
+    decimals: 1,
+    lastUpdated: "2026-10-27",
+    status: "active",
+  },
+  {
     id: "nbi-vivienda",
     slug: "nbi-vivienda",
     name: "Hogares con NBI en la vivienda",
