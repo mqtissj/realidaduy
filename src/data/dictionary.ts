@@ -53,6 +53,8 @@ export const dictionary: Indicator[] = [
     availableFrom: "2006",
     methodology:
       "Encuesta Continua de Hogares (ECH) del INE. La ECH fue rediseñada en 2021–2022: las series anteriores y posteriores no son estrictamente comparables. La apertura departamental es el promedio anual que publica el INE en su Anuario Estadístico Nacional (cuadro 3.4.4).",
+    comparability:
+      "La ECH del INE se rediseñó en 2021–2022. Los datos de antes y de después del cambio no son estrictamente comparables: una diferencia que cruza esos años hay que leerla con cautela.",
     isCalculated: false,
     reading: "lowerIsBetter",
     decimals: 1,
@@ -77,6 +79,8 @@ export const dictionary: Indicator[] = [
     geographicLevel: ["pais", "departamento"],
     availableFrom: "2006",
     methodology: "Encuesta Continua de Hogares (ECH) del INE.",
+    comparability:
+      "La ECH del INE se rediseñó en 2021–2022. Los datos de antes y de después del cambio no son estrictamente comparables: una diferencia que cruza esos años hay que leerla con cautela.",
     isCalculated: false,
     reading: "higherIsBetter",
     decimals: 1,
@@ -102,6 +106,8 @@ export const dictionary: Indicator[] = [
     geographicLevel: ["pais", "departamento"],
     availableFrom: "2006",
     methodology: "Encuesta Continua de Hogares (ECH) del INE.",
+    comparability:
+      "La ECH del INE se rediseñó en 2021–2022. Los datos de antes y de después del cambio no son estrictamente comparables: una diferencia que cruza esos años hay que leerla con cautela.",
     isCalculated: false,
     reading: "neutral",
     decimals: 1,
@@ -155,6 +161,8 @@ export const dictionary: Indicator[] = [
     availableFrom: "2016",
     methodology:
       "Cuentas Nacionales del BCU, base 2016, a precios constantes. La variación trimestral desestacionalizada es otra medida distinta: nunca se mezclan en un mismo gráfico.",
+    comparability:
+      "La serie anual empalma dos fuentes: PRISMA (ANII) hasta 2016 y el BCU desde 2017, con la base 2016 de Cuentas Nacionales. En los años en que se solapan coinciden. La variación desestacionalizada es otra medida y no se mezcla con esta.",
     isCalculated: false,
     reading: "neutral",
     decimals: 1,
@@ -281,6 +289,8 @@ export const dictionary: Indicator[] = [
     availableFrom: "2022",
     methodology:
       "Monitor Mipymes de la Agencia Nacional de Desarrollo (ANDE), elaborado a partir de los registros de BPS. Es una serie mensual; el sitio toma el mismo mes de cada año (el último publicado) para que la variación sea interanual y no la mueva la estacionalidad. El monitor cambió de metodología en 2022 y no publica datos comparables anteriores. La suma de los departamentos es apenas menor que el total del país porque unas pocas empresas no tienen departamento asignado.",
+    comparability:
+      "El Monitor Mipymes de ANDE cambió de metodología en 2022: la serie arranca ese año y no se empalma con datos anteriores. Se compara el mismo mes de cada año, porque la cantidad de empresas tiene un componente estacional.",
     isCalculated: false,
     reading: "higherIsBetter",
     decimals: 0,
@@ -307,6 +317,8 @@ export const dictionary: Indicator[] = [
     availableFrom: "2022",
     methodology:
       "Monitor Mipymes de la Agencia Nacional de Desarrollo (ANDE), elaborado a partir de los registros de BPS. Es una serie mensual; el sitio toma el mismo mes de cada año (el último publicado) para que la variación sea interanual y no la mueva la estacionalidad. El monitor cambió de metodología en 2022 y no publica datos comparables anteriores.",
+    comparability:
+      "El Monitor Mipymes de ANDE cambió de metodología en 2022: la serie arranca ese año y no se empalma con datos anteriores. Se compara el mismo mes de cada año, porque el empleo tiene un componente estacional.",
     isCalculated: false,
     reading: "higherIsBetter",
     decimals: 0,
@@ -437,6 +449,8 @@ export const dictionary: Indicator[] = [
     availableFrom: "2015",
     methodology:
       "ECH del INE. El dato nacional y la apertura departamental 2024 usan la metodología actualizada (Met. 2017, canasta de la ENGIH 2016-2017; apertura departamental elaborada por el Observatorio Territorio Uruguay de OPP). La serie nacional anual desde 2015 es la que el propio INE recalculó hacia atrás con la metodología 2017 (Cuadro 6.5 del documento «Metodología 2017», mayo 2025), así que se compara año a año sin quiebre. El dato departamental 2023 usa la metodología anterior (canasta 2006): ambas mediciones NO son comparables entre sí y esta plataforma nunca las mezcla ni calcula variaciones entre ellas.",
+    comparability:
+      "En 2025 el INE adoptó una canasta nueva (Metodología 2017) y recalculó con ella la serie nacional desde 2015, así que esa serie se compara año a año sin quiebre. El dato por departamento de 2023 es de la metodología anterior y no se compara con el de 2024. Las estimaciones semestrales se comparan solo con otros semestres, y el titular usa el mismo semestre del año anterior, porque la pobreza puede tener un componente estacional.",
     isCalculated: false,
     reading: "lowerIsBetter",
     decimals: 1,
@@ -462,6 +476,8 @@ export const dictionary: Indicator[] = [
     availableFrom: "1996",
     methodology:
       "INE, estimaciones y proyecciones de población (Revisión 2025, con base en el Censo 2023), tablas de mortalidad. El dato del país es anual; el de cada departamento es un promedio de tres años centrado en el año de referencia (tablas abreviadas), por eso llega un año menos. La serie departamental 2022 promedia 2021–2023 e incluye el exceso de muertes de la pandemia en 2021. No es comparable con la serie anterior del Observatorio Territorio Uruguay (2019), calculada con otra base de población.",
+    comparability:
+      "El dato por departamento es el de 2022, un promedio de 2021–2023 que incluye el exceso de muertes de la pandemia en 2021, y por eso queda algo por debajo de lo habitual. Sale de las proyecciones del INE con base en el Censo 2023 y no es comparable con la serie anterior del Observatorio Territorio Uruguay (2019).",
     isCalculated: false,
     reading: "higherIsBetter",
     decimals: 1,
@@ -826,6 +842,8 @@ export const dictionary: Indicator[] = [
     availableFrom: "2006",
     methodology:
       "ECH del INE, elaboración del Observatorio Social del MIDES. El nivel de esta serie difiere del de la serie nacional del INE (~+17-21%, metodología de ponderación propia): es útil para comparar departamentos entre sí, no como nivel oficial nacional. Serie 2006–2023.",
+    comparability:
+      "El nivel de esta serie del MIDES es más alto que el de la serie nacional del INE, porque pondera de otra forma: sirve para comparar departamentos entre sí, no como nivel oficial.",
     isCalculated: false,
     reading: "higherIsBetter",
     decimals: 0,
@@ -853,6 +871,8 @@ export const dictionary: Indicator[] = [
     availableFrom: "2022",
     methodology:
       "ECH del INE, informe anual de informalidad. Medición ampliada de ocupación informal (OIT, 21.ª CIET): no registro a la seguridad social más otras formas de informalidad. Es algo más amplia que el 'no registro' clásico (2024: 22,7% ampliada vs 21,7% no registro).",
+    comparability:
+      "La serie arranca en 2022 con la medición ampliada de la OIT (21.ª CIET), algo más amplia que el «no registro» clásico a la seguridad social. Las dos mediciones no se empalman.",
     isCalculated: false,
     reading: "lowerIsBetter",
     decimals: 1,

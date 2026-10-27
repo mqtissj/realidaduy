@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { sources } from "@/data/sources";
 import { dictionary } from "@/data/dictionary";
 import { getSource } from "@/data/sources";
@@ -30,10 +31,19 @@ const SECCIONES = [
   { id: "tipos", label: "Tipos de dato" },
   { id: "diccionario", label: "Diccionario" },
   { id: "validacion", label: "Validación" },
+  { id: "comparabilidad", label: "Comparabilidad" },
+  { id: "revision", label: "Revisión externa" },
   { id: "geo", label: "Límites" },
 ];
 
 const link = "font-semibold text-primary underline decoration-line underline-offset-2 hover:decoration-primary";
+
+const REGLAS_COMPARACION = [
+  "Solo se comparan períodos de la misma granularidad: mes con mes, trimestre con trimestre, semestre con semestre y año con año. Una estimación semestral nunca se compara con el año completo.",
+  "Un semestre se compara, por defecto, con el mismo semestre del año anterior, porque el indicador puede tener un componente estacional. Si el lector elige dos semestres distintos del año, el comparador lo avisa.",
+  "Cuando un organismo cambia la metodología, el dato que estrena la medición nueva queda marcado y el sitio no calcula la diferencia contra los anteriores.",
+  "Cada indicador afectado por un cambio de metodología lo dice a la vista, en su página, bajo «Ojo al comparar»: qué cambió y desde cuándo.",
+];
 
 const PASOS_VALIDACION = [
   "Se verifica la fuente: organismo competente y URL del dato concreto.",
@@ -253,6 +263,61 @@ export default function FuentesPage() {
             </li>
           ))}
         </ol>
+      </section>
+
+      {/* Comparabilidad */}
+      <section aria-labelledby="comparabilidad-titulo" className="mt-12 scroll-mt-20" id="comparabilidad">
+        <h2 id="comparabilidad-titulo" className="font-display text-2xl font-bold">
+          ¿Cómo se comparan datos de distintos períodos?
+        </h2>
+        <ul className="mt-4 max-w-3xl list-disc space-y-2 pl-5 text-sm text-ink-soft">
+          {REGLAS_COMPARACION.map((r) => (
+            <li key={r}>{r}</li>
+          ))}
+        </ul>
+        <h3 className="mt-6 font-display text-lg font-bold">Cambios de metodología registrados</h3>
+        <dl className="mt-3 grid gap-3 md:grid-cols-2">
+          {dictionary
+            .filter((i) => i.status === "active" && i.comparability)
+            .map((i) => (
+              <div key={i.id} className="rounded-2xl border border-line bg-surface p-4">
+                <dt>
+                  <Link className={link} href={`/indicadores/${i.slug}`}>
+                    {i.name}
+                  </Link>
+                </dt>
+                <dd className="mt-1 text-sm text-ink-soft">{i.comparability}</dd>
+              </div>
+            ))}
+        </dl>
+      </section>
+
+      {/* Revisión externa */}
+      <section aria-labelledby="revision-titulo" className="mt-12 scroll-mt-20" id="revision">
+        <h2 id="revision-titulo" className="font-display text-2xl font-bold">Revisión metodológica externa</h2>
+        <p className="mt-3 max-w-3xl text-sm text-ink-soft">
+          En octubre de 2026 la Unidad de Métodos y Acceso a Datos (UMAD) de la Facultad de Ciencias Sociales
+          de la Universidad de la República revisó, a pedido de la plataforma, tres decisiones metodológicas y
+          las consideró razonables:
+        </p>
+        <ol className="mt-3 max-w-3xl list-decimal space-y-2 pl-5 text-sm text-ink-soft">
+          <li>
+            Mostrar notas metodológicas visibles que avisen de los cambios de metodología y de lo que implican
+            para comparar entre años.
+          </li>
+          <li>
+            Comparar los indicadores semestrales solo con otros semestres, porque pueden tener un componente
+            estacional.
+          </li>
+          <li>
+            Tomar 2022 como año de referencia de la esperanza de vida por departamento (el promedio 2021–2023
+            que publica el INE).
+          </li>
+        </ol>
+        <p className="mt-3 max-w-3xl text-sm text-ink-soft">
+          La revisión no hace a la UMAD responsable de los datos: cada cifra sigue siendo responsabilidad del
+          organismo que la produce y su presentación, de esta plataforma.
+        </p>
       </section>
 
       {/* Límites territoriales */}
