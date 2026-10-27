@@ -110,6 +110,61 @@ export const nationalObservations: Observation[] = [
     notes:
       "Metodología 2017 del INE. Margen de error al 95%: ±0,9 punto. Hogares: 13,4%; indigencia: 1,5% de las personas. Cuadro 1 del informe anual 2025 del INE.",
   },
+  // Pobreza en hogares 2015–2023, del mismo Cuadro 6.5 (columna «% de hogares,
+  // LP 2017»). Su 2024 (13,4) coincide con el del informe anual 2025, que trae
+  // el script fetch-ine-pobreza.mjs junto con los períodos siguientes.
+  ...(
+    [
+      ["2015", 13.2],
+      ["2016", 13.0],
+      ["2017", 11.4],
+      ["2018", 11.9],
+      ["2019", 12.8],
+      ["2020", 18.1],
+      ["2021", 16.6],
+      ["2022", 15.5],
+      ["2023", 15.1],
+    ] as const
+  ).map(
+    ([period, value]): Observation => ({
+      indicatorId: "pobreza-hogares",
+      territoryId: "UY",
+      period,
+      periodLabel: `Año ${period}`,
+      value,
+      status: "OFFICIAL",
+      demo: false,
+      sourceUrl:
+        "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/PDF/ECH/Pobreza/Metodolog%C3%ADa%202017%20final%20v140525.pdf",
+      retrievedAt: "2026-10-27",
+      notes:
+        "Metodología 2017 del INE, recalculada hacia atrás por el propio INE: Cuadro 6.5 del documento «Metodología 2017» (mayo 2025), hogares bajo la LP 2017, total país.",
+    })
+  ),
+  // Semestres de hogares del informe del 1er semestre 2025 (cuadro 1), que el
+  // script no lee porque tiene otro formato.
+  ...(
+    [
+      ["2024-S1", "1er semestre 2024", 14.1],
+      ["2024-S2", "2do semestre 2024", 12.6],
+      ["2025-S1", "1er semestre 2025", 13.9],
+    ] as const
+  ).map(
+    ([period, periodLabel, value]): Observation => ({
+      indicatorId: "pobreza-hogares",
+      territoryId: "UY",
+      period,
+      periodLabel,
+      value,
+      status: "OFFICIAL",
+      demo: false,
+      sourceUrl:
+        "https://www5.ine.gub.uy/documents/Demograf%C3%ADayEESS/HTML/ECH/Pobreza/2025/Informe%20pobreza%20primer%20semestre%202025.html",
+      retrievedAt: "2026-10-27",
+      notes:
+        "Metodología 2017 del INE. Es una estimación semestral: se compara con otros semestres, no con el año completo. Cuadro 1 del informe del 1er semestre 2025 del INE.",
+    })
+  ),
   // Estimaciones semestrales: el titular compara cada semestre con el anterior
   // de la misma granularidad, nunca con el año completo.
   {
