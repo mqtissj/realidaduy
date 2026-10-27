@@ -121,6 +121,9 @@ jobs:
         continue-on-error: true
         run: node scripts/ingest/fetch-udelar-forma.mjs
 
+      - name: Pruebas
+        run: npm test
+
       - name: Validar datos
         run: npm run validate:data
 

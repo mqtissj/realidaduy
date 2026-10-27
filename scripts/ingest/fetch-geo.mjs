@@ -58,8 +58,6 @@ const DEPARTMENT_IDS = {
   "treinta y tres": "UY-TT",
 };
 
-const MUNICIPIO_LETTERS = ["a", "b", "c", "ch", "d", "e", "f", "g"];
-
 const normalize = (s) =>
   String(s)
     .normalize("NFD")

@@ -76,6 +76,8 @@ export default function PeriodCompare({
   const brokenBy =
     lo && hi ? periods.find((p) => p.period > lo.period && p.period <= hi.period && p.breakBefore) : undefined;
   const delta = lo && hi && !sameOne && !brokenBy ? hi.value - lo.value : undefined;
+  // Primer semestre contra segundo: la diferencia puede ser estacional.
+  const otherHalf = kind === "semestral" && lo && hi && lo.period.slice(4) !== hi.period.slice(4);
 
   const fmt = (v: number) => formatValue(v, indicator.unit, indicator.decimals);
   // En la frase, "$" no se separa del número al cortar la línea.
@@ -181,6 +183,12 @@ export default function PeriodCompare({
               <>
                 <Delta delta={delta} indicator={indicator} prevLabel={lo.label} />
                 <p className="mt-1 text-sm text-ink">{sentence}</p>
+                {otherHalf ? (
+                  <p className="mt-1 text-sm text-ink-soft">
+                    Ojo: son semestres distintos del año y el indicador puede tener un componente estacional. La
+                    comparación más limpia es con el mismo semestre de otro año.
+                  </p>
+                ) : null}
               </>
             ) : null}
           </div>

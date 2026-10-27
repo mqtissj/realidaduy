@@ -12,24 +12,7 @@ import type {
   Territory,
 } from "@/lib/types";
 import { dictionary, getIndicator } from "@/data/dictionary";
-import { nationalObservations } from "@/data/observations/nacional";
-import { departmentObservations } from "@/data/observations/departamentos";
-import { municipioObservations } from "@/data/observations/municipios";
-import { departmentEchObservations } from "@/data/observations/departamentos-ech";
-import { otuObservations } from "@/data/observations/otu";
-import { otuMunicipioObservations } from "@/data/observations/otu-municipios";
-import { otuCensalObservations } from "@/data/observations/otu-censal";
-import { ineMensualDesgloses, ineMensualObservations } from "@/data/observations/ine-mensual";
-import { seguridadObservations } from "@/data/observations/seguridad";
-import { worldBankSeries } from "@/data/observations/series-banco-mundial";
-import { prismaObservations } from "@/data/observations/prisma";
-import { bcuPibObservations } from "@/data/observations/bcu-pib";
-import { bcuCotizacionesObservations } from "@/data/observations/bcu-cotizaciones";
-import { ineAnualesDesgloses, ineAnualesObservations } from "@/data/observations/ine-anuales";
-import { inePobrezaAperturas } from "@/data/observations/ine-pobreza-aperturas";
-import { andeMipymesObservations } from "@/data/observations/ande-mipymes";
-import { mecEducacionObservations } from "@/data/observations/mec-educacion";
-import { udelarFormaObservations } from "@/data/observations/udelar-forma";
+import { allBreakdowns, allObservations } from "@/data/observations";
 import { carrerasMec } from "@/data/carreras-mec";
 import {
   flujosUdelar,
@@ -47,30 +30,9 @@ export * from "@/data/territories";
 export * from "@/data/elections";
 export { getSource, sources } from "@/data/sources";
 
-const allObservations: Observation[] = [
-  ...nationalObservations,
-  ...departmentObservations,
-  ...departmentEchObservations,
-  ...otuObservations,
-  ...otuMunicipioObservations,
-  ...otuCensalObservations,
-  ...ineMensualObservations,
-  ...seguridadObservations,
-  ...municipioObservations,
-  ...worldBankSeries,
-  ...prismaObservations,
-  ...bcuPibObservations,
-  ...bcuCotizacionesObservations,
-  ...ineAnualesObservations,
-  ...mecEducacionObservations,
-  ...udelarFormaObservations,
-  ...andeMipymesObservations,
-];
-
-// Aperturas (por sexo, por edad), aparte de los totales: ninguna función de
-// totales las ve, así un titular, un ranking o un mapa nunca muestra el dato de
-// las mujeres como si fuera el del departamento.
-const allBreakdowns: Observation[] = [...ineAnualesDesgloses, ...inePobrezaAperturas, ...ineMensualDesgloses];
+// Las aperturas (por sexo, por edad) van aparte de los totales: ninguna función
+// de totales las ve, así un titular, un ranking o un mapa nunca muestra el dato
+// de las mujeres como si fuera el del departamento.
 
 /** Todas las observaciones de la plataforma, totales y aperturas (descargas CSV). */
 export function getAllObservations(): Observation[] {
@@ -143,10 +105,17 @@ export function getLatest(indicatorId: string, territoryId: string): LatestResul
   const latest = obs[obs.length - 1];
   // Quiebre metodológico: jamás se compara contra el período anterior.
   if (latest.breakBefore) return { obs: latest };
+  const kind = periodKind(latest.period);
   const comparable = obs.filter(
-    (o) => o.period.length === latest.period.length && o.period < latest.period
+    (o) => periodKind(o.period) === kind && o.period.length === latest.period.length && o.period < latest.period
   );
-  const prev = comparable[comparable.length - 1];
+  // Un semestre se compara con el mismo semestre del año anterior: el
+  // indicador puede tener un componente estacional (revisión de la UMAD,
+  // FCS-UdelaR). Si ese semestre no está, no hay variación.
+  const prev =
+    kind === "semestral"
+      ? comparable.find((o) => o.period === `${Number(latest.period.slice(0, 4)) - 1}${latest.period.slice(4)}`)
+      : comparable[comparable.length - 1];
   const delta =
     prev && latest.value !== null && prev.value !== null ? latest.value - prev.value : undefined;
   return { obs: latest, prev, delta };
