@@ -17,6 +17,7 @@ import { bcuCotizacionesObservations } from "./bcu-cotizaciones.ts";
 import { ineAnualesDesgloses, ineAnualesObservations } from "./ine-anuales.ts";
 import { inePobrezaAperturas } from "./ine-pobreza-aperturas.ts";
 import { andeMipymesObservations } from "./ande-mipymes.ts";
+import { inePobrezaObservations, inePobrezaReferente } from "./ine-pobreza.ts";
 import { mecEducacionObservations } from "./mec-educacion.ts";
 import { udelarFormaObservations } from "./udelar-forma.ts";
 
@@ -43,7 +44,8 @@ export const allObservations: Observation[] = [
   ...mecEducacionObservations,
   ...udelarFormaObservations,
   ...andeMipymesObservations,
+  ...inePobrezaObservations,
 ];
 
 /** Aperturas (por sexo, por edad), aparte de los totales. */
-export const allBreakdowns: Observation[] = [...ineAnualesDesgloses, ...inePobrezaAperturas, ...ineMensualDesgloses];
+export const allBreakdowns: Observation[] = [...ineAnualesDesgloses, ...inePobrezaAperturas, ...ineMensualDesgloses, ...inePobrezaReferente];

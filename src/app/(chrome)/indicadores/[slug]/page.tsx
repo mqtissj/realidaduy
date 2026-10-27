@@ -23,6 +23,7 @@ import LineChart from "@/components/charts/LineChart";
 import RankingList from "@/components/charts/RankingList";
 import PeriodCompare from "@/components/charts/PeriodCompare";
 import BreakdownSection from "@/components/charts/BreakdownSection";
+import LineaPobreza from "@/components/charts/LineaPobreza";
 import SourceNote from "@/components/ui/SourceNote";
 import StateView from "@/components/ui/StateView";
 
@@ -327,6 +328,8 @@ export default async function IndicadorPage({
       {breakdownDimensions(indicator.id).map((d) => (
         <BreakdownSection key={d} indicator={indicator} dimension={d} />
       ))}
+
+      {indicator.id === "pobreza-personas" || indicator.id === "pobreza-hogares" ? <LineaPobreza /> : null}
 
       {/* Por departamento */}
       <section aria-labelledby="por-departamento" className="mt-8">

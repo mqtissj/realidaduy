@@ -24,8 +24,9 @@ import {
 } from "@/data/udelar-forma";
 import { mediaMecFuente, sextoMec, utuMediaMec, utuTerciariaMec } from "@/data/media-mec";
 import { departments, getTerritoryById } from "@/data/territories";
+import { lineaPobreza } from "@/data/observations/ine-pobreza";
 
-export { dictionary, getIndicator };
+export { dictionary, getIndicator, lineaPobreza };
 export * from "@/data/territories";
 export * from "@/data/elections";
 export { getSource, sources } from "@/data/sources";

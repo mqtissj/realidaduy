@@ -458,6 +458,34 @@ export const dictionary: Indicator[] = [
     status: "active",
   },
   {
+    id: "pobreza-hogares",
+    slug: "pobreza-hogares",
+    name: "Pobreza (hogares)",
+    shortName: "Hogares pobres",
+    question: "¿Qué parte de los hogares es pobre?",
+    description:
+      "Porcentaje de hogares bajo la línea de pobreza, según la metodología vigente del INE.",
+    plainDefinition:
+      "Porcentaje de hogares cuyo ingreso no alcanza la línea de pobreza: lo que cuesta una canasta básica de alimentos y otros bienes y servicios para un hogar de su tamaño y región. Es menor que la pobreza en personas porque los hogares pobres suelen tener más integrantes, sobre todo niños.",
+    category: "sociedad",
+    unit: "%",
+    unitLabel: "por ciento de los hogares",
+    sourceId: "ine",
+    sourceUrl: "https://www.gub.uy/instituto-nacional-estadistica/tematica/pobreza",
+    periodicity: "semestral",
+    geographicLevel: ["pais"],
+    availableFrom: "2015",
+    methodology:
+      "ECH del INE, metodología 2017 (canasta de la ENGIH 2016-2017). La serie anual 2015–2023 es la que el INE recalculó hacia atrás con esa metodología (Cuadro 6.5 del documento «Metodología 2017», mayo 2025); desde 2024 sale de los informes anuales y semestrales, que el sitio lee solo cuando se publican. La apertura según quién encabeza el hogar es el cuadro 5 del informe anual: el sexo de la persona de referencia del hogar.",
+    comparability:
+      "La serie anual desde 2015 usa una sola metodología y se compara año a año. Las estimaciones semestrales se comparan solo con otros semestres, y el titular usa el mismo semestre del año anterior.",
+    isCalculated: false,
+    reading: "lowerIsBetter",
+    decimals: 1,
+    lastUpdated: "2026-10-27",
+    status: "active",
+  },
+  {
     id: "esperanza-vida",
     slug: "esperanza-de-vida",
     name: "Esperanza de vida al nacer",
