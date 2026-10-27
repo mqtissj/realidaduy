@@ -105,10 +105,17 @@ export function getLatest(indicatorId: string, territoryId: string): LatestResul
   const latest = obs[obs.length - 1];
   // Quiebre metodológico: jamás se compara contra el período anterior.
   if (latest.breakBefore) return { obs: latest };
+  const kind = periodKind(latest.period);
   const comparable = obs.filter(
-    (o) => o.period.length === latest.period.length && o.period < latest.period
+    (o) => periodKind(o.period) === kind && o.period.length === latest.period.length && o.period < latest.period
   );
-  const prev = comparable[comparable.length - 1];
+  // Un semestre se compara con el mismo semestre del año anterior: el
+  // indicador puede tener un componente estacional (revisión de la UMAD,
+  // FCS-UdelaR). Si ese semestre no está, no hay variación.
+  const prev =
+    kind === "semestral"
+      ? comparable.find((o) => o.period === `${Number(latest.period.slice(0, 4)) - 1}${latest.period.slice(4)}`)
+      : comparable[comparable.length - 1];
   const delta =
     prev && latest.value !== null && prev.value !== null ? latest.value - prev.value : undefined;
   return { obs: latest, prev, delta };

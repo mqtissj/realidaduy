@@ -217,6 +217,23 @@ export default async function IndicadorPage({
         </div>
       </section>
 
+      {/* Nota metodológica a la vista: qué cambió y cómo afecta comparar. */}
+      {indicator.comparability ? (
+        <section aria-labelledby="ojo-al-comparar" className="mt-4">
+          <div className="rounded-2xl border border-line bg-surface px-4 py-3">
+            <h2 id="ojo-al-comparar" className="text-sm font-bold uppercase tracking-wide text-ink-soft">
+              Ojo al comparar
+            </h2>
+            <p className="mt-1 text-sm text-ink">{indicator.comparability}</p>
+            <p className="mt-2 text-xs text-ink-faint">
+              <Link className="underline hover:text-primary" href="/fuentes#comparabilidad">
+                Cómo se manejan los cambios de metodología
+              </Link>
+            </p>
+          </div>
+        </section>
+      ) : null}
+
       {/* Evolución */}
       <section aria-labelledby="evolucion" className="mt-8">
         <h2 id="evolucion" className="sr-only">

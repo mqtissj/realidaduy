@@ -66,6 +66,11 @@ export interface Indicator {
   geographicLevel: GeoLevel[];
   availableFrom?: string;
   methodology: string;
+  /**
+   * Cambio de metodología o cautela que afecta la comparación entre períodos.
+   * Se muestra a la vista en la página del indicador, no dentro de un plegable.
+   */
+  comparability?: string;
   formula?: string;
   isCalculated: boolean;
   reading: Reading;
