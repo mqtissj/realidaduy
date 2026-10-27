@@ -28,6 +28,7 @@ const { flujosUdelar, origenesUdelar, trabajoCarrerasUdelar, carrerasAfueraUdela
 const { sextoMec, utuMediaMec, utuTerciariaMec } = await import("../src/data/media-mec.ts");
 const { sources } = await import("../src/data/sources.ts");
 const { parties, elections, electionResults, turnout } = await import("../src/data/elections.ts");
+const { historicElections } = await import("../src/data/elecciones-historicas.ts");
 const { catalogDatasets } = await import("../src/data/catalogo.ts");
 
 // La misma lista que usa la app (src/data/observations/index.ts).
@@ -299,6 +300,22 @@ for (const r of electionResults) {
 }
 for (const [k, n] of winnerKey) {
   if (n !== 1) errors.push(`${n} ganadores en ${k}`);
+}
+// Historia electoral: los votos de los lemas (o de los candidatos del
+// balotaje) no pueden pasar de los emitidos, ni los emitidos de los
+// habilitados; el ganador del balotaje es el presidente electo.
+for (const e of historicElections) {
+  const lemas = e.firstRound.reduce((s, l) => s + l.votes, 0);
+  if (lemas > e.emitted) errors.push(`Elección ${e.year}: los lemas suman ${lemas} y hay ${e.emitted} emitidos`);
+  if (e.emitted > e.enabled) errors.push(`Elección ${e.year}: más emitidos que habilitados`);
+  if (e.turnout < 80 || e.turnout > 95) warnings.push(`Elección ${e.year}: participación ${e.turnout}%`);
+  if (e.runoff) {
+    const r = e.runoff;
+    const c = r.candidates.reduce((s, x) => s + x.votes, 0);
+    if (c > r.emitted || r.emitted > r.enabled) errors.push(`Balotaje ${e.year}: totales inconsistentes`);
+    const ganador = [...r.candidates].sort((a, b) => b.votes - a.votes)[0];
+    if (ganador.name !== e.president.name) errors.push(`Balotaje ${e.year}: ganó ${ganador.name} y figura ${e.president.name}`);
+  }
 }
 for (const d of departments) {
   if (!winnerKey.has(`departamental-2025|${d.id}`))

@@ -448,8 +448,10 @@ export default function EleccionesPage() {
           Historia electoral (1984–2019)
         </h2>
         <p className="mt-1 max-w-2xl text-sm text-ink-soft">
-          Todas las elecciones nacionales desde el retorno a la democracia. Porcentajes de
-          primera vuelta sobre votos válidos. Tocá un año para ver el detalle.
+          Todas las elecciones nacionales desde el retorno a la democracia, con los resultados
+          oficiales de la Corte Electoral. Los porcentajes son sobre votos emitidos, como en
+          2024: no suman 100 porque faltan los votos en blanco y anulados. Tocá un año para ver
+          el detalle.
         </p>
         <div className="mt-4 space-y-3">
           {historicElections.map((e) => {
@@ -494,8 +496,7 @@ export default function EleccionesPage() {
                       <h3 className="text-sm font-bold uppercase tracking-wide text-ink-faint">
                         Balotaje · {e.runoff.date.split("-").reverse().join("/")}
                         {e.runoff.turnout ? ` · participación ${formatNumber(e.runoff.turnout, 2)}%` : ""}
-                        {" · % sobre votos "}
-                        {e.runoff.pctBase === "validos" ? "válidos" : "emitidos"}
+                        {" · % sobre votos emitidos"}
                       </h3>
                       <div className="mt-2">
                         <PartyBars
@@ -515,11 +516,21 @@ export default function EleccionesPage() {
                     <p className="text-xs text-ink-faint">Sin balotaje.</p>
                   )}
                   <p className="text-xs text-ink-faint">
-                    Fuente:{" "}
-                    <a className="underline" href={e.sourceUrl} target="_blank" rel="noopener noreferrer">
-                      Wikipedia (reproduce datos de la Corte Electoral)
-                    </a>
-                    . Pendiente de cotejo final contra las publicaciones oficiales.
+                    {formatNumber(e.emitted, 0)} votos emitidos de {formatNumber(e.enabled, 0)}{" "}
+                    habilitados. Fuente:{" "}
+                    {e.source === "corte" ? (
+                      <a className="underline" href={e.sourceUrl} target="_blank" rel="noopener noreferrer">
+                        Corte Electoral
+                      </a>
+                    ) : (
+                      <>
+                        <a className="underline" href={e.sourceUrl} target="_blank" rel="noopener noreferrer">
+                          Wikipedia
+                        </a>{" "}
+                        (fuente secundaria: la Corte Electoral no tiene publicados los resultados de {e.year})
+                      </>
+                    )}
+                    .
                   </p>
                 </div>
               </details>

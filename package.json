@@ -25,6 +25,7 @@
     "fetch:ande": "node scripts/ingest/fetch-ande-mipymes.mjs",
     "fetch:seguridad": "node scripts/ingest/fetch-seguridad.mjs",
     "fetch:elecciones": "node scripts/ingest/fetch-elecciones.mjs",
+    "check:elecciones-historicas": "node scripts/ingest/check-elecciones-historicas.mjs",
     "fetch:mec": "node scripts/ingest/fetch-mec-educacion.mjs",
     "fetch:udelar": "node scripts/ingest/fetch-udelar-forma.mjs",
     "fetch:mensual": "npm run fetch:ine && npm run fetch:ine-anuales && npm run fetch:worldbank && npm run fetch:prisma && npm run fetch:bcu && npm run fetch:cotizaciones && npm run fetch:pobreza && npm run fetch:ande && npm run fetch:seguridad && npm run fetch:elecciones && npm run fetch:mec && npm run fetch:udelar"
