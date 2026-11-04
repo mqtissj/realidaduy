@@ -13,7 +13,8 @@
 # (Corte Electoral; con asserts contra el escrutinio), matrícula por carrera y
 # departamento (anuario del MEC) y de dónde vienen y dónde cursan los
 # estudiantes de la UdelaR (FormA).
-# Lo que no tiene script (pobreza, salario mínimo, datos departamentales) lo
+# La pobreza (informes semestral y anual del INE) también tiene script.
+# Lo que no tiene script (salario mínimo, datos departamentales) lo
 # revisa la tarea local de Claude (día 5).
 
 name: Actualizar datos
@@ -91,6 +92,13 @@ jobs:
         continue-on-error: true
         run: node scripts/ingest/fetch-bcu-cotizaciones.mjs
 
+      # Pobreza (personas y hogares, línea de pobreza): informes semestral y
+      # anual del INE. Si sale un informe nuevo, lo trae; si cambió el formato,
+      # el paso queda en rojo y la corrida sigue con el archivo anterior.
+      - name: Ingesta INE (pobreza)
+        continue-on-error: true
+        run: node scripts/ingest/fetch-ine-pobreza.mjs
+
       # Monitor Mipymes de ANDE: mismo criterio, si falla queda el archivo anterior.
       - name: Ingesta ANDE (mipymes por departamento)
         id: ande
@@ -160,7 +168,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add src/data/observations/ine-mensual.ts src/data/observations/ine-anuales.ts src/data/observations/series-banco-mundial.ts src/data/observations/prisma.ts src/data/observations/bcu-pib.ts src/data/observations/bcu-cotizaciones.ts src/data/observations/ande-mipymes.ts src/data/observations/seguridad.ts src/data/elecciones-generadas.ts src/data/carreras-mec.ts src/data/media-mec.ts src/data/observations/mec-educacion.ts src/data/udelar-forma.ts src/data/observations/udelar-forma.ts
+          git add src/data/observations/ine-mensual.ts src/data/observations/ine-anuales.ts src/data/observations/series-banco-mundial.ts src/data/observations/prisma.ts src/data/observations/bcu-pib.ts src/data/observations/bcu-cotizaciones.ts src/data/observations/ande-mipymes.ts src/data/observations/ine-pobreza.ts src/data/observations/seguridad.ts src/data/elecciones-generadas.ts src/data/carreras-mec.ts src/data/media-mec.ts src/data/observations/mec-educacion.ts src/data/udelar-forma.ts src/data/observations/udelar-forma.ts
           if git diff --cached --quiet; then
             echo "Sin cambios de datos este mes."
             exit 0

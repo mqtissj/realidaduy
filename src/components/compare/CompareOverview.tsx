@@ -19,7 +19,7 @@ const GROUPS: { id: Category; label: string }[] = [
 // Unidades largas ("cada 100 mil") van una vez en la fila y no en cada celda:
 // así la celda queda en un renglón aun en el celular.
 const unitInRow = (unit: string) => unit.includes(" ");
-const UNIT_LABEL: Record<string, string> = { "cada 100 mil": "cada 100 mil hab." };
+const UNIT_LABEL: Record<string, string> = { "cada 100 mil": "cada 100 mil hab.", "cada mil": "cada mil nacidos" };
 
 function territoryHref(t: TerritorySummary): string {
   return t.level === "departamento" ? `/departamentos/${t.slug}` : "/montevideo/municipios";
