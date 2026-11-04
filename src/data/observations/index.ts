@@ -6,6 +6,7 @@ import { departmentObservations } from "./departamentos.ts";
 import { municipioObservations } from "./municipios.ts";
 import { departmentEchObservations } from "./departamentos-ech.ts";
 import { otuObservations } from "./otu.ts";
+import { otuPobreza2025, otuPobreza2025Sexo } from "./otu-pobreza-2025.ts";
 import { otuMunicipioObservations } from "./otu-municipios.ts";
 import { otuCensalObservations } from "./otu-censal.ts";
 import { ineMensualDesgloses, ineMensualObservations } from "./ine-mensual.ts";
@@ -32,6 +33,7 @@ export const allObservations: Observation[] = [
   ...departmentObservations,
   ...departmentEchObservations,
   ...otuObservations,
+  ...otuPobreza2025,
   ...otuMunicipioObservations,
   ...otuCensalObservations,
   ...ineMensualObservations,
@@ -50,4 +52,4 @@ export const allObservations: Observation[] = [
 ];
 
 /** Aperturas (por sexo, por edad), aparte de los totales. */
-export const allBreakdowns: Observation[] = [...ineAnualesDesgloses, ...inePobrezaAperturas, ...ineMensualDesgloses, ...inePobrezaReferente];
+export const allBreakdowns: Observation[] = [...ineAnualesDesgloses, ...inePobrezaAperturas, ...ineMensualDesgloses, ...inePobrezaReferente, ...otuPobreza2025Sexo];
