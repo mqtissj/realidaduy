@@ -1,7 +1,7 @@
 import type { SixthGradeChoice, TechnicalCourse } from "@/lib/types";
 
 // GENERADO por scripts/ingest/fetch-mec-educacion.mjs — no editar a mano.
-// Última ejecución: 2026-10-19. Fuente: MEC, Anuario Estadístico de Educación 2024.
+// Última ejecución: 2026-11-05. Fuente: MEC, Anuario Estadístico de Educación 2024.
 // Cada cuadro se controla por sus totales (opciones contra totales de plan,
 // departamentos contra resto del país y total): si algo no cierra, no escribe.
 
@@ -9,7 +9,7 @@ export const mediaMecFuente = {
   cita: "MEC, Anuario Estadístico de Educación 2024",
   periodo: "2024",
   sourceUrl: "https://www.gub.uy/ministerio-educacion-cultura/datos-y-estadisticas/datos/anuario-estadistico-educacion-2024",
-  retrievedAt: "2026-10-19",
+  retrievedAt: "2026-11-05",
 };
 
 /** Estudiantes de 6º de liceo por opción (cuadros II-4.2.8, pública, y II-4.2.9, privada). */
