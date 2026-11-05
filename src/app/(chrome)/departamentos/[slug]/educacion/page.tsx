@@ -7,6 +7,7 @@ import { SITE_NAME } from "@/lib/site";
 import MetricCard from "@/components/charts/MetricCard";
 import EducacionTerciaria from "@/components/educacion/EducacionTerciaria";
 import EstudianAfuera from "@/components/educacion/EstudianAfuera";
+import IngresosSede from "@/components/educacion/IngresosSede";
 import MediaSuperior from "@/components/educacion/MediaSuperior";
 
 export function generateStaticParams() {
@@ -75,6 +76,7 @@ export default async function EducacionDepartamento({
       ) : null}
 
       <EducacionTerciaria dept={dept} />
+      <IngresosSede dept={dept} />
       <EstudianAfuera dept={dept} />
       <MediaSuperior dept={dept} />
     </div>

@@ -192,6 +192,14 @@ export interface CareerEnrollment {
   notes?: string;
 }
 
+/** Ingresos por carrera a una sede, año por año, según la propia sede. */
+export interface SedeIntake {
+  territoryId: string;
+  career: string;
+  /** Año lectivo → ingresos; null si la celda del cuadro está vacía. */
+  ingresos: Record<string, number | null>;
+}
+
 /** Carrera de la UdelaR que cursan fuera de su departamento quienes vivían en él (FormA). */
 export interface CareerAbroad {
   originId: string;

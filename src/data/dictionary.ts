@@ -448,13 +448,13 @@ export const dictionary: Indicator[] = [
     geographicLevel: ["pais", "departamento"],
     availableFrom: "2015",
     methodology:
-      "ECH del INE. El dato nacional y la apertura departamental 2024 usan la metodología actualizada (Met. 2017, canasta de la ENGIH 2016-2017; apertura departamental elaborada por el Observatorio Territorio Uruguay de OPP). La serie nacional anual desde 2015 es la que el propio INE recalculó hacia atrás con la metodología 2017 (Cuadro 6.5 del documento «Metodología 2017», mayo 2025), así que se compara año a año sin quiebre. El dato departamental 2023 usa la metodología anterior (canasta 2006): ambas mediciones NO son comparables entre sí y esta plataforma nunca las mezcla ni calcula variaciones entre ellas.",
+      "ECH del INE. El dato nacional y la apertura departamental 2024 y 2025 usan la metodología actualizada (Met. 2017, canasta de la ENGIH 2016-2017; apertura departamental elaborada por el Observatorio Territorio Uruguay de OPP sobre la ECH; la de 2025 es el cuadro que el OTU mandó en Excel el 04/11/2026). La serie nacional anual desde 2015 es la que el propio INE recalculó hacia atrás con la metodología 2017 (Cuadro 6.5 del documento «Metodología 2017», mayo 2025), así que se compara año a año sin quiebre. El dato departamental 2023 usa la metodología anterior (canasta 2006): ambas mediciones NO son comparables entre sí y esta plataforma nunca las mezcla ni calcula variaciones entre ellas.",
     comparability:
-      "En 2025 el INE adoptó una canasta nueva (Metodología 2017) y recalculó con ella la serie nacional desde 2015, así que esa serie se compara año a año sin quiebre. El dato por departamento de 2023 es de la metodología anterior y no se compara con el de 2024. Las estimaciones semestrales se comparan solo con otros semestres, y el titular usa el mismo semestre del año anterior, porque la pobreza puede tener un componente estacional.",
+      "En 2025 el INE adoptó una canasta nueva (Metodología 2017) y recalculó con ella la serie nacional desde 2015, así que esa serie se compara año a año sin quiebre. El dato por departamento de 2023 es de la metodología anterior y no se compara con los de 2024 y 2025. Por departamento la muestra de la ECH es chica y todavía no hay intervalos de confianza publicados; por eso el INE publica la pobreza solo para Montevideo y el interior según el tamaño de las localidades. El Observatorio Territorio Uruguay (OPP) recomienda leer el dato departamental con cautela: mirar la tendencia de varios años y no sacar conclusiones de la variación de un año puntual. Las estimaciones semestrales se comparan solo con otros semestres, y el titular usa el mismo semestre del año anterior, porque la pobreza puede tener un componente estacional.",
     isCalculated: false,
     reading: "lowerIsBetter",
     decimals: 1,
-    lastUpdated: "2026-10-12",
+    lastUpdated: "2026-11-05",
     status: "active",
   },
   {
