@@ -14,6 +14,7 @@ import type {
 import { dictionary, getIndicator } from "@/data/dictionary";
 import { allBreakdowns, allObservations } from "@/data/observations";
 import { carrerasMec } from "@/data/carreras-mec";
+import { CENUR_SALTO_ANIOS, cenurSaltoFuente, ingresosCenurSalto } from "@/data/cenur-salto-ingresos";
 import {
   flujosUdelar,
   carrerasAfueraUdelar,
@@ -214,7 +215,7 @@ export { getTerritoryById };
 
 // ── Educación terciaria ─────────────────────────────────────────
 
-export { formaUdelarFuente, mediaMecFuente };
+export { formaUdelarFuente, mediaMecFuente, cenurSaltoFuente, CENUR_SALTO_ANIOS };
 
 /** Estudiantes de 6º de liceo por opción en el departamento (anuario del MEC). */
 export function getSixthGrade(territoryId: string) {
@@ -241,6 +242,22 @@ export function getCareers(territoryId: string): CareerEnrollment[] {
   return carrerasMec
     .filter((c) => c.territoryIds.length === 1 && c.territoryIds[0] === territoryId)
     .sort((a, b) => b.matricula - a.matricula);
+}
+
+/**
+ * Ingresos por carrera a la sede de la UdelaR en el departamento, según la sede
+ * (hoy solo la Sede Salto del CENUR). Ordenadas por el último año completo.
+ */
+export function getSedeIntake(territoryId: string) {
+  const carreras = ingresosCenurSalto.filter((c) => c.territoryId === territoryId);
+  const totales = CENUR_SALTO_ANIOS.map((anio) => ({
+    anio,
+    total: carreras.reduce((s, c) => s + (c.ingresos[anio] ?? 0), 0),
+  }));
+  return {
+    carreras: [...carreras].sort((a, b) => (b.ingresos["2025"] ?? 0) - (a.ingresos["2025"] ?? 0)),
+    totales,
+  };
 }
 
 /** Dónde cursan los estudiantes de la UdelaR que vivían en el departamento (FormA). */

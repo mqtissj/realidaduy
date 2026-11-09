@@ -45,3 +45,11 @@ test("cada observación tiene fuente, período y un valor numérico o vacío", (
     assert.ok(o.value === null || Number.isFinite(o.value), `valor inválido: ${ref}`);
   }
 });
+
+test("ingresos CENUR Sede Salto: las carreras suman los totales del cuadro", async () => {
+  const { ingresosCenurSalto, cenurSaltoTotales, CENUR_SALTO_ANIOS } = await import("../src/data/cenur-salto-ingresos.ts");
+  for (const anio of CENUR_SALTO_ANIOS) {
+    const suma = ingresosCenurSalto.reduce((s, c) => s + (c.ingresos[anio] ?? 0), 0);
+    assert.equal(suma, cenurSaltoTotales[anio], anio);
+  }
+});
